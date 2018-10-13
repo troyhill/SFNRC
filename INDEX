@@ -1,6 +1,6 @@
 dfe.wq                  DataForEver water quality database API
 dfe.hydro               DataForEver hydrology database API
-derm.wq                 Process water quality data from Miami-Dade Department of Environmental Resources
+derm.wq                 Process water quality data from Miami-Dade Department of Environmental Resources Management
 dbh.stn                 An API for station-level DBHYDRO water quality data
 dbh.stn.batch           A wrapper for dbh.stn; download data from multiple stations
 dbh.proj                An API for project-level DBHYDRO water quality data

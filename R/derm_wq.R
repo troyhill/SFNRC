@@ -1,4 +1,4 @@
-#' @title Process water quality data from Miami-Dade Department of Environmental Resources
+#' @title Process water quality data from Miami-Dade Department of Environmental Resources Management
 #'
 #' @description Processes DERM data to facilitate analysis and integration with DataForEver data. Adjusts parameter names and units to match DataForEver.
 #'
