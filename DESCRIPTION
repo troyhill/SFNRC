@@ -1,0 +1,19 @@
+Package: SFNRC
+Type: Package
+Title: APIs and Tools for the South Florida  Natural Resources Center's Water Quality and Flow Databases
+Version: 0.0.1
+Date: 2018-10-13
+Author: Troy D. Hill <Hill.Troy@gmail.com>
+Maintainer: Troy D. Hill <Hill.Troy@gmail.com>
+Description: An R interface for the South Florida  Natural Resources Center's water quality and flow databases, DBHYDRO, and tools used to upload, process, and analyze data from DataForEver and the Miami-Dade Department of Environmental Resources Management.
+License: file LICENSE
+URL: https://github.com/troyhill/SFNRC
+LazyData: true
+Depends:
+    R (>= 3.0),
+    httr,
+    utils
+RoxygenNote: 6.1.0
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
