@@ -1,8 +1,6 @@
 #' @title DataForEver water quality database API
 #'
-#' @description Downloads and compiles DataForEver water quality data.
-#'
-#' @details This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
+#' @description Downloads and compiles DataForEver water quality data. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
 #' 
 #' @usage dfe.wq(stns, target_analytes = "all", 
 #' output_colNames = c("stn", "date", "time", "param", "units", 
@@ -44,10 +42,10 @@ dfe.wq <- function(stns, target_analytes = "all",
   # requires permissions on the shell script, access to NPS processes etc. 
   # TODO: select date ranges, option for outputting wide data
   
-  files.in.tmp <- list.files(tempdir())
-  stn.list.loc <- file.path(tempdir(), "stn_temp.lst")
+  files.in.tmp     <- list.files(tempdir(), recursive = TRUE)
+  stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
   folder_with_data <- file.path(tempdir(), "data")
-  bash.script.loc <- file.path(tempdir(), "bash_temp.sh")
+  bash.script.loc  <- file.path(tempdir(), "bash_temp.sh")
   
   utils::write.table(stns, file = stn.list.loc, col.names = FALSE, row.names = FALSE, sep = "", quote = FALSE)
   
@@ -115,7 +113,7 @@ dfe.wq <- function(stns, target_analytes = "all",
   ########################
   ### clean up the temp folder
   ########################
-  newFiles <- list.files(tempdir(), full.names = TRUE)[!list.files(tempdir()) %in% files.in.tmp]
+  newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
   invisible(file.remove(newFiles))
 }
 

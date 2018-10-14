@@ -1,8 +1,6 @@
 #' @title DataForEver hydrology database API
 #'
-#' @description Downloads and compiles DataForEver hydrology data
-#'
-#' @details This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
+#' @description Downloads and compiles DataForEver hydrology data. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
 #' 
 #' @usage dfe.hydro(stns, parameter_list = c("flow", "tail_water", "head_water", "stage"),
 #' data_shape = "long")
@@ -39,6 +37,7 @@ dfe.hydro <- function(stns,
                       data_shape = "long") {
   # I think this still requires access to NPS servers and opt/physical drive
   
+  files.in.tmp     <- list.files(tempdir(), recursive = TRUE)
   stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
   folder_with_data <- file.path(tempdir(), "data")
   bash.script.loc  <- file.path(tempdir(), "bash_hydro_tmp.sh") # wrapper for bash_hydro_sql.sh
@@ -181,7 +180,7 @@ dfe.hydro <- function(stns,
   ########################
   ### clean up the temp folder
   ########################
-  newFiles <- list.files(tempdir(), full.names = TRUE)[!list.files(tempdir()) %in% files.in.tmp]
+  newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
   invisible(file.remove(newFiles))
   
 }
