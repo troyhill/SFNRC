@@ -35,7 +35,7 @@
 dfe.hydro <- function(stns, 
                       parameter_list = c("flow", "tail_water", "head_water", "stage"),
                       data_shape = "long") {
-  # I think this still requires access to NPS servers and opt/physical drive
+  ### TODO: write bash script using contents of parameter_list rather than post-dl filtering
   
   files.in.tmp     <- list.files(tempdir(), recursive = TRUE)
   stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
