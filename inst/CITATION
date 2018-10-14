@@ -1,0 +1,18 @@
+bibentry("Manual",
+         title = "South Florida Natural Resources Center R package",
+         author = person("Troy D. Hill"),
+         organization = "",
+         address      = "Miami, FL",
+         year         = "2018",
+         url          = "https://github.com/troyhill/SFNRC",
+         
+         textVersion = 
+         paste("Troy D. Hill (2018). ", 
+               "South Florida Natural Resources Center R package. ",
+               "Miami, FL. ",
+               "URL https://github.com/troyhill/SFNRC",
+               sep=""),
+         
+         mheader = "To cite the SFNRC R package in publications use:",
+	       mfooter = ""
+)
