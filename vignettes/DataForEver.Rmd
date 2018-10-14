@@ -1,0 +1,98 @@
+---
+title: 'Working with DataForEver data'
+subtitle: ''
+output: 
+  pdf_document: 
+    latex_engine: pdflatex
+vignette: >
+  %\VignetteIndexEntry{DataForEver}
+  %\VignetteEngine{knitr::knitr}
+  %\usepackage[UTF-8]{inputenc}
+mainfont: FreeMono
+header-includes:
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+- \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+if(!require(knitr)){
+  install.packages("knitr", repos='http://cran.us.r-project.org')
+}
+if(!require(rmarkdown)){
+  install.packages("rmarkdown", repos='http://cran.us.r-project.org')
+}
+if(!require(plyr)){
+  install.packages("plyr", repos='http://cran.us.r-project.org')
+}
+if(!require(reshape2)){
+  install.packages("reshape2", repos='http://cran.us.r-project.org')
+}
+if(!require(ggplot2)){
+  install.packages("ggplot2", repos='http://cran.us.r-project.org')
+}
+if(!require(scales)){
+  install.packages("scales", repos='http://cran.us.r-project.org')
+}
+
+# then load the package:
+library(knitr)
+library(rmarkdown)
+library(plyr)
+library(reshape2)
+library(ggplot2)
+library(scales)
+library(SFNRC)
+
+knitr::opts_chunk$set(echo = TRUE, comment=NA)
+```
+
+
+
+## 1. 
+
+
+
+\vspace{3mm}\hrule
+
+**Keywords:** data
+
+
+```{r, echo = FALSE, include=FALSE}
+# if the NitrogenUptake2016 package isn't installed, use devtools to do so:
+# devtools::install_github("troyhill/NitrogenUptake2016", build_vignettes = TRUE)
+
+# set some constants
+todaysDate <- substr(as.character(Sys.time()), 1, 10)
+core.area <- pot.m2 <- 0.00801185 # mesocosm surface area (m2)
+top.vol   <- core.area * 0.05 * 1e6 # cm3 in core: top 5 cm only
+pointSize <- 2 # for ggplot graphics
+pd <- pd2 <- position_dodge(1.2)
+pd3 <- position_dodge(0.8)
+grayColor <- 0.55
+fig2Col   <- "gray55"
+
+
+```
+
+
+
+
+**2.1.	 text**
+
+mass = (height$\cdot$a + b)^1/$\lambda$^ 
+
+
+```{r allometry, include=FALSE, echo=FALSE}
+
+
+```
+
+
+```{r Figure 1 (Data In Brief), fig.width = 6, fig.height = 4, message = FALSE, include=FALSE, echo=FALSE}
+
+```
+
+
+

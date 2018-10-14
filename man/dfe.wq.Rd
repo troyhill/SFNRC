@@ -23,10 +23,7 @@ output_colClasses = c("character", "character", "character",
 dataframe \code{dfe.wq} returns a dataframe with water quality measurements from each station identified in \code{stns}.
 }
 \description{
-Downloads and compiles DataForEver water quality data.
-}
-\details{
-This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
+Downloads and compiles DataForEver water quality data. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
 }
 \examples{
 \dontrun{

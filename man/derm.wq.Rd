@@ -2,7 +2,7 @@
 % Please edit documentation in R/derm_wq.R
 \name{derm.wq}
 \alias{derm.wq}
-\title{Process water quality data from Miami-Dade Department of Environmental Resources}
+\title{Process water quality data from Miami-Dade Department of Environmental Resources Management}
 \usage{
 derm.wq(filename = "/opt/physical/troy/RDATA/biscayne/data/data_BBWQall_20180517.txt",
 remove_QC_codes = c("B|H|J|K|Q|Y|\\\\?|\\\\*"), 
