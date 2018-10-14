@@ -179,7 +179,9 @@ dfe.hydro <- function(stns,
   invisible(tempDat) 
   
   ########################
-  ### clean up the temp folder?
+  ### clean up the temp folder
   ########################
+  newFiles <- list.files(tempdir(), full.names = TRUE)[!list.files(tempdir()) %in% files.in.tmp]
+  invisible(file.remove(newFiles))
   
 }

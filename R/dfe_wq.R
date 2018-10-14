@@ -44,7 +44,7 @@ dfe.wq <- function(stns, target_analytes = "all",
   # requires permissions on the shell script, access to NPS processes etc. 
   # TODO: select date ranges, option for outputting wide data
   
-  
+  files.in.tmp <- list.files(tempdir())
   stn.list.loc <- file.path(tempdir(), "stn_temp.lst")
   folder_with_data <- file.path(tempdir(), "data")
   bash.script.loc <- file.path(tempdir(), "bash_temp.sh")
@@ -113,8 +113,9 @@ dfe.wq <- function(stns, target_analytes = "all",
   invisible(tempDat) 
   
   ########################
-  ### clean up the temp folder?
+  ### clean up the temp folder
   ########################
-  
+  newFiles <- list.files(tempdir(), full.names = TRUE)[!list.files(tempdir()) %in% files.in.tmp]
+  invisible(file.remove(newFiles))
 }
 
