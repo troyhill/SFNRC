@@ -113,7 +113,7 @@ dfe.wq <- function(stns, target_analytes = "all",
   ########################
   ### clean up the temp folder
   ########################
-  newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
-  invisible(file.remove(newFiles))
+  # newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
+  # invisible(file.remove(newFiles))
 }
 
