@@ -92,7 +92,16 @@ dfe.wq <- function(stns, target_analytes = "all",
     tempDat <- tempDat[tempDat$param %in% target_analytes, ]
   }
   
+  ########################
+  ### clean up the temp folder
+  ########################
+  newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
+  file.remove(newFiles)
+           
+                                   
+  ########################
   ### clean up the data
+  ########################
   tempDat$year     <- substr(tempDat$date, 1, 4) #as.numeric(sapply(strsplit(tempDat$date, "-"), "[", 1))
   tempDat$mo       <- substr(tempDat$date, 6, 7) #as.numeric(sapply(strsplit(tempDat$date, "-"), "[", 2))
   tempDat$day      <- substr(tempDat$date, 9, 10) #as.numeric(sapply(strsplit(tempDat$date, "-"), "[", 3))
@@ -110,10 +119,5 @@ dfe.wq <- function(stns, target_analytes = "all",
   
   invisible(tempDat) 
   
-  ########################
-  ### clean up the temp folder
-  ########################
-  # newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
-  # invisible(file.remove(newFiles))
 }
 
