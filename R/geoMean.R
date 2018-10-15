@@ -23,6 +23,6 @@ geoMean <- function(x, nas = TRUE, zero.propagate = FALSE){
     }
     exp(mean(log(x), na.rm = nas))
   } else {
-    exp(sum(log(x[x > 0]), na.rm = nas) / sum(x, na.rm = nas))
+    exp(sum(log(x[x > 0]), na.rm = nas) / sum(!is.na(x)))
   }
 }
