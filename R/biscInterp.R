@@ -24,12 +24,13 @@
 #' agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 #' names(agm) <- gsub(x = names(agm), pattern = " ", replacement = "")
 #' names(agm) <- gsub(x = names(agm), pattern = ",", replacement = "")
-#' finDat.coords <- join_all(list(agm, masterCoords), by = "stn")
+#' names(agm) <- gsub(x = names(agm), pattern = "-", replacement = ".")
+#' finDat.coords <- plyr::join_all(list(agm, masterCoords), by = "stn")
 #' finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
 #' coordinates(finDat.coords) <- c("long", "lat")
 #' proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 #' 
-#' sitesInBay <- over(finDat.coords, bnp)
+#' sitesInBay <- sp::over(finDat.coords, bnp)
 #' sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 #' 
 #' biscInterp(inputData = finDat.coords[(finDat.coords@data$stn %in% sitesInBay@data$stn), ],
