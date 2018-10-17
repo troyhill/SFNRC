@@ -4,7 +4,7 @@
 \name{wqDat}
 \alias{wqDat}
 \title{Data: DataForEver water quality data for northern boundary of Everglades National Park}
-\format{A dataframe with x observations of y variables:
+\format{A dataframe of water quality data from DataForEver, downloaded on 16 October 2018.
 \describe{
 \item{stn}{station name}
 \item{date}{date of observation}
@@ -46,7 +46,6 @@ targetStations <- c("COOPERTN", "FROGCITY", "G311", "G342A", "G342B", "G342C",
 
 testDat <- dfe.wq(stns = targetStations)
 
-identical(wqDat, testDat)
 }
 
 ### export to .csv: 

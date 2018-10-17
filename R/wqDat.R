@@ -2,7 +2,7 @@
 #'
 #'
 #'
-#' @format A dataframe with x observations of y variables:
+#' @format A dataframe of water quality data from DataForEver, downloaded on 16 October 2018.
 #' \describe{
 #' \item{stn}{station name}
 #' \item{date}{date of observation}
@@ -42,7 +42,6 @@
 #' 
 #' testDat <- dfe.wq(stns = targetStations)
 #' 
-#' identical(wqDat, testDat)
 #' }
 #' 
 #' ### export to .csv: 
