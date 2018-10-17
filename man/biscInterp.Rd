@@ -48,8 +48,8 @@ Make interpolated maps of Biscayne Bay
 \examples{
 \dontrun{
 
-fin2 <- dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
-agm <- ddply(fin2[, -c(2)], .(year, stn), numcolwise(geoMean))
+fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
+agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 names(agm) <- gsub(x = names(agm), pattern = " ", replacement = "")
 names(agm) <- gsub(x = names(agm), pattern = ",", replacement = "")
 finDat.coords <- join_all(list(agm, masterCoords), by = "stn")
@@ -57,9 +57,11 @@ finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
 coordinates(finDat.coords) <- c("long", "lat")
 proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
-biscInterp(inputData = finDat.coords, # finDat.coords[(finDat.coords@data$stn \%in\% finalSites), ]
-    param = "SALINITY", year = "2016",
-    exportPlot = TRUE, plotName = "SALINITY_2016.png")
+sitesInBay <- over(finDat.coords, bnp)
+sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
+
+biscInterp(inputData = finDat.coords[(finDat.coords@data$stn \%in\% sitesInBay), ]
+    param = "SALINITY", year = "2016")
 
 
 }
