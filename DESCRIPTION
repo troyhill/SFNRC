@@ -1,7 +1,7 @@
 Package: SFNRC
 Type: Package
 Title: APIs and Tools for Processing Data from DataForEver, DBHYDRO, and Miami-Dade Department of Environmental Resources Management
-Version: 0.0.2
+Version: 0.0.3
 Date: 2018-10-13
 Author: Troy D. Hill <Hill.Troy@gmail.com>
 Maintainer: Troy D. Hill <Hill.Troy@gmail.com>
@@ -12,7 +12,11 @@ LazyData: true
 Depends:
     R (>= 3.0),
     httr,
-    utils
+    utils,
+    dismo,
+    gstat,
+    raster,
+    sf
 RoxygenNote: 6.1.0
 Suggests: knitr,
     rmarkdown,

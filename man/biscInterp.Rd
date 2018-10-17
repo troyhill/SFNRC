@@ -4,10 +4,9 @@
 \alias{biscInterp}
 \title{Make interpolated maps of Biscayne Bay}
 \usage{
-biscInterp(inputData = finDat.coords[(finDat.coords@data$stn \%in\%
-  finalSites), ], paramCol = "SALINITY", yearCol = "year",
+biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
   year = "2016", returnRas = FALSE, exportRaster = FALSE,
-  fileName = "NA.tif", BISCmap = bnp, exportPlot = FALSE,
+  fileName = "NA.tif", BISCmap = SFNRC::bnp, exportPlot = FALSE,
   plotName = "NA.png", plotWidth = 4, plotHeight = 5,
   plotRes = 200, plotZLims = c(10, 40))
 }
@@ -47,7 +46,7 @@ plot, raster layer, and/or raster data
 Make interpolated maps of Biscayne Bay
 }
 \examples{
-\dontrun {
+\dontrun{
 
 fin2 <- dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
 agm <- ddply(fin2[, -c(2)], .(year, stn), numcolwise(geoMean))
@@ -58,15 +57,10 @@ finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
 coordinates(finDat.coords) <- c("long", "lat")
 proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
-biscInterp(param = "SALINITY", year = "2016",
-exportPlot = TRUE, plotName = paste0("/opt/physical/troy/RDATA/biscayne/output/interpolatedMaps/SALINITY_2016.png"))
+biscInterp(inputData = finDat.coords, # finDat.coords[(finDat.coords@data$stn \%in\% finalSites), ]
+    param = "SALINITY", year = "2016",
+    exportPlot = TRUE, plotName = "SALINITY_2016.png")
 
 
-for (i in 1:length(unique(vec))) {
-  targYear <- unique(vec)[i]
-  targParam <- "SALINITY"
-  biscInterp(param = targParam, year = targYear,
-       exportPlot = TRUE, plotName = paste0("/opt/physical/troy/RDATA/biscayne/output/interpolatedMaps/", targParam, "_", targYear, ".png"))
-}
 }
 }

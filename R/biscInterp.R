@@ -19,7 +19,8 @@
 #' @return plot, raster layer, and/or raster data
 #' @export
 #'
-#' @examples \dontrun {
+#' @examples 
+#' \dontrun{
 #' 
 #' fin2 <- dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
 #' agm <- ddply(fin2[, -c(2)], .(year, stn), numcolwise(geoMean))
@@ -31,21 +32,33 @@
 #' coordinates(finDat.coords) <- c("long", "lat")
 #' proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 #' 
-#' biscInterp(param = "SALINITY", year = "2016",
-#' exportPlot = TRUE, plotName = paste0("/opt/physical/troy/RDATA/biscayne/output/interpolatedMaps/SALINITY_2016.png"))
+#' biscInterp(inputData = finDat.coords, # finDat.coords[(finDat.coords@data$stn %in% finalSites), ]
+#'     param = "SALINITY", year = "2016",
+#'     exportPlot = TRUE, plotName = "SALINITY_2016.png")
 #' 
 #' 
-#' for (i in 1:length(unique(vec))) {
-#'   targYear <- unique(vec)[i]
-#'   targParam <- "SALINITY"
-#'   biscInterp(param = targParam, year = targYear,
-#'        exportPlot = TRUE, plotName = paste0("/opt/physical/troy/RDATA/biscayne/output/interpolatedMaps/", targParam, "_", targYear, ".png"))
 #' }
-#' }
-biscInterp <- function(inputData = finDat.coords[(finDat.coords@data$stn %in% finalSites), ], 
+#' @importFrom gstat gstat
+#' @importFrom gstat variogram
+#' @importFrom gstat fit.variogram
+#' @importFrom raster predict
+#' @importFrom raster raster
+#' @importFrom raster writeRaster
+#' @importFrom raster aggregate
+#' @importFrom raster intersect
+#' @importFrom dismo voronoi 
+#' @importFrom sf as_Spatial 
+#' @importFrom grDevices terrain.colors
+#' @importFrom grDevices colorRampPalette
+#' @importFrom grDevices dev.off 
+#' @importFrom grDevices png 
+#' @importFrom graphics par 
+#' @importFrom graphics plot
+#' 
+biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$stn %in% finalSites), ], 
                        paramCol     = "SALINITY", yearCol = "year", year      = "2016", 
                        returnRas    = FALSE, # option to return raster as an object
-                       exportRaster = FALSE, fileName     = "NA.tif", BISCmap = bnp,
+                       exportRaster = FALSE, fileName     = "NA.tif", BISCmap = SFNRC::bnp,
                        exportPlot   = FALSE, plotName     = "NA.png",
                        plotWidth    = 4,     plotHeight   = 5, plotRes = 200,
                        plotZLims    = c(10, 40)
@@ -100,11 +113,11 @@ biscInterp <- function(inputData = finDat.coords[(finDat.coords@data$stn %in% fi
   
   ### kriging using the variogram
   template.ras <- raster::raster(BISCmap, res = c(0.001, 0.001))
-  blank.ras    <- as(template.ras, "SpatialGrid")
+  blank.ras    <- sf::as_Spatial(template.ras, "SpatialGrid")
   
   ### predict values
   k  <- gstat::gstat(formula = get(paramCol) ~ 1, location = pts, model = fve)
-  ras_pred <- raster::raster(predict(k, blank.ras), layer = 1)
+  ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1)
   ras_pred <- raster::mask(ras_pred, BISCmap)
   
   
@@ -112,19 +125,19 @@ biscInterp <- function(inputData = finDat.coords[(finDat.coords@data$stn %in% fi
   ### plot/export
   #################
   if (exportPlot) {
-    png(filename = plotName, width = plotWidth, height = plotHeight, units = "in", res = plotRes)
+    grDevices::png(filename = plotName, width = plotWidth, height = plotHeight, units = "in", res = plotRes)
   } 
-  par(mar = c(4,4,1,0.5), fig = c(0,1,0,1))
-  plot(ras_pred, main = paste0(paramCol, " ", year), zlim = plotZLims)
-  plot(BISCmap, add = TRUE)
-  plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
+  graphics::par(mar = c(4,4,1,0.5), fig = c(0,1,0,1))
+  graphics::plot(ras_pred, main = paste0(paramCol, " ", year), zlim = plotZLims)
+  graphics::plot(BISCmap, add = TRUE)
+  graphics::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
   if (exportPlot) {
-    dev.off()
+    grDevices::dev.off()
   } 
   ### export raster
   if (exportRaster) {
-    writeRaster(test, fileName, overwrite = TRUE)
-  } 
+    raster::writeRaster(ras_pred, fileName, overwrite = TRUE)
+  }
 }
 
 
