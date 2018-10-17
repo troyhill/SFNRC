@@ -19,9 +19,7 @@
 #' @return plot, raster layer, and/or raster data
 #' @export
 #'
-#' @examples 
-#' \dontrun{
-#' 
+#' @examples  
 #' fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
 #' agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 #' names(agm) <- gsub(x = names(agm), pattern = " ", replacement = "")
@@ -34,11 +32,10 @@
 #' sitesInBay <- over(finDat.coords, bnp)
 #' sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 #' 
-#' biscInterp(inputData = finDat.coords[(finDat.coords@data$stn %in% sitesInBay), ]
+#' biscInterp(inputData = finDat.coords[(finDat.coords@data$stn %in% sitesInBay@data$stn), ],
 #'     param = "SALINITY", year = "2016")
 #' 
 #' 
-#' }
 #' @importFrom gstat gstat
 #' @importFrom gstat variogram
 #' @importFrom gstat fit.variogram
