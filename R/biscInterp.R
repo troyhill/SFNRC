@@ -46,6 +46,7 @@
 #' @importFrom raster writeRaster
 #' @importFrom raster aggregate
 #' @importFrom raster intersect
+#' @importFrom raster plot
 #' @importFrom dismo voronoi 
 #' @importFrom methods as 
 #' @importFrom grDevices terrain.colors
@@ -128,9 +129,9 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
     grDevices::png(filename = plotName, width = plotWidth, height = plotHeight, units = "in", res = plotRes)
   } 
   graphics::par(mar = c(4,4,1,0.5), fig = c(0,1,0,1))
-  graphics::plot(ras_pred, main = paste0(paramCol, " ", year), zlim = plotZLims)
-  graphics::plot(BISCmap, add = TRUE)
-  graphics::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
+  raster::plot(ras_pred, main = paste0(paramCol, " ", year), zlim = plotZLims)
+  raster::plot(BISCmap, add = TRUE)
+  raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
   if (exportPlot) {
     grDevices::dev.off()
   } 

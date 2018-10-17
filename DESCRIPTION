@@ -16,7 +16,6 @@ Depends:
     dismo,
     gstat,
     raster,
-    sf,
     methods
 RoxygenNote: 6.1.0
 Suggests: knitr,
