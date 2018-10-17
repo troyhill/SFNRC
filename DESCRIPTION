@@ -16,7 +16,8 @@ Depends:
     dismo,
     gstat,
     raster,
-    sf
+    sf,
+    methods
 RoxygenNote: 6.1.0
 Suggests: knitr,
     rmarkdown,

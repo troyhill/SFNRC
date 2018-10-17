@@ -47,7 +47,7 @@
 #' @importFrom raster aggregate
 #' @importFrom raster intersect
 #' @importFrom dismo voronoi 
-#' @importFrom sf as
+#' @importFrom methods as 
 #' @importFrom grDevices terrain.colors
 #' @importFrom grDevices colorRampPalette
 #' @importFrom grDevices dev.off 
@@ -113,7 +113,7 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
   
   ### kriging using the variogram
   template.ras <- raster::raster(BISCmap, res = c(0.001, 0.001))
-  blank.ras    <- sf::as(template.ras, "SpatialGrid")
+  blank.ras    <- methods::as(template.ras, "SpatialGrid") # sf::as may work
   
   ### predict values
   k  <- gstat::gstat(formula = get(paramCol) ~ 1, location = pts, model = fve)
