@@ -99,8 +99,7 @@ dfe.hydro <- function(stns,
                     hydroParam=${3:-flow}
                     
                     while read station; do  
-                    echo \"reading $3 data from $station\"
-                    echo \"redirecting stdout to: ${station}_${hydroParam}.dat\"
+                    echo \"Saving $3 data from $station to ${station}_${hydroParam}.dat, if data available\"
                     ", sql.script.loc, " $station $hydroParam 1960-01-01 $(date +%Y-%m-%d) daily aggregate_statistic validation_level units_converted 		\\
                     | gawk -F \"|\" '{printf\"%s\\t%s\\t%s\\t%s\\n\", $1, $2, $3, $4}' 				\\
                     > $1/${station}_${hydroParam}.dat;   
@@ -112,18 +111,46 @@ dfe.hydro <- function(stns,
   
   system(paste0('chmod 777 ', bash.script.loc))
   system(paste0('chmod 777 ', sql.script.loc))
+  ### working version:
+  # bash.cmd <- paste0('bash -c "
+  #                mkdir ', folder_with_data, '
+  #                . set_project hydrology
+  #                /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' flow
+  #                /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' stage
+  #                /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' head_water
+  #                /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' tail_water
+  #                find ', folder_with_data,' -name \'*.dat\' -size -2k
+  #                find ', folder_with_data,' -name \'*.dat\' -size -2k -delete
+  # 
+  #                "')
   
-  system(paste0('bash -c "
-                mkdir ', folder_with_data, '
-                . set_project hydrology
-                /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' flow
-                /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' stage
-                /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' head_water
-                /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' tail_water
-                find ', folder_with_data,' -name \'*.dat\' -size -2k
-                find ', folder_with_data,' -name \'*.dat\' -size -2k -delete
-                
-                "'))
+  ### experimental version: 
+  parameter_list = c("flow", "tail_water", "head_water", "stage", "salinity", "giraffe_sightings")
+  
+  inner_cmds <- paste0('/bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' ', parameter_list, ' 
+                       ')
+  
+  bash.cmd <- paste0('bash -c "
+                     mkdir ', folder_with_data, '
+                     . set_project hydrology
+                     ', paste(inner_cmds, collapse=""), ' 
+                     find ', folder_with_data,' -name \'*.dat\' -size -2k
+                     find ', folder_with_data,' -name \'*.dat\' -size -2k -delete
+                     
+                     "', collapse = "")
+  system(bash.cmd)
+  
+  # system(paste0('bash -c "
+  #               mkdir ', folder_with_data, '
+  #               . set_project hydrology
+  #               /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' flow
+  #               /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' stage
+  #               /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' head_water
+  #               /bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' tail_water
+  #               find ', folder_with_data,' -name \'*.dat\' -size -2k
+  #               find ', folder_with_data,' -name \'*.dat\' -size -2k -delete
+  #               
+  #               "'))
   Sys.sleep(2) # to avoid odd behavior from loading data before downloads finish
   
   ########################
@@ -136,16 +163,16 @@ dfe.hydro <- function(stns,
   dat.files.tw     <- grep(list.files(folder_with_data, full.names = TRUE), pattern = "_tail_water", value = TRUE)
   
   flow.list <- do.call(rbind, lapply(dat.files.flow, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE, na.strings = "null",
-                                                                            col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
+                                                                                   col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
   flow.list$value[is.na(flow.list$value)] <- 0
   hw.list <- do.call(rbind, lapply(dat.files.hw, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE,  na.strings = "null",
-                                                                        col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
+                                                                               col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
   hw.list$value <- as.numeric(trimws(hw.list$value))
   tw.list <- do.call(rbind, lapply(dat.files.tw, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE,  na.strings = "null",
-                                                                        col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
+                                                                               col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
   hw.list$value <- as.numeric(trimws(hw.list$value))
   stg.list <- do.call(rbind, lapply(dat.files.stg, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE,  na.strings = "null",
-                                                                          col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
+                                                                                 col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
   
   ########################
   ### merge all the data

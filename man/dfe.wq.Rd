@@ -8,7 +8,8 @@ dfe.wq(stns, target_analytes = "all",
 output_colNames = c("stn", "date", "time", "param", "units", 
 "matrix", "mdl", "value"),
 output_colClasses = c("character", "character", "character", 
-"character", "character", "character", "numeric", "numeric"))
+"character", "character", "character", "numeric", "numeric"),
+rFriendlyParamNames = FALSE)
 }
 \arguments{
 \item{stns}{a single-column dataframe of DataForEver station names.}
@@ -18,6 +19,8 @@ output_colClasses = c("character", "character", "character",
 \item{output_colNames}{names of columns in output (changing this is not recommended; this argument is more of a placeholder)}
 
 \item{output_colClasses}{classes of columns in output (changing this is not recommended; this argument is more of a placeholder)}
+
+\item{rFriendlyParamNames}{TRUE/FALSE; indicates whether parameter names should be modified to be R-friendly (no special characters, commas, or spaces). Advisable for analysis, as this makes analysis easier and pre-empts changes coerced by, e.g., \code{plyr::ddply}}
 }
 \value{
 dataframe \code{dfe.wq} returns a dataframe with water quality measurements from each station identified in \code{stns}.

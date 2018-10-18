@@ -6,13 +6,14 @@
 #' output_colNames = c("stn", "date", "time", "param", "units", 
 #' "matrix", "mdl", "value"),
 #' output_colClasses = c("character", "character", "character", 
-#' "character", "character", "character", "numeric", "numeric"))
+#' "character", "character", "character", "numeric", "numeric"),
+#' rFriendlyParamNames = FALSE)
 #' 
 #' @param stns a single-column dataframe of DataForEver station names. 
 #' @param target_analytes grep-style character vector naming analytes of interest. default is "all". e.g., # target_analytes <- c("PHOSPHATE|NITROGEN|AMMONI|SUSPENDED|DISSOLVED OXYGEN|CALCIUM|POTASSIUM|HARDNESS|SODIUM|CHLORIDE|TEMP|CONDUCTIVITY, FIELD|SILICA|LEAD, TOTAL|MAGNESIUM|TURBIDITY|CHLOROPHYLL|MERCURY, TOTAL|SULFATE|ZINC, TOTAL|CHLORDANE|MALATHION|CARBOPHENOTHION|PH, FIELD")
 #' @param output_colNames names of columns in output (changing this is not recommended; this argument is more of a placeholder)
 #' @param output_colClasses classes of columns in output (changing this is not recommended; this argument is more of a placeholder)
-#' 
+#' @param rFriendlyParamNames TRUE/FALSE; indicates whether parameter names should be modified to be R-friendly (no special characters, commas, or spaces). Advisable for analysis, as this makes analysis easier and pre-empts changes coerced by, e.g., \code{plyr::ddply}
 #' @return dataframe \code{dfe.wq} returns a dataframe with water quality measurements from each station identified in \code{stns}.
 #' 
 #' @seealso \code{\link{dfe.hydro}}
@@ -34,7 +35,8 @@
 ### Works only on linux, issues system commands and modifies files on disk
 dfe.wq <- function(stns, target_analytes = "all", 
                    output_colNames = c("stn",         "date",      "time",      "param",     "units",     "matrix",    "mdl",       "value"),
-                   output_colClasses = c("character", "character", "character", "character", "character", "character", "numeric", "numeric")) {
+                   output_colClasses = c("character", "character", "character", "character", "character", "character", "numeric", "numeric"),
+                   rFriendlyParamNames = FALSE) {
   # stns = a single-column dataframe of DataForEver station names
   # target_analytes = grep-style character vector naming analytes of interest. default is "all". e.g., # target_analytes <- c("PHOSPHATE|NITROGEN|AMMONI|SUSPENDED|DISSOLVED OXYGEN|CALCIUM|POTASSIUM|HARDNESS|SODIUM|CHLORIDE|TEMP|CONDUCTIVITY, FIELD|SILICA|LEAD, TOTAL|MAGNESIUM|TURBIDITY|CHLOROPHYLL|MERCURY, TOTAL|SULFATE|ZINC, TOTAL|CHLORDANE|MALATHION|CARBOPHENOTHION|PH, FIELD")
   # output_colNames = names of columns in output (should correspond to extractDataForEver_WQ_wMDL.sh)
@@ -90,6 +92,12 @@ dfe.wq <- function(stns, target_analytes = "all",
   
   if (!target_analytes %in% "all") {
     tempDat <- tempDat[tempDat$param %in% target_analytes, ]
+  }
+  
+  if (rFriendlyParamNames) {
+    # modify column with parameter names to not have commas, +/- signs
+    tempDat[, output_colNames[4]] <-  gsub(x = tempDat[, output_colNames[4]], pattern = " |,", replacement = "")
+    tempDat[, output_colNames[4]] <-  gsub(x = tempDat[, output_colNames[4]], pattern = "-|[+]", replacement = ".")
   }
   
   ########################

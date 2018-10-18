@@ -8,7 +8,8 @@ biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
   year = "2016", returnRas = FALSE, exportRaster = FALSE,
   fileName = "NA.tif", BISCmap = SFNRC::bnp, exportPlot = FALSE,
   plotName = "NA.png", plotWidth = 4, plotHeight = 5,
-  plotRes = 200, plotZLims = c(10, 40))
+  plotRes = 200, plotZLims = c(10, 40), minDataPoints = 2,
+  vgModelType = "Sph")
 }
 \arguments{
 \item{inputData}{dataframe with water quality data. Function works best with output of \code{dfe.wq() or dfe.hydro()} using \code{wide = TRUE}.}
@@ -17,7 +18,7 @@ biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
 
 \item{yearCol}{character string, name of column indicating relevant temporal divisions}
 
-\item{year}{time period to be used for the plot (subset from \code{yearCol}, above).}
+\item{year}{time period to be used for the plot (subset from \code{yearCol}, above)}
 
 \item{returnRas}{TRUE/FALSE; should a raster layer be returned to the global environment}
 
@@ -37,7 +38,11 @@ biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
 
 \item{plotRes}{resolution of the plot}
 
-\item{plotZLims}{range for colors plotted in figure. This is useful for standardizing when multiple plots are being produced.}
+\item{plotZLims}{range for colors plotted in figure. This is useful for standardizing when multiple plots are being produced}
+
+\item{minDataPoints}{minimum number of data points considered necessary for interpolation}
+
+\item{vgModelType}{model type passed to \code{fit.variogram()} to interpolate data. See \code{?fit.variogram} for more details}
 }
 \value{
 plot, raster layer, and/or raster data
@@ -47,11 +52,11 @@ Make interpolated maps of Biscayne Bay
 }
 \examples{
  
+\dontrun{
 fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
 agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
-names(agm) <- gsub(x = names(agm), pattern = " ", replacement = "")
-names(agm) <- gsub(x = names(agm), pattern = ",", replacement = "")
-names(agm) <- gsub(x = names(agm), pattern = "-", replacement = ".")
+names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
+names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
 finDat.coords <- plyr::join_all(list(agm, masterCoords), by = "stn")
 finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
 coordinates(finDat.coords) <- c("long", "lat")
@@ -62,6 +67,7 @@ sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
 biscInterp(inputData = finDat.coords[(finDat.coords@data$stn \%in\% sitesInBay@data$stn), ],
     param = "SALINITY", year = "2016")
+    }
 
 
 }

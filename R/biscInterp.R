@@ -4,7 +4,7 @@
 #' @param inputData dataframe with water quality data. Function works best with output of \code{dfe.wq() or dfe.hydro()} using \code{wide = TRUE}.
 #' @param paramCol character string, name of column containing the relevant water quality data
 #' @param yearCol character string, name of column indicating relevant temporal divisions
-#' @param year time period to be used for the plot (subset from \code{yearCol}, above).
+#' @param year time period to be used for the plot (subset from \code{yearCol}, above)
 #' @param returnRas TRUE/FALSE; should a raster layer be returned to the global environment
 #' @param exportRaster TRUE/FALSE; should a raster layer be saved to disk?
 #' @param fileName if a raster layer is exported, this argument sets the file address and name
@@ -14,17 +14,19 @@
 #' @param plotWidth width of the plot
 #' @param plotHeight height of the plot
 #' @param plotRes resolution of the plot
-#' @param plotZLims range for colors plotted in figure. This is useful for standardizing when multiple plots are being produced.
+#' @param minDataPoints minimum number of data points considered necessary for interpolation
+#' @param plotZLims range for colors plotted in figure. This is useful for standardizing when multiple plots are being produced
+#' @param vgModelType model type passed to \code{fit.variogram()} to interpolate data. See \code{?fit.variogram} for more details
 #'
 #' @return plot, raster layer, and/or raster data
 #' @export
 #'
 #' @examples  
+#' \dontrun{
 #' fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
 #' agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
-#' names(agm) <- gsub(x = names(agm), pattern = " ", replacement = "")
-#' names(agm) <- gsub(x = names(agm), pattern = ",", replacement = "")
-#' names(agm) <- gsub(x = names(agm), pattern = "-", replacement = ".")
+#' names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
+#' names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
 #' finDat.coords <- plyr::join_all(list(agm, masterCoords), by = "stn")
 #' finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
 #' coordinates(finDat.coords) <- c("long", "lat")
@@ -35,6 +37,7 @@
 #' 
 #' biscInterp(inputData = finDat.coords[(finDat.coords@data$stn %in% sitesInBay@data$stn), ],
 #'     param = "SALINITY", year = "2016")
+#'     }
 #' 
 #' 
 #' @importFrom gstat gstat
@@ -61,82 +64,86 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
                        exportRaster = FALSE, fileName     = "NA.tif", BISCmap = SFNRC::bnp,
                        exportPlot   = FALSE, plotName     = "NA.png",
                        plotWidth    = 4,     plotHeight   = 5, plotRes = 200,
-                       plotZLims    = c(10, 40)
+                       plotZLims    = c(10, 40), minDataPoints = 2,
+                       vgModelType = "Sph"
 ) {
   ## make sure bnp and pts have same projections. Add bnp to package
   
   
   pts <- inputData[!is.na(inputData@data[, paramCol]) & (inputData@data[, yearCol] %in% year), ]
-  
-  ### create color mapping for plot
-  #Create a function to generate a continuous color palette
-  earthTones <- grDevices::terrain.colors(n = 10, alpha = 1)
-  rbPal      <- grDevices::colorRampPalette(c(earthTones[10], earthTones[1]))
-  #This adds a column of color values
-  # based on the y values
-  
-  # brks <- seq(plotZLims[1], plotZLims[2], by = 0.1) # this gets v complex given different scales of different params
-  # nb <- length(brks)-1 
-  # cols <- rev(terrain.colors(nb))
-  
-  pts$Col    <- rbPal(10)[as.numeric(cut(as.data.frame(pts[, paramCol])[, paramCol], breaks = 10))] # not on the same scale as the plot...
-  # pts$Col    <- round(as.data.frame(pts[, paramCol])[, paramCol], 1)
-  ###
-  
-  # pts@data
-  
-  ### create nearest neighbor polygons
-  vlocs <- dismo::voronoi(pts)
-  # plot(vlocs)
-  bnp_ag <- raster::aggregate(BISCmap)
-  bnp_intsct    <- raster::intersect(vlocs, bnp_ag)
-  # spplot(bnp_intsct, paramCol, col.regions = rev(get_col_regions()))
-  
-  ### rasterize
-  fl.ras <- raster::raster(bnp, nrows = 1000, ncols = 1000)
-  vr     <- raster::rasterize(bnp_intsct, fl.ras, paramCol)
-  # plot(vr)
-  # plot(BISCmap, add = TRUE)
-  
-  ### nearest neighbor interpolation considering nmax neighbors
-  # gs <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) # ~1 = intercept only
-  # nn <- raster::interpolate(fl.ras, gs)
-  # nn <- raster::mask(nn, vr)
-  # plot(nn)
-  # plot(BISCmap, add = TRUE)
-  
-  ### inverse distance weighted interpolation
-  gs  <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) 
-  v   <- gstat::variogram(gs) # generate variogram
-  fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0., model = "Exp", range = max(v$dist) / 2, nugget = 0))
-  ### function doesn't handle convergence errors well
-  
-  ### kriging using the variogram
-  template.ras <- raster::raster(BISCmap, res = c(0.001, 0.001))
-  blank.ras    <- methods::as(template.ras, "SpatialGrid") # sf::as may work
-  
-  ### predict values
-  k  <- gstat::gstat(formula = get(paramCol) ~ 1, location = pts, model = fve)
-  ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1)
-  ras_pred <- raster::mask(ras_pred, BISCmap)
-  
-  
-  #################
-  ### plot/export
-  #################
-  if (exportPlot) {
-    grDevices::png(filename = plotName, width = plotWidth, height = plotHeight, units = "in", res = plotRes)
-  } 
-  graphics::par(mar = c(4,4,1,0.5), fig = c(0,1,0,1))
-  raster::plot(ras_pred, main = paste0(paramCol, " ", year), zlim = plotZLims)
-  raster::plot(BISCmap, add = TRUE)
-  raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
-  if (exportPlot) {
-    grDevices::dev.off()
-  } 
-  ### export raster
-  if (exportRaster) {
-    raster::writeRaster(ras_pred, fileName, overwrite = TRUE)
+  cat(nrow(pts), "stations with", paramCol, "data in", year, "       ")
+  if (nrow(pts) > minDataPoints) { # only interpolate if there's more than x data points.
+        
+      ### create color mapping for plot
+      #Create a function to generate a continuous color palette
+      earthTones <- grDevices::terrain.colors(n = 10, alpha = 1)
+      rbPal      <- grDevices::colorRampPalette(c(earthTones[10], earthTones[1]))
+      #This adds a column of color values
+      # based on the y values
+      
+      # brks <- seq(plotZLims[1], plotZLims[2], by = 0.1) # this gets v complex given different scales of different params
+      # nb <- length(brks)-1 
+      # cols <- rev(terrain.colors(nb))
+      
+      pts$Col    <- rbPal(10)[as.numeric(cut(as.data.frame(pts[, paramCol])[, paramCol], breaks = 10))] # not on the same scale as the plot...
+      # pts$Col    <- round(as.data.frame(pts[, paramCol])[, paramCol], 1)
+      ###
+      
+      # pts@data
+      
+      ### create nearest neighbor polygons
+      vlocs <- dismo::voronoi(pts)
+      # plot(vlocs)
+      bnp_ag <- raster::aggregate(BISCmap)
+      bnp_intsct    <- raster::intersect(vlocs, bnp_ag)
+      # spplot(bnp_intsct, paramCol, col.regions = rev(get_col_regions()))
+      
+      ### rasterize
+      fl.ras <- raster::raster(bnp, nrows = 1000, ncols = 1000)
+      vr     <- raster::rasterize(bnp_intsct, fl.ras, paramCol)
+      # plot(vr)
+      # plot(BISCmap, add = TRUE)
+      
+      ### nearest neighbor interpolation considering nmax neighbors
+      # gs <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) # ~1 = intercept only
+      # nn <- raster::interpolate(fl.ras, gs)
+      # nn <- raster::mask(nn, vr)
+      # plot(nn)
+      # plot(BISCmap, add = TRUE)
+      
+      ### inverse distance weighted interpolation
+      gs  <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) 
+      v   <- gstat::variogram(gs) # generate variogram
+      fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0.9, model = vgModelType, range = max(v$dist) / 2, nugget = 0))
+      ### function doesn't handle convergence errors well
+      
+      ### kriging using the variogram
+      template.ras <- raster::raster(BISCmap, res = c(0.001, 0.001))
+      blank.ras    <- methods::as(template.ras, "SpatialGrid") # sf::as may work
+      
+      ### predict values
+      k  <- gstat::gstat(formula = get(paramCol) ~ 1, location = pts, model = fve)
+      ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1)
+      ras_pred <- raster::mask(ras_pred, BISCmap)
+      
+      
+      #################
+      ### plot/export
+      #################
+      if (exportPlot) {
+        grDevices::png(filename = plotName, width = plotWidth, height = plotHeight, units = "in", res = plotRes)
+      } 
+      graphics::par(mar = c(4,4,1,0.5), fig = c(0,1,0,1))
+      raster::plot(ras_pred, main = paste0(paramCol, " ", year), zlim = plotZLims)
+      raster::plot(BISCmap, add = TRUE)
+      raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
+      if (exportPlot) {
+        grDevices::dev.off()
+      } 
+      ### export raster
+      if (exportRaster) {
+        raster::writeRaster(ras_pred, fileName, overwrite = TRUE)
+      }
   }
 }
 
