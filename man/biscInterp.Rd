@@ -8,8 +8,8 @@ biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
   year = "2016", returnRas = FALSE, exportRaster = FALSE,
   fileName = "NA.tif", BISCmap = SFNRC::bnp, exportPlot = FALSE,
   plotName = "NA.png", plotWidth = 4, plotHeight = 5,
-  plotRes = 200, plotZLims = c(10, 40), minDataPoints = 2,
-  vgModelType = "Sph")
+  plotRes = 200, plotZLims = "range", minDataPoints = 2,
+  vgModelType = c("Exp", "Mat", "Gau", "Sph", "Ste"))
 }
 \arguments{
 \item{inputData}{dataframe with water quality data. Function works best with output of \code{dfe.wq() or dfe.hydro()} using \code{wide = TRUE}.}

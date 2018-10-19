@@ -64,15 +64,19 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
                        exportRaster = FALSE, fileName     = "NA.tif", BISCmap = SFNRC::bnp,
                        exportPlot   = FALSE, plotName     = "NA.png",
                        plotWidth    = 4,     plotHeight   = 5, plotRes = 200,
-                       plotZLims    = c(10, 40), minDataPoints = 2,
-                       vgModelType = "Sph"
+                       plotZLims    = "range", minDataPoints = 2,
+                       vgModelType  = c("Exp", "Mat", "Gau", "Sph", "Ste")
 ) {
   ## make sure bnp and pts have same projections. Add bnp to package
-  
   
   pts <- inputData[!is.na(inputData@data[, paramCol]) & (inputData@data[, yearCol] %in% year), ]
   cat(nrow(pts), "stations with", paramCol, "data in", year, "       ")
   if (nrow(pts) > minDataPoints) { # only interpolate if there's more than x data points.
+    
+    if (plotZLims %in% "range") {
+      plotZLims <- range(pts[, paramCol], na.rm = TRUE)
+    }
+    
         
       ### create color mapping for plot
       #Create a function to generate a continuous color palette
@@ -108,7 +112,7 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       gs  <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) 
       v   <- gstat::variogram(gs) # generate variogram
       # fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0.9, model = vgModelType, range = max(v$dist) / 2, nugget = 0))
-      fve <- gstat::fit.variogram(v, gstat::vgm(c("Exp", "Mat", "Gau", "Sph", "Ste")), fit.kappa = TRUE) # https://www.r-spatial.org/r/2016/02/14/gstat-variogram-fitting.html
+      fve <- gstat::fit.variogram(v, gstat::vgm(vgModelType), fit.kappa = TRUE) # https://www.r-spatial.org/r/2016/02/14/gstat-variogram-fitting.html
       ### look into automap::autoKrige. coordinate system issues are obstacle. See also more generally: https://gis.stackexchange.com/questions/147660/strange-spatial-interpolation-results-from-ordinary-kriging
       ### TODO: report specs on interpolation
       ### function doesn't handle convergence errors well
