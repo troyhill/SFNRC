@@ -161,6 +161,10 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       if (exportRaster) {
         raster::writeRaster(ras_pred, fileName, overwrite = TRUE)
       }
+      
+      if (returnRas) {
+        invisible(ras_pred)
+      }
   }
 }
 
