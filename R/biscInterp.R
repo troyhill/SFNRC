@@ -37,7 +37,11 @@
 #' 
 #' biscInterp(inputData = finDat.coords[(finDat.coords@data$stn %in% sitesInBay@data$stn), ],
 #'     param = "SALINITY", year = "2016")
-#'     }
+#'     
+#'     ### store raster layer in working environment
+#' biscRas <- biscInterp(inputData = finDat.coords[(finDat.coords@data$stn %in% sitesInBay@data$stn), ],
+#'     param = "SALINITY", year = "2016", returnRas = TRUE)
+#'     #'     }
 #' 
 #' 
 #' @importFrom gstat gstat

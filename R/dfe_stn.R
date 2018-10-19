@@ -4,14 +4,14 @@
 #' 
 #' @usage dfe.stn(query = "S33")
 #' 
-#' @param query a character string
+#' @param query a character string. Case insensitive.
 #' 
 #' @return dataframe \code{dfe.stn} returns a vector of stations
 #' 
 #' 
 #' @examples
 #' a <- dfe.stn(query = "S33")
-#' a <- dfe.stn(query = "S333")
+#' a <- dfe.stn(query = "s333")
 #' 
 #' @importFrom utils read.delim
 #' 
@@ -75,7 +75,7 @@ dfe.stn <- function(query = "S33") {
   system(paste0('chmod 777 ', bash.script.loc))
   bash.cmd <- paste0('bash -c "
                      . set_project hydrology
-                     ', bash.script.loc, ' ', query, ' > ', stn.list.loc, '
+                     ', bash.script.loc, ' ', toupper(query), ' > ', stn.list.loc, '
 
                      "')
   system(bash.cmd)
@@ -89,7 +89,7 @@ dfe.stn <- function(query = "S33") {
                 col.names = c("stn", "datetime_modified"), colClasses = c("character"))
 
   stnDatReturn <- sapply(strsplit(x = stnDat$stn, split = " "), "[", 1)
-  invisible(stnDatReturn) 
+  stnDatReturn
   
   ########################
   ### clean up the temp folder

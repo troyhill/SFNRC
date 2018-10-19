@@ -42,7 +42,7 @@ dfe.hydro <- function(stns,
   folder_with_data <- file.path(tempdir(), "data")
   bash.script.loc  <- file.path(tempdir(), "bash_hydro_tmp.sh") # wrapper for bash_hydro_sql.sh
   sql.script.loc   <- file.path(tempdir(), "hydro_data.sh") # interfaces with hydro database
-  utils::write.table(stns, file = stn.list.loc, col.names = FALSE, row.names = FALSE, sep = "", quote = FALSE)
+  utils::write.table(toupper(stns), file = stn.list.loc, col.names = FALSE, row.names = FALSE, sep = "", quote = FALSE)
   
   ########################
   ### build bash script for interfacing with hydro database
@@ -125,7 +125,7 @@ dfe.hydro <- function(stns,
   #                "')
   
   ### experimental version: 
-  parameter_list = c("flow", "tail_water", "head_water", "stage", "salinity", "giraffe_sightings")
+  # parameter_list = c("flow", "tail_water", "head_water", "stage", "salinity", "giraffe_sightings")
   
   inner_cmds <- paste0('/bin/bash ', bash.script.loc, ' ', folder_with_data, ' ', stn.list.loc, ' ', parameter_list, ' 
                        ')

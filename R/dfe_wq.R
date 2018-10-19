@@ -49,7 +49,7 @@ dfe.wq <- function(stns, target_analytes = "all",
   folder_with_data <- file.path(tempdir(), "data")
   bash.script.loc  <- file.path(tempdir(), "bash_temp.sh")
   
-  utils::write.table(stns, file = stn.list.loc, col.names = FALSE, row.names = FALSE, sep = "", quote = FALSE)
+  utils::write.table(toupper(stns), file = stn.list.loc, col.names = FALSE, row.names = FALSE, sep = "", quote = FALSE)
   
   
   ### create bash script to download water quality data
