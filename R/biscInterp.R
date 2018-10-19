@@ -80,8 +80,9 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
         
       ### create color mapping for plot
       #Create a function to generate a continuous color palette
-      earthTones <- grDevices::terrain.colors(n = 10, alpha = 1)
-      rbPal      <- grDevices::colorRampPalette(c(earthTones[10], earthTones[1]))
+      numberOfLevels <- 10
+      earthTones <- grDevices::terrain.colors(n = numberOfLevels, alpha = 1)
+      rbPal      <- grDevices::colorRampPalette(c(earthTones[numberOfLevels], earthTones[1]))
       #This adds a column of color values
       # based on the y values
       
@@ -89,7 +90,7 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       # nb <- length(brks)-1 
       # cols <- rev(terrain.colors(nb))
       
-      pts$Col    <- rbPal(10)[as.numeric(cut(as.data.frame(pts[, paramCol])[, paramCol], breaks = 10))] # not on the same scale as the plot...
+      pts$Col    <- rbPal(numberOfLevels)[as.numeric(cut(as.data.frame(pts[, paramCol])[, paramCol], breaks = numberOfLevels))] # not on the same scale as the plot...
       # pts$Col    <- round(as.data.frame(pts[, paramCol])[, paramCol], 1)
       ###
       
@@ -128,11 +129,13 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       
       
       ### TODO: if IDW interpolation fails, use nearest neighbor interpolation considering nmax neighbors
-      # nn <- raster::raster(raster::predict(gs, blank.ras), layer = 1)
-      # nn <- raster::mask(nn, BISCmap)
-      # plot(nn)
-      # plot(BISCmap, add = TRUE)
-      # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
+      if (sum(!is.na(ras_pred@data@values)) < 1) {
+        ras_pred <- raster::raster(raster::predict(gs, blank.ras), layer = 1)
+        ras_pred <- raster::mask(ras_pred, BISCmap)
+        # plot(nn)
+        # plot(BISCmap, add = TRUE)
+        # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
+      }
       
       
       
