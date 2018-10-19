@@ -104,17 +104,13 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       # plot(vr)
       # plot(BISCmap, add = TRUE)
       
-      ### nearest neighbor interpolation considering nmax neighbors
-      # gs <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) # ~1 = intercept only
-      # nn <- raster::interpolate(fl.ras, gs)
-      # nn <- raster::mask(nn, vr)
-      # plot(nn)
-      # plot(BISCmap, add = TRUE)
-      
       ### inverse distance weighted interpolation
       gs  <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) 
       v   <- gstat::variogram(gs) # generate variogram
-      fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0.9, model = vgModelType, range = max(v$dist) / 2, nugget = 0))
+      # fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0.9, model = vgModelType, range = max(v$dist) / 2, nugget = 0))
+      fve <- gstat::fit.variogram(v, gstat::vgm(c("Exp", "Mat", "Gau", "Sph", "Ste")), fit.kappa = TRUE) # https://www.r-spatial.org/r/2016/02/14/gstat-variogram-fitting.html
+      ### look into automap::autoKrige. coordinate system issues are obstacle. See also more generally: https://gis.stackexchange.com/questions/147660/strange-spatial-interpolation-results-from-ordinary-kriging
+      ### TODO: report specs on interpolation
       ### function doesn't handle convergence errors well
       
       ### kriging using the variogram
@@ -127,6 +123,15 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       ras_pred <- raster::mask(ras_pred, BISCmap)
       
       
+      ### TODO: if IDW interpolation fails, use nearest neighbor interpolation considering nmax neighbors
+      # nn <- raster::raster(raster::predict(gs, blank.ras), layer = 1)
+      # nn <- raster::mask(nn, BISCmap)
+      # plot(nn)
+      # plot(BISCmap, add = TRUE)
+      # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
+      
+      
+      
       #################
       ### plot/export
       #################
@@ -134,7 +139,7 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
         grDevices::png(filename = plotName, width = plotWidth, height = plotHeight, units = "in", res = plotRes)
       } 
       graphics::par(mar = c(4,4,1,0.5), fig = c(0,1,0,1))
-      raster::plot(ras_pred, main = paste0(paramCol, " ", year), zlim = plotZLims)
+      raster::plot(ras_pred, main = paste0(paramCol, " ", year), zlim = plotZLims, las = 1)
       raster::plot(BISCmap, add = TRUE)
       raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
       if (exportPlot) {
