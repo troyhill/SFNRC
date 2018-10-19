@@ -74,7 +74,7 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
   if (nrow(pts) > minDataPoints) { # only interpolate if there's more than x data points.
     
     if (plotZLims %in% "range") {
-      plotZLims <- range(pts[, paramCol], na.rm = TRUE)
+      plotZLims <- range(pts@data[, paramCol], na.rm = TRUE)
     }
     
         
