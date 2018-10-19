@@ -117,28 +117,29 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       ras_pred <- raster::mask(ras_pred, BISCmap)
       
       
-      ### TODO: if IDW interpolation fails, use nearest neighbor interpolation considering nmax neighbors
+      ### TODO: if kriging interpolation fails, use IDW or nearest neighbor interpolation considering nmax neighbors
       if (sum(!is.na(ras_pred@data@values)) < 1) {
-        # ### create nearest neighbor polygons
-        vlocs         <- dismo::voronoi(pts)
-        # plot(vlocs)
-        bnp_ag        <- raster::aggregate(BISCmap)
-        bnp_intsct    <- raster::intersect(vlocs, bnp_ag)
-        # spplot(bnp_intsct, paramCol, col.regions = rev(get_col_regions()))
-
-        ### rasterize
-        fl.ras       <- raster::raster(bnp, nrows = 1000, ncols = 1000)
-        ras_pred     <- raster::rasterize(bnp_intsct, fl.ras, paramCol)
-        # plot(ras_pred)
-        # plot(BISCmap, add = TRUE)
-        # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
-        
-        ### Alternative: use inverse distance weighted interpolation
-        # ras_pred <- raster::raster(raster::predict(gs, blank.ras), layer = 1)
-        # ras_pred <- raster::mask(ras_pred, BISCmap)
+        # # ### Alternative: nearest neighbor. 
+        # # ### Create nearest neighbor polygons
+        # vlocs         <- dismo::voronoi(pts)
+        # # plot(vlocs)
+        # bnp_ag        <- raster::aggregate(BISCmap)
+        # bnp_intsct    <- raster::intersect(vlocs, bnp_ag)
+        # # spplot(bnp_intsct, paramCol, col.regions = rev(get_col_regions()))
+        # 
+        # ### rasterize
+        # fl.ras       <- raster::raster(bnp, nrows = 1000, ncols = 1000)
+        # ras_pred     <- raster::rasterize(bnp_intsct, fl.ras, paramCol)
         # # plot(ras_pred)
         # # plot(BISCmap, add = TRUE)
         # # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
+        
+        ### Alternative: use inverse distance weighted interpolation
+        ras_pred <- raster::raster(raster::predict(gs, blank.ras), layer = 1)
+        ras_pred <- raster::mask(ras_pred, BISCmap)
+        # plot(ras_pred)
+        # plot(BISCmap, add = TRUE)
+        # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
       }
       
       
