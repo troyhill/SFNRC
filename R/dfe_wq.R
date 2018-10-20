@@ -125,6 +125,9 @@ dfe.wq <- function(stns, target_analytes = "all",
   tempDat$param[tempDat$param %in% c("AMMONIA, TOTAL AS N", "NITROGEN, AMMONIA AS NH4")] <- "AMMONIA-N"
   tempDat$param[tempDat$param %in% c("temp")] <- "TEMP"
   
+  ### remove QC samples
+  tempDat <- tempDat[!tempDat$matrix %in% c("analyte_free_water"), ]
+  
   invisible(tempDat) 
   
 }
