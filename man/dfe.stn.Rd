@@ -7,7 +7,7 @@
 dfe.stn(query = "S33")
 }
 \arguments{
-\item{query}{a character string}
+\item{query}{a character string. Case insensitive.}
 }
 \value{
 dataframe \code{dfe.stn} returns a vector of stations
@@ -17,6 +17,6 @@ Identifies DataForEver stations matching query
 }
 \examples{
 a <- dfe.stn(query = "S33")
-a <- dfe.stn(query = "S333")
+a <- dfe.stn(query = "s333")
 
 }

@@ -5,6 +5,7 @@
 \title{DataForEver water quality database API}
 \usage{
 dfe.wq(stns, target_analytes = "all", 
+matricesToExclude = "analyte_free_water",
 output_colNames = c("stn", "date", "time", "param", "units", 
 "matrix", "mdl", "value"),
 output_colClasses = c("character", "character", "character", 
@@ -12,9 +13,11 @@ output_colClasses = c("character", "character", "character",
 rFriendlyParamNames = FALSE)
 }
 \arguments{
-\item{stns}{a single-column dataframe of DataForEver station names.}
+\item{stns}{a single-column dataframe of DataForEver station names. Case insensitive.}
 
 \item{target_analytes}{grep-style character vector naming analytes of interest. default is "all". e.g., # target_analytes <- c("PHOSPHATE|NITROGEN|AMMONI|SUSPENDED|DISSOLVED OXYGEN|CALCIUM|POTASSIUM|HARDNESS|SODIUM|CHLORIDE|TEMP|CONDUCTIVITY, FIELD|SILICA|LEAD, TOTAL|MAGNESIUM|TURBIDITY|CHLOROPHYLL|MERCURY, TOTAL|SULFATE|ZINC, TOTAL|CHLORDANE|MALATHION|CARBOPHENOTHION|PH, FIELD")}
+
+\item{matricesToExclude}{character vector specifying any sample matrices to be excluded. Spelling/case must be a perfect match to DataForEver entries. For example, "analyte_free_water" indicates field blanks. Advisible to check output using, e.g., \code{unique(wqDat$matrix)}}
 
 \item{output_colNames}{names of columns in output (changing this is not recommended; this argument is more of a placeholder)}
 

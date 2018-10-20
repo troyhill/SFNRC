@@ -3,13 +3,15 @@
 #' @description Downloads and compiles DataForEver water quality data. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
 #' 
 #' @usage dfe.wq(stns, target_analytes = "all", 
+#' matricesToExclude = "analyte_free_water",
 #' output_colNames = c("stn", "date", "time", "param", "units", 
 #' "matrix", "mdl", "value"),
 #' output_colClasses = c("character", "character", "character", 
 #' "character", "character", "character", "numeric", "numeric"),
 #' rFriendlyParamNames = FALSE)
 #' 
-#' @param stns a single-column dataframe of DataForEver station names. 
+#' @param stns a single-column dataframe of DataForEver station names. Case insensitive.
+#' @param matricesToExclude character vector specifying any sample matrices to be excluded. Spelling/case must be a perfect match to DataForEver entries. For example, "analyte_free_water" indicates field blanks. Advisible to check output using, e.g., \code{unique(wqDat$matrix)}
 #' @param target_analytes grep-style character vector naming analytes of interest. default is "all". e.g., # target_analytes <- c("PHOSPHATE|NITROGEN|AMMONI|SUSPENDED|DISSOLVED OXYGEN|CALCIUM|POTASSIUM|HARDNESS|SODIUM|CHLORIDE|TEMP|CONDUCTIVITY, FIELD|SILICA|LEAD, TOTAL|MAGNESIUM|TURBIDITY|CHLOROPHYLL|MERCURY, TOTAL|SULFATE|ZINC, TOTAL|CHLORDANE|MALATHION|CARBOPHENOTHION|PH, FIELD")
 #' @param output_colNames names of columns in output (changing this is not recommended; this argument is more of a placeholder)
 #' @param output_colClasses classes of columns in output (changing this is not recommended; this argument is more of a placeholder)
@@ -34,6 +36,7 @@
 ### DataForEver water quality data: downloads data and compiles a dataframe of water quality data based on a list of stations. 
 ### Works only on linux, issues system commands and modifies files on disk
 dfe.wq <- function(stns, target_analytes = "all", 
+                   matricesToExclude = "analyte_free_water",
                    output_colNames = c("stn",         "date",      "time",      "param",     "units",     "matrix",    "mdl",       "value"),
                    output_colClasses = c("character", "character", "character", "character", "character", "character", "numeric", "numeric"),
                    rFriendlyParamNames = FALSE) {
@@ -126,7 +129,7 @@ dfe.wq <- function(stns, target_analytes = "all",
   tempDat$param[tempDat$param %in% c("temp")] <- "TEMP"
   
   ### remove QC samples
-  tempDat <- tempDat[!tempDat$matrix %in% c("analyte_free_water"), ]
+  tempDat <- tempDat[!tempDat$matrix %in% c(matricesToExclude), ]
   
   invisible(tempDat) 
   

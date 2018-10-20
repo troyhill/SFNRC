@@ -1,0 +1,181 @@
+---
+title: 'Water quality in Biscayne Bay: Status and trends'
+subtitle: ''
+output: 
+  pdf_document: 
+    latex_engine: pdflatex
+vignette: >
+  %\VignetteIndexEntry{DataForEver}
+  %\VignetteEngine{knitr::knitr}
+  %\usepackage[UTF-8]{inputenc}
+mainfont: FreeMono
+header-includes:
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+- \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+if(!require(knitr)){
+  install.packages("knitr", repos='http://cran.us.r-project.org')
+}
+if(!require(rmarkdown)){
+  install.packages("rmarkdown", repos='http://cran.us.r-project.org')
+}
+if(!require(plyr)){
+  install.packages("plyr", repos='http://cran.us.r-project.org')
+}
+if(!require(reshape2)){
+  install.packages("reshape2", repos='http://cran.us.r-project.org')
+}
+if(!require(ggplot2)){
+  install.packages("ggplot2", repos='http://cran.us.r-project.org')
+}
+if(!require(scales)){
+  install.packages("scales", repos='http://cran.us.r-project.org')
+}
+# if(!require(maptools)){ # this package may be unnecessary
+#   install.packages("scales", repos='http://cran.us.r-project.org')
+# }
+if(!require(rgeos)){
+  install.packages("rgeos", repos='http://cran.us.r-project.org')
+}
+if(!require(deldir)){
+  install.packages("deldir", repos='http://cran.us.r-project.org')
+}
+
+# then load the package:
+library(knitr)
+library(rmarkdown)
+library(plyr)
+library(reshape2)
+library(ggplot2)
+library(scales)
+library(SFNRC)
+
+# library(maptools)
+library(rgeos)
+library(sp)
+library(dismo)
+library(deldir)
+library(gstat)
+library(rgdal)
+library(raster)
+
+knitr::opts_chunk$set(echo = TRUE, comment=NA)
+```
+
+## Summary
+
+Water quality trends in Biscayne Bay were evaluated using data from DataForEver and the Miami-Dade Department of Environmental Resources Management. Spatial and temporal trends were evaluated for subregions of the bay using interpolated raster layers for each water quality parameter. This approach minimizes, but does not eliminate, artifacts introduced by varying sampling locations. The effect of canal inflows on water quality in Biscayne Bay was also evaluated.
+
+
+\vspace{3mm}\hrule
+
+**Keywords:** Biscayne Bay, water quality
+
+
+```{r, echo = FALSE, include=FALSE}
+# if the NitrogenUptake2016 package isn't installed, use devtools to do so:
+# devtools::install_github("troyhill/NitrogenUptake2016", build_vignettes = TRUE)
+
+# set some constants
+todaysDate <- substr(as.character(Sys.time()), 1, 10)
+pointSize <- 2 # for ggplot graphics
+pd <- pd2 <- position_dodge(1.2)
+pd3 <- position_dodge(0.8)
+grayColor <- 0.55
+fig2Col   <- "gray55"
+
+
+compareParams <- c("AMMONIA-N", "NITRATE+NITRITE-N",
+                   "SALINITY", "PH, FIELD", "CHLOROPHYLL-A", "TURBIDITY", "DISSOLVED OXYGEN", 
+                   "PHOSPHATE, TOTAL AS P", "PHOSPHATE, ORTHO AS P")
+
+## compiled water quality data - regenerate this.
+summary(finDat)  # bay water quality data - merged with latest DERM data
+summary(wqDat)   # canal water quality data (DERM data not likely to be relevant)
+
+## hydrology data
+summary(hydDat)  # canal inflows
+
+
+```
+
+
+
+## 1. Water quality trends in Biscayne Bay
+
+
+```{r interpolated water quality rasters, echo = FALSE, include=FALSE}
+
+# Explore relationships between water quality parameters ------------------
+fin2 <- dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
+# plot(fin2[, 3:ncol(fin2)])
+fin2 <- seas(fin2, timeCol = "date")
+fin2$seas2  <- paste0(fin2$waterYr,"-", fin2$seas)
+
+
+# Create interpolated maps of annual geometric means ----------------------
+### Data are not finalized, so this is just laying out the conceptual approach. Interpolate for the whole bay and then clip for regions.
+agm <- ddply(fin2[, -c(2)], .(waterYr, stn, seas2), numcolwise(geoMean))
+names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
+names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
+
+sitesInBay <- over(finDat.coords, bnp)
+sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
+
+finalSites <- unique(sitesInBay@data$stn)
+
+finDat.coords <- join_all(list(agm[agm$stn %in% finalSites, ], masterCoords), by = "stn")
+finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
+
+coordinates(finDat.coords) <- c("long", "lat")
+proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
+
+
+
+# kriging -----------------------------------------------------------------
+### 
+targParam <- "SALINITY"
+targYear  <- "2015"
+biscInterp(inputData = finDat.coords[(finDat.coords@data$stn %in% sitesInBay@data$stn) & !is.na(finDat.coords@data[, targParam]), ], paramCol = targParam, year = targYear, yearCol = "waterYr")
+           
+# for (j in 4:length(names(finDat.coords))) {
+#   for (i in 1:length(unique(finDat.coords$seas2))) {
+#     targYear <- unique(finDat.coords$seas2)[i]
+#     targParam <- names(finDat.coords)[j]
+#     targDat   <- finDat.coords[(finDat.coords$stn %in% sitesInBay@data$stn) & !is.na(finDat.coords@data[, j]), ]
+#     lims <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
+#     biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "seas2", plotZLims = lims,
+#                exportPlot = TRUE, plotName = paste0("/opt/physical/troy/RDATA/biscayne/output/interpolatedMaps2/", strsplit(x = targYear, "-")[[1]][2] ,"/", targParam, "_", targYear, ".png"))
+#   }
+# }
+
+
+```
+
+
+
+## 2. Effect of canal inflows
+
+
+
+**2.1.	 text**
+
+mass = (height$\cdot$a + b)^1/$\lambda$^ 
+
+
+```{r allometry, include=FALSE, echo=FALSE}
+
+
+```
+
+
+```{r Figure 1 (Data In Brief), fig.width = 6, fig.height = 4, message = FALSE, include=FALSE, echo=FALSE}
+
+```
+
+
+

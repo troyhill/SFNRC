@@ -35,13 +35,13 @@
 #' sitesInBay <- sp::over(finDat.coords, bnp)
 #' sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 #' 
-#' biscInterp(inputData = finDat.coords[(finDat.coords@data$stn %in% sitesInBay@data$stn), ],
-#'     param = "SALINITY", year = "2016")
+#' biscInterp(inputData = sitesInBay,
+#'     paramCol = "SALINITY", year = "2016")
 #'     
 #'     ### store raster layer in working environment
-#' biscRas <- biscInterp(inputData = finDat.coords[(finDat.coords@data$stn %in% sitesInBay@data$stn), ],
-#'     param = "SALINITY", year = "2016", returnRas = TRUE)
-#'     #'     }
+#' biscRas <- biscInterp(inputData = sitesInBay,
+#'     paramCol = "SALINITY", year = "2016", returnRas = TRUE)
+#'     }
 #' 
 #' 
 #' @importFrom gstat gstat

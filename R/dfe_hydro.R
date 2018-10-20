@@ -180,9 +180,8 @@ dfe.hydro <- function(stns,
   tempDat <- do.call(rbind, list(flow.list, hw.list, tw.list, stg.list))
   tempDat <- tempDat[tempDat$param %in% parameter_list, ]
   
-  if (data_shape %in% "long") {
-    
-  } else if (grep(x = data_shape, pattern = "wide")) {
+  ### data are output in long form. manipulate to wide or really wide if desired.
+  if (grep(x = data_shape, pattern = "wide")) {
     tempDat <- stats::reshape(tempDat, idvar = c("stn", "date"), timevar = "param", direction = "wide")
     names(tempDat) <- gsub(x = names(tempDat), pattern = "value.", replacement = "")
     # names(tempDat) <- c(hydro_col_names[c(1, 3)], "cfs", "hw.ft", "tw.ft", "stg.ft") # changes depending on parameters selected. should define by mapping new names to value.stage etc.
