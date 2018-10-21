@@ -74,7 +74,7 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
   ## make sure bnp and pts have same projections. Add bnp to package
   
   pts <- inputData[!is.na(inputData@data[, paramCol]) & (inputData@data[, yearCol] %in% year), ]
-  cat(nrow(pts), "stations with", paramCol, "data in", year, "       ")
+  cat(length(unique(pts$stn)), "stations with", paramCol, "data in", year, "       ")
   if (nrow(pts) > minDataPoints) { # only interpolate if there's more than x data points.
     
     if (plotZLims %in% "range") {
@@ -118,12 +118,15 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       
       ### predict values
       k  <- gstat::gstat(formula = get(paramCol) ~ 1, location = pts, model = fve)
-      ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1)
+      
+      setTimeLimit(30) # set time limit to prevent this from running forever
+      try(ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1), silent = TRUE)
       ras_pred <- raster::mask(ras_pred, BISCmap)
+      setTimeLimit()
       
       
       ### TODO: if kriging interpolation fails, use IDW or nearest neighbor interpolation considering nmax neighbors
-      if (sum(!is.na(ras_pred@data@values)) < 1) {
+      if (!exists("ras_pred") || sum(!is.na(ras_pred@data@values)) < 1) {
         # # ### Alternative: nearest neighbor. 
         # # ### Create nearest neighbor polygons
         # vlocs         <- dismo::voronoi(pts)

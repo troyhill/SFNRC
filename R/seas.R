@@ -2,12 +2,12 @@
 #'
 #' @description See above. Water year 2015 runs from Oct 01 2014 - Sept 30 2015.
 #' 
-#' @usage seas(inputData, timeCol = "datetime", wetSeas = c("May", "Oct"), waterYearBegin = "Oct")
+#' @usage seas(inputData, timeCol = "datetime", wetSeas = c("May", "Oct"), waterYearBegin = "Nov")
 #' 
 #' @param inputData input dataframe 
 #' @param timeCol POSIXct column of timestamps
 #' @param wetSeas the first and last month of the wet season (inclusive; use abbreviated months as in \code{month.abb}) 
-#' @param waterYearBegin the first month of each water year (abbreviated form, as in \code{month.abb}). 
+#' @param waterYearBegin the first full month of each water year (abbreviated form, as in \code{month.abb}). 
 #' 
 #' @return two columns are appended to the input dataframe
 #' 
@@ -22,7 +22,7 @@
 #' @export
 
 seas <- function(inputData, timeCol = "datetime", 
-                 wetSeas = c("May", "Oct"), waterYearBegin = "Oct") {
+                 wetSeas = c("May", "Oct"), waterYearBegin = "Nov") {
   ### assign wet/dry season status
   wetStart         <- which(month.abb %in% wetSeas[1])
   wetEnd           <- which(month.abb %in% wetSeas[2])
