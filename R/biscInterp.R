@@ -121,7 +121,7 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       
       setTimeLimit(30) # set time limit to prevent this from running forever
       try(ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1), silent = TRUE)
-      ras_pred <- raster::mask(ras_pred, BISCmap)
+      try(ras_pred <- raster::mask(ras_pred, BISCmap), silent = TRUE)
       setTimeLimit()
       
       
