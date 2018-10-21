@@ -35,9 +35,9 @@ if(!require(ggplot2)){
 if(!require(scales)){
   install.packages("scales", repos='http://cran.us.r-project.org')
 }
-# if(!require(maptools)){ # this package may be unnecessary
-#   install.packages("scales", repos='http://cran.us.r-project.org')
-# }
+if(!require(maptools)){ # this package may be unnecessary
+  install.packages("scales", repos='http://cran.us.r-project.org')
+}
 if(!require(rgeos)){
   install.packages("rgeos", repos='http://cran.us.r-project.org')
 }
@@ -54,7 +54,7 @@ library(ggplot2)
 library(scales)
 library(SFNRC)
 
-# library(maptools)
+library(maptools)
 library(rgeos)
 library(sp)
 library(dismo)
@@ -109,8 +109,8 @@ summary(hydDat)  # canal inflows
 
 
 ```{r interpolated water quality rasters, echo = FALSE, include=FALSE}
-  
-# Explore relationships between water quality parameters ------------------
+
+# http://rspatial.org/analysis/rst/4-interpolation.html ------------------
 fin2 <- dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
 fin2 <- seas(fin2, timeCol = "date")
 fin2$seas2  <- paste0(fin2$waterYr,"-", fin2$seas)
@@ -145,20 +145,95 @@ sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 ### 
 targParam <- "SALINITY"
 targYear  <- "2016"
-biscInterp(inputData = sitesInBay, 
-           paramCol = targParam, year = targYear, yearCol = "year")
+a <- biscInterp(inputData = sitesInBay, 
+           paramCol = targParam, year = targYear, yearCol = "year", returnRas = TRUE)
            
-sal.list <- list()
-# for (j in 4:(length(names(sitesInBay) - 1))) {
-  for (i in 1:length(unique(sitesInBay$year))) {
-    targYear  <- unique(sitesInBay$year)[i]
-    targParam <- "SALINITY" # names(sitesInBay)[j]
+dat.l <- list()
+for (j in c(5, 10)) { #4:(length(names(sitesInBay) - 1))) {
+  for (i in 1995:2010) { #1:length(unique(sitesInBay$year))) {
+    targYear  <- i # unique(sitesInBay$year)[i]
+    targParam <- names(sitesInBay)[j] # "SALINITY" 
     targDat   <- sitesInBay
     lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
-    sal.list[i] <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "year", plotZLims = lims,returnRas = TRUE)
+    dat.l[[paste0(targParam, targYear)]] <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "year", plotZLims = lims, returnRas = TRUE)
+    # names(dat.l)[i] <- paste0(targParam, targYear)
   }
-# }
+}
 
+
+### summarize
+# https://gis.stackexchange.com/questions/270988/raster-data-extract-to-polygon-rcode
+# possible approach would be to create a raster stack (https://gis.stackexchange.com/questions/29118/how-to-find-the-average-raster-value-of-an-area-defined-by-a-shapefile-using-r)
+# get mean and area <20 psu for bay subregions 
+###
+test     <- ldply(dat.l, function(x) cellStats(x, "mean"))
+test$sd  <- ldply(dat.l, function(x) cellStats(x, "sd"))[, 2]
+test$param <- substr(test[, 1], 1, nchar(test[, 1]) - 4)
+test$yr  <- substr(test[, 1], nchar(test[, 1]) - 3, nchar(test[, 1]))
+
+
+### get mean for each region in bnp map
+plot(bnp, col = bnp@data$OBJECTID)
+pointLabel(coordinates(bnp),labels=bnp$OBJECTID)
+
+# adat    <- extract(dat.l[[1]], bnp, fun = mean, na.rm = TRUE, df = TRUE, sp = TRUE) # to preserve spatial relation
+# adat@data
+
+# adat    <- extract(dat.l[[1]], bnp, fun = mean, na.rm = TRUE)
+# adat.sd <- extract(dat.l[[1]], bnp, fun = sd, na.rm = TRUE)
+# adat.20 <- extract(dat.l[[1]], bnp, fun = ecdf()(3))
+
+# raster::stack
+adat <- ldply(dat.l, function(x) t(extract(x, bnp, fun = mean, na.rm = TRUE)))
+adat.20 <- ldply(dat.l, function(x) t(extract(x, bnp, fun = function(x,...)ecdf(x)(20), na.rm = TRUE))) # proportion of total area below 20 (for salinity)
+adat.sd <- ldply(dat.l, function(x) t(raster::extract(x, bnp, fun = sd, na.rm = TRUE)))
+# adat.sd
+
+### to make a wide dataset:
+# names(adat)[-1] <- paste0("mean.", bnp@data$OBJECTID)
+# names(adat.20)[-1] <- paste0("cellsSub20.", bnp@data$OBJECTID)
+# names(adat.sd)[-1] <- paste0("sd.", bnp@data$OBJECTID)
+# combd       <- join_all(list(adat, adat.sd, adat.20))
+
+### to make a long dataset with columns: param, year, loc, mean, sd, ecdf20
+tail(melt(adat, id.vars = 1, variable.name = "polygon", value.name = "mean"))
+
+combd <- join_all(list(
+  melt(adat, id.vars = 1, variable.name = "polygon", value.name = "mean"),
+  melt(adat.sd, id.vars = 1, variable.name = "polygon", value.name = "sd"),
+  melt(adat.20, id.vars = 1, variable.name = "polygon", value.name = "cellsSub20")
+))
+
+
+
+
+
+combd$param <- substr(combd[, 1], 1, nchar(combd[, 1]) - 4)
+combd$yr    <- substr(combd[, 1], nchar(combd[, 1]) - 3, nchar(combd[, 1]))
+
+ggplot(combd, aes())
+
+### I can't figure out how to generate multiple columns at the same time, avoiding the need to join_all. e.g., this doesn't work:
+# test <- ldply(sal.list, summarise,
+#               # name = names(x),
+#               mean = function(x) cellStats(x, "mean"),
+#               area_sub20 = function(x) cellStats(x, "ecdf(x)(20)"))
+
+# 
+# ### now repeat for all parameters
+# wq.list <- list()
+# for (j in 4:(length(names(sitesInBay)) - 1)) {
+#   for (i in 1:length(unique(sitesInBay$year))) {
+#     targYear  <- unique(sitesInBay$year)[i]
+#     targParam <- names(sitesInBay)[j]
+#     targDat   <- sitesInBay
+#     lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
+#     wq.list[i] <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "year", plotZLims = lims,returnRas = TRUE)
+#     names(wq.list)[i] <- paste0(targParam, targYear)
+#   }
+# }
+# 
+# test <- ldply(wq.list, function(x) cellStats(x, "mean"))
 
 ```
 
