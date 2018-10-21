@@ -105,52 +105,58 @@ summary(hydDat)  # canal inflows
 
 
 
-## 1. Water quality trends in Biscayne Bay
+## 1. Annual water quality trends in Biscayne Bay
 
 
 ```{r interpolated water quality rasters, echo = FALSE, include=FALSE}
-
+  
 # Explore relationships between water quality parameters ------------------
 fin2 <- dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
-# plot(fin2[, 3:ncol(fin2)])
 fin2 <- seas(fin2, timeCol = "date")
 fin2$seas2  <- paste0(fin2$waterYr,"-", fin2$seas)
 
 
 # Create interpolated maps of annual geometric means ----------------------
 ### Data are not finalized, so this is just laying out the conceptual approach. Interpolate for the whole bay and then clip for regions.
-agm <- ddply(fin2[, -c(2)], .(waterYr, stn, seas2), numcolwise(geoMean))
+agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
 names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
 
-sitesInBay <- over(finDat.coords, bnp)
-sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
-finalSites <- unique(sitesInBay@data$stn)
-
-finDat.coords <- join_all(list(agm[agm$stn %in% finalSites, ], masterCoords), by = "stn")
+finDat.coords <- plyr::join_all(list(agm, masterCoords), by = "stn")
 finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
 
 coordinates(finDat.coords) <- c("long", "lat")
 proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
+sitesInBay <- sp::over(finDat.coords, bnp)
+sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
 
-# kriging -----------------------------------------------------------------
+
+# kriging --------------------------------------------------------------
+# biscInterp(inputData = sitesInBay,paramCol = "SALINITY", year = "2016")
+    
+    ### store raster layer in working environment
+# biscRas <- biscInterp(inputData = sitesInBay,
+    # paramCol = "SALINITY", year = "2016", returnRas = TRUE)
+
+
 ### 
 targParam <- "SALINITY"
-targYear  <- "2015"
-biscInterp(inputData = finDat.coords[(finDat.coords@data$stn %in% sitesInBay@data$stn) & !is.na(finDat.coords@data[, targParam]), ], paramCol = targParam, year = targYear, yearCol = "waterYr")
+targYear  <- "2016"
+biscInterp(inputData = sitesInBay, 
+           paramCol = targParam, year = targYear, yearCol = "year")
            
-# for (j in 4:length(names(finDat.coords))) {
-#   for (i in 1:length(unique(finDat.coords$seas2))) {
-#     targYear <- unique(finDat.coords$seas2)[i]
-#     targParam <- names(finDat.coords)[j]
-#     targDat   <- finDat.coords[(finDat.coords$stn %in% sitesInBay@data$stn) & !is.na(finDat.coords@data[, j]), ]
-#     lims <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
-#     biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "seas2", plotZLims = lims,
-#                exportPlot = TRUE, plotName = paste0("/opt/physical/troy/RDATA/biscayne/output/interpolatedMaps2/", strsplit(x = targYear, "-")[[1]][2] ,"/", targParam, "_", targYear, ".png"))
-#   }
+sal.list <- list()
+# for (j in 4:(length(names(sitesInBay) - 1))) {
+  for (i in 1:length(unique(sitesInBay$year))) {
+    targYear  <- unique(sitesInBay$year)[i]
+    targParam <- "SALINITY" # names(sitesInBay)[j]
+    targDat   <- sitesInBay
+    lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
+    sal.list[i] <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "year", plotZLims = lims,returnRas = TRUE)
+  }
 # }
 
 

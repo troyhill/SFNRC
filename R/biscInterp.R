@@ -103,6 +103,7 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
 
       
       ### inverse distance weighted interpolation
+      # http://rspatial.org/analysis/rst/4-interpolation.html
       gs  <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) 
       v   <- gstat::variogram(gs) # generate variogram
       # fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0.9, model = vgModelType, range = max(v$dist) / 2, nugget = 0))
