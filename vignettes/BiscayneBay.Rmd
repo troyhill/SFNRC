@@ -295,7 +295,7 @@ sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
 seas.l <- list()
 for (j in c(7, 12)) { #5:(length(names(sitesInBay) - 1))) {
-  for (i in 41:length(unique(sitesInBay$seas2))) {
+  for (i in 20:length(unique(sitesInBay$seas2))) {
     targYear  <- unique(sitesInBay$seas2)[i]
     targParam <- names(sitesInBay)[j] # "SALINITY" 
     targDat   <- sitesInBay
