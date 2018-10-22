@@ -4,7 +4,7 @@
 \alias{seas}
 \title{Create columns indicating wet/dry season and water year}
 \usage{
-seas(inputData, timeCol = "datetime", wetSeas = c("May", "Oct"), waterYearBegin = "Oct")
+seas(inputData, timeCol = "datetime", wetSeas = c("May", "Oct"), waterYearBegin = "Nov")
 }
 \arguments{
 \item{inputData}{input dataframe}
@@ -13,7 +13,7 @@ seas(inputData, timeCol = "datetime", wetSeas = c("May", "Oct"), waterYearBegin 
 
 \item{wetSeas}{the first and last month of the wet season (inclusive; use abbreviated months as in \code{month.abb})}
 
-\item{waterYearBegin}{the first month of each water year (abbreviated form, as in \code{month.abb}).}
+\item{waterYearBegin}{the first full month of each water year (abbreviated form, as in \code{month.abb}).}
 }
 \value{
 two columns are appended to the input dataframe

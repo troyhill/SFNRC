@@ -46,7 +46,7 @@ targetStns <- c("AC01", "BB02", "BB04", "BB05A", "BB06", "BB09", "BB10", "BB11",
 "S21A", "S21", "S22", "S25", "S25A", "S25B", "S26", "S27", "S28", 
 "G58", "S700", "G93", "S123", "S197")
 
-hydDat <- dfe.hydro(stns = c(as.character(dfrInBay$stn), structs), 
+hydDat <- dfe.hydro(stns = targetStns, # c(as.character(dfrInBay$stn), structs), 
 parameter_list = c("flow", "head_water", "salinity", "temperature", "tail_water", 
 "stage", "rainfall", "precipitation", "ppt"), data_shape = "wide")
 }

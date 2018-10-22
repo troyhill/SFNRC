@@ -42,7 +42,11 @@ targetStations <- c("COOPERTN", "FROGCITY", "G311", "G342A", "G342B", "G342C",
 "S20", "S21", "S319", "S332", "S333", "S334", "S335", "S335TW", 
 "S336", "S339", "S340", "S343A", "S343B", "S344", "S346", "S355A", 
 "S355ATW", "S355B", "S355BTW", "S356", "S356-334", "S356GW1", 
-"S356GW2", "S356GW3", "S356GW4", "S361", "S362", "S7", "S700")
+"S356GW2", "S356GW3", "S356GW4", "S361", "S362", "S7", "S700",
+"S22", "S25", "S25A", "S25B", "S26", # central
+"S27", "S28", "S29", # from SWIM plan - north biscayne bay
+"G58", "S700", "G93", # new structures since SWIM plan?
+"S123",  "S21A", "S21", "S20", "S20F", "S20G", "S197"))
 
 testDat <- dfe.wq(stns = targetStations)
 
