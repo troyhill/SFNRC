@@ -162,43 +162,32 @@ sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 # a <- biscInterp(inputData = sitesInBay, 
 #            paramCol = targParam, year = targYear, yearCol = "year", returnRas = TRUE)
            
-dat.l <- list()
 for (j in c(5, 10)) { #4:(length(names(sitesInBay) - 1))) {
-  for (i in 1990:2010) { #1:length(unique(sitesInBay$year))) {
-    targYear  <- i # unique(sitesInBay$year)[i]
+  dat.l <- list()
+  for (i in 1:length(unique(sitesInBay$year))) {
+    targYear  <- unique(sitesInBay$year)[i]
     targParam <- names(sitesInBay)[j] # "SALINITY" 
     targDat   <- sitesInBay
     lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
     dat.l[[paste0(targParam, targYear)]] <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "year", plotZLims = lims, returnRas = TRUE)
-    # names(dat.l)[i] <- paste0(targParam, targYear)
+  }
+  ### summarize data after compiling rasters for each parameter
+  # https://gis.stackexchange.com/questions/270988/raster-data-extract-to-polygon-rcode
+  # possible approach would be to create a raster stack (https://gis.stackexchange.com/questions/29118/how-to-find-the-average-raster-value-of-an-area-defined-by-a-shapefile-using-r)
+  # get mean and area <20 psu for bay subregions 
+  ### example for entire raster:
+  # test     <- ldply(dat.l, function(x) cellStats(x, "mean"))
+  ### for subregions:
+  if (!exists("adat")) {
+    adat    <- ldply(dat.l, function(x) t(extract(x, bnp, fun = mean, na.rm = TRUE)))
+    adat.20 <- ldply(dat.l, function(x) t(extract(x, bnp, fun = function(x,...)ecdf(x)(20), na.rm = TRUE))) # proportion of total area below 20 (for salinity)
+    adat.sd <- ldply(dat.l, function(x) t(raster::extract(x, bnp, fun = sd, na.rm = TRUE)))
+  } else { ### if this isn't the first iteration, merge with existing dataframes
+    adat    <- rbind(adat, ldply(dat.l, function(x) t(extract(x, bnp, fun = mean, na.rm = TRUE))))
+    adat.20 <- rbind(adat.20, ldply(dat.l, function(x) t(extract(x, bnp, fun = function(x,...)ecdf(x)(20), na.rm = TRUE))))
+    adat.sd <- rbind(adat.sd, ldply(dat.l, function(x) t(raster::extract(x, bnp, fun = sd, na.rm = TRUE))))
   }
 }
-
-
-### summarize
-# https://gis.stackexchange.com/questions/270988/raster-data-extract-to-polygon-rcode
-# possible approach would be to create a raster stack (https://gis.stackexchange.com/questions/29118/how-to-find-the-average-raster-value-of-an-area-defined-by-a-shapefile-using-r)
-# get mean and area <20 psu for bay subregions 
-###
-test     <- ldply(dat.l, function(x) cellStats(x, "mean"))
-test$sd  <- ldply(dat.l, function(x) cellStats(x, "sd"))[, 2]
-test$param <- substr(test[, 1], 1, nchar(test[, 1]) - 4)
-test$yr  <- substr(test[, 1], nchar(test[, 1]) - 3, nchar(test[, 1]))
-
-
-### get mean for each region in bnp map
-# adat    <- extract(dat.l[[1]], bnp, fun = mean, na.rm = TRUE, df = TRUE, sp = TRUE) # to preserve spatial relation
-# adat@data
-
-# adat    <- extract(dat.l[[1]], bnp, fun = mean, na.rm = TRUE)
-# adat.sd <- extract(dat.l[[1]], bnp, fun = sd, na.rm = TRUE)
-# adat.20 <- extract(dat.l[[1]], bnp, fun = ecdf()(3))
-
-# raster::stack
-adat <- ldply(dat.l, function(x) t(extract(x, bnp, fun = mean, na.rm = TRUE)))
-adat.20 <- ldply(dat.l, function(x) t(extract(x, bnp, fun = function(x,...)ecdf(x)(20), na.rm = TRUE))) # proportion of total area below 20 (for salinity)
-adat.sd <- ldply(dat.l, function(x) t(raster::extract(x, bnp, fun = sd, na.rm = TRUE)))
-# adat.sd
 
 ### to make a wide dataset:
 # names(adat)[-1] <- paste0("mean.", bnp@data$OBJECTID)
@@ -259,7 +248,8 @@ Figure 1. Map of sub-regions used in Biscayne Bay, with numeric labels.
 
 
 ```{r parameter trends, fig.width = 6, fig.height = 4, message = FALSE, echo=FALSE}
-ggplot(combd, aes(y = mean, x = yr, col = subregion)) + geom_point(size  = 0.25, position = pd3) + geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("") 
+ggplot(combd, aes(y = mean, x = yr, col = subregion)) + # geom_point(size  = 0.5, position = pd3) + 
+  geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, size  = 0.75) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("") 
 
 ```
 Figure 2. Annual water quality trends for Biscayne Bay subregions. Spatially-weighted mean (+- SD) of interpolated annual geometric means from individual stations.
