@@ -278,7 +278,7 @@ fin2$seas2  <- paste0(fin2$waterYr,"-", fin2$seas)
 
 
 # Create interpolated maps of geometric means ----------------------
-agm <- plyr::ddply(fin2[, -c(grep(x = names(fin2), pattern = "date|waterYr"))], plyr::.(seas2, seas, year, stn), plyr::numcolwise(geoMean))
+agm <- plyr::ddply(fin2[, -c(grep(x = names(fin2), pattern = "date|water"))], plyr::.(seas2, seas, year, stn), plyr::numcolwise(geoMean))
 names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
 names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
 
@@ -307,38 +307,19 @@ for (j in c(7, 12)) { #5:(length(names(sitesInBay) - 1))) {
 
 
 ### summarize
-# https://gis.stackexchange.com/questions/270988/raster-data-extract-to-polygon-rcode
-# possible approach would be to create a raster stack (https://gis.stackexchange.com/questions/29118/how-to-find-the-average-raster-value-of-an-area-defined-by-a-shapefile-using-r)
-# get mean and area <20 psu for bay subregions 
-###
 test     <- ldply(seas.l, function(x) cellStats(x, "mean"))
 test$sd  <- ldply(seas.l, function(x) cellStats(x, "sd"))[, 2]
-test$param <- substr(test[, 1], 1, nchar(test[, 1]) - 4)
-test$yr  <- substr(test[, 1], nchar(test[, 1]) - 3, nchar(test[, 1]))
+test$param <- substr(test[, 1], 1, nchar(test[, 1]) - 8)
+test$yr    <- as.numeric(substr(test[, 1], nchar(test[, 1]) - 7, nchar(test[, 1]) - 4))
+test$seas  <- substr(test[, 1], nchar(test[, 1]) - 2, nchar(test[, 1]))
 
 
-### get mean for each region in bnp map
-# adat    <- extract(dat.l[[1]], bnp, fun = mean, na.rm = TRUE, df = TRUE, sp = TRUE) # to preserve spatial relation
-# adat@data
-
-# adat    <- extract(dat.l[[1]], bnp, fun = mean, na.rm = TRUE)
-# adat.sd <- extract(dat.l[[1]], bnp, fun = sd, na.rm = TRUE)
-# adat.20 <- extract(dat.l[[1]], bnp, fun = ecdf()(3))
-
-# raster::stack
 adat <- ldply(seas.l, function(x) t(extract(x, bnp, fun = mean, na.rm = TRUE)))
 adat.20 <- ldply(seas.l, function(x) t(extract(x, bnp, fun = function(x,...)ecdf(x)(20), na.rm = TRUE))) # proportion of total area below 20 (for salinity)
 adat.sd <- ldply(seas.l, function(x) t(raster::extract(x, bnp, fun = sd, na.rm = TRUE)))
 # adat.sd
 
-### to make a wide dataset:
-# names(adat)[-1] <- paste0("mean.", bnp@data$OBJECTID)
-# names(adat.20)[-1] <- paste0("cellsSub20.", bnp@data$OBJECTID)
-# names(adat.sd)[-1] <- paste0("sd.", bnp@data$OBJECTID)
-# combd       <- join_all(list(adat, adat.sd, adat.20))
-
 ### to make a long dataset with columns: param, year, loc, mean, sd, ecdf20
-tail(melt(adat, id.vars = 1, variable.name = "subregion", value.name = "mean"))
 
 combd <- join_all(list(
   melt(adat, id.vars = 1, variable.name = "subregion", value.name = "mean"),
