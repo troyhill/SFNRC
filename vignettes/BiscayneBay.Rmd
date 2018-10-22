@@ -164,7 +164,7 @@ sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
            
 for (j in c(5, 10)) { #4:(length(names(sitesInBay) - 1))) {
   dat.l <- list()
-  for (i in 1:length(unique(sitesInBay$year))) {
+  for (i in 33:length(unique(sitesInBay$year))) {
     targYear  <- unique(sitesInBay$year)[i]
     targParam <- names(sitesInBay)[j] # "SALINITY" 
     targDat   <- sitesInBay
@@ -248,8 +248,8 @@ Figure 1. Map of sub-regions used in Biscayne Bay, with numeric labels.
 
 
 ```{r parameter trends, fig.width = 6, fig.height = 4, message = FALSE, echo=FALSE}
-ggplot(combd, aes(y = mean, x = yr, col = subregion)) + # geom_point(size  = 0.5, position = pd3) + 
-  geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, size  = 0.75) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("") 
+ggplot(combd, aes(y = mean, x = yr, col = subregion)) + #geom_point(size  = 1, position = pd3) + 
+  geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, fatten = 1) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("") 
 
 ```
 Figure 2. Annual water quality trends for Biscayne Bay subregions. Spatially-weighted mean (+- SD) of interpolated annual geometric means from individual stations.
@@ -283,9 +283,9 @@ sitesInBay <- sp::over(finDat.coords, bnp)
 sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
 
-seas.l <- list()
 for (j in c(7, 12)) { #5:(length(names(sitesInBay) - 1))) {
-  for (i in 20:length(unique(sitesInBay$seas2))) {
+  seas.l <- list()
+  for (i in 1:length(unique(sitesInBay$seas2))) {
     targYear  <- unique(sitesInBay$seas2)[i]
     targParam <- names(sitesInBay)[j] # "SALINITY" 
     targDat   <- sitesInBay
@@ -293,28 +293,24 @@ for (j in c(7, 12)) { #5:(length(names(sitesInBay) - 1))) {
     seas.l[[paste0(targParam, targYear)]] <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "seas2", plotZLims = lims, returnRas = TRUE)
     # names(dat.l)[i] <- paste0(targParam, targYear)
   }
+  if (!exists("adat.seas")) {
+    adat.seas    <- ldply(seas.l, function(x) t(extract(x, bnp, fun = mean, na.rm = TRUE)))
+    adat.seas.20 <- ldply(seas.l, function(x) t(extract(x, bnp, fun = function(x,...)ecdf(x)(20), na.rm = TRUE))) # proportion of total area below 20 (for salinity)
+    adat.seas.sd <- ldply(seas.l, function(x) t(raster::extract(x, bnp, fun = sd, na.rm = TRUE)))
+  } else { ### if this isn't the first iteration, merge with existing dataframes
+    adat.seas    <- rbind(adat.seas,    ldply(seas.l, function(x) t(extract(x, bnp, fun = mean, na.rm = TRUE))))
+    adat.seas.20 <- rbind(adat.seas.20, ldply(seas.l, function(x) t(extract(x, bnp, fun = function(x,...)ecdf(x)(20), na.rm = TRUE))))
+    adat.seas.sd <- rbind(adat.seas.sd, ldply(seas.l, function(x) t(raster::extract(x, bnp, fun = sd, na.rm = TRUE))))
+  }
 }
 
-
-### summarize
-test     <- ldply(seas.l, function(x) cellStats(x, "mean"))
-test$sd  <- ldply(seas.l, function(x) cellStats(x, "sd"))[, 2]
-test$param <- substr(test[, 1], 1, nchar(test[, 1]) - 8)
-test$yr    <- as.numeric(substr(test[, 1], nchar(test[, 1]) - 7, nchar(test[, 1]) - 4))
-test$seas  <- substr(test[, 1], nchar(test[, 1]) - 2, nchar(test[, 1]))
-
-
-adat <- ldply(seas.l, function(x) t(extract(x, bnp, fun = mean, na.rm = TRUE)))
-adat.20 <- ldply(seas.l, function(x) t(extract(x, bnp, fun = function(x,...)ecdf(x)(20), na.rm = TRUE))) # proportion of total area below 20 (for salinity)
-adat.sd <- ldply(seas.l, function(x) t(raster::extract(x, bnp, fun = sd, na.rm = TRUE)))
-# adat.sd
 
 ### to make a long dataset with columns: param, year, loc, mean, sd, ecdf20
 
 combd.seas <- join_all(list(
-  melt(adat, id.vars = 1, variable.name = "subregion", value.name = "mean"),
-  melt(adat.sd, id.vars = 1, variable.name = "subregion", value.name = "sd"),
-  melt(adat.20, id.vars = 1, variable.name = "subregion", value.name = "propSub20")
+  melt(adat.seas, id.vars = 1, variable.name = "subregion", value.name = "mean"),
+  melt(adat.seas.sd, id.vars = 1, variable.name = "subregion", value.name = "sd"),
+  melt(adat.seas.20, id.vars = 1, variable.name = "subregion", value.name = "propSub20")
 ))
 
 combd.seas$param <- substr(combd.seas[, 1], 1, nchar(combd.seas[, 1]) - 8)
