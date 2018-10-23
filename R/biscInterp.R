@@ -27,7 +27,7 @@
 #' agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 #' names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
 #' names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
-#' finDat.coords <- plyr::join_all(list(agm, masterCoords), by = "stn")
+#' finDat.coords <- plyr::join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
 #' finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
 #' coordinates(finDat.coords) <- c("long", "lat")
 #' proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
@@ -120,8 +120,14 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       k  <- gstat::gstat(formula = get(paramCol) ~ 1, location = pts, model = fve)
       
       setTimeLimit(30) # set time limit to prevent this from running forever
-      try(ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1), silent = TRUE)
-      try(ras_pred <- raster::mask(ras_pred, BISCmap), silent = TRUE)
+      # try(ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1), silent = TRUE)
+      # try(ras_pred <- raster::mask(ras_pred, BISCmap), silent = TRUE)
+      
+      tryCatch({
+        ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1)
+        ras_pred <- raster::mask(ras_pred, BISCmap)
+      }, error=function(e){cat("timeout on ordinary kriging of ", paramCol, year, ":",conditionMessage(e), "\n")})
+      
       setTimeLimit()
       
       

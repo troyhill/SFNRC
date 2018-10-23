@@ -57,7 +57,7 @@ fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to
 agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
 names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
-finDat.coords <- plyr::join_all(list(agm, masterCoords), by = "stn")
+finDat.coords <- plyr::join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
 finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
 coordinates(finDat.coords) <- c("long", "lat")
 proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
