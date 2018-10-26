@@ -2,7 +2,7 @@
 % Please edit documentation in R/biscInterp.R
 \name{biscInterp}
 \alias{biscInterp}
-\title{Make interpolated maps of Biscayne Bay}
+\title{Make interpolated maps}
 \usage{
 biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
   year = "2016", returnRas = FALSE, exportRaster = FALSE,
@@ -26,7 +26,7 @@ biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
 
 \item{fileName}{if a raster layer is exported, this argument sets the file address and name}
 
-\item{BISCmap}{SpatialPolygonDataFrame layer with outline of Biscayne Bay (data included in SNFRC package)}
+\item{BISCmap}{Can be any SpatialPolygonDataFrame layer. Default is a polygon layer of Biscayne Bay (included in SNFRC package)}
 
 \item{exportPlot}{TRUE/FALSE; should the displayed plot be saved to disk?}
 
@@ -48,7 +48,7 @@ biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
 plot, raster layer, and/or raster data
 }
 \description{
-Make interpolated maps of Biscayne Bay
+Spatial interpolation of data from points to a user-provided polygon layer.
 }
 \examples{
  

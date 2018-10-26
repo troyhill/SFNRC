@@ -5,7 +5,7 @@
 \title{Plot concentration-discharge relationship for a DataForEver station}
 \usage{
 dfe.CQ(stn, parameter_list = c("flow", "tail_water", "head_water", "stage"),
-target_analytes = "orthophosphate", date_range = "all", rFriendlyParamNames = TRUE
+target_analytes = "PHOSPHATE, TOTAL AS P", date_range = "all", rFriendlyParamNames = TRUE
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ Downloads and compiles DataForEver hydrology and water quality data. Creates plo
 }
 \examples{
 \dontrun{
-dfe.CQ(stns = "S700")
+dfe.CQ(stn = "S333")
 }
 
 }

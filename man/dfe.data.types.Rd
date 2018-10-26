@@ -4,18 +4,28 @@
 \alias{dfe.data.types}
 \title{DataForEver hydrology database parameter query}
 \usage{
-dfe.data.types(query = "flow")
+dfe.data.types(parameter = "all", station = "all", fixed = FALSE)
 }
 \arguments{
-\item{query}{a character string}
+\item{parameter}{a character string specifying the parameter(s) used to constrain the query.}
+
+\item{stn}{a character string specifying the station(s) used to constrain the query.}
 }
 \value{
-dataframe \code{dfe.data.types} returns a vector of stations
+dataframe \code{dfe.data.types} returns a vector of stations and parameters.
 }
 \description{
 Identifies parameters available from the DataForEver hydrology database
 }
 \examples{
-a <- dfe.data.types(query = "flow")
+\dontrun{
+### search by parameter:
+dfe.data.types(parameter = "salinity")
+
+### search by station:
+dfe.data.types(stn = "S333")
+dfe.data.types(stn = "S333", fixed = TRUE) # note that the function does not use exact matches unless requested to do so using \\code{fixed = TRUE}
+}
+
 
 }

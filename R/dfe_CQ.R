@@ -3,7 +3,7 @@
 #' @description Downloads and compiles DataForEver hydrology and water quality data. Creates plot and returns descriptive statistics and raw data in list form. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
 #' 
 #' @usage dfe.CQ(stn, parameter_list = c("flow", "tail_water", "head_water", "stage"),
-#' target_analytes = "orthophosphate", date_range = "all", rFriendlyParamNames = TRUE
+#' target_analytes = "PHOSPHATE, TOTAL AS P", date_range = "all", rFriendlyParamNames = TRUE
 #' )
 #' 
 #' @param stn the target station from DataForEver. Recommended to run function on a single station at a time.
@@ -18,7 +18,7 @@
 #' 
 #' @examples
 #' \dontrun{
-#' dfe.CQ(stns = "S700")
+#' dfe.CQ(stn = "S333")
 #' }
 #' 
 #' @importFrom utils write.table
@@ -32,7 +32,7 @@
 
 dfe.CQ <- function(stn, 
                     parameter_list = c("flow", "tail_water", "head_water", "stage"),
-                    target_analytes = "orthophosphate", date_range = "all", 
+                    target_analytes = "PHOSPHATE, TOTAL AS P", date_range = "all", 
                    rFriendlyParamNames = TRUE) {
   
   ### get hydro data
@@ -40,11 +40,11 @@ dfe.CQ <- function(stn,
   # hyd <- hydDat[hydDat$stn %in% "S700", ] ### for testing
 
   ### get water quality data
-  wq <- dfe.wq(stns = stn, target_analytes = target_analytes, rFriendlyParamNames = rFriendlyParamNames)
+  wq <- dfe.wq(stns = stn, target_analytes = toupper(target_analytes), rFriendlyParamNames = rFriendlyParamNames)
   # wq <- wqDat[(wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$stn %in% "S700"), ] ### for testing
   ### convert wq to wide format
   
-  tempDat <- stats::reshape(, idvar = c("stn", "date", "year", "mo", "day", "time", "datetime"), timevar = "param", direction = "wide")
+  tempDat <- stats::reshape(wq, idvar = c("stn", "date", "year", "mo", "day", "time", "datetime"), timevar = "param", direction = "wide")
   names(tempDat) <- gsub(x = names(tempDat), pattern = "value.| |,", replacement = "")
   
   tempDatForMerge <- tempDat[, c("stn", "date", grep(x = names(tempDat), pattern = "units|mdl|matrix", value = TRUE), names(tempDat)[length(names(tempDat))])]

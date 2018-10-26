@@ -2,15 +2,24 @@
 #'
 #' @description Identifies parameters available from the DataForEver hydrology database
 #' 
-#' @usage dfe.data.types(query = "flow")
+#' @usage dfe.data.types(parameter = "all", station = "all", fixed = FALSE)
 #' 
-#' @param query a character string
-#' 
-#' @return dataframe \code{dfe.data.types} returns a vector of stations
+#' @param parameter a character string specifying the parameter(s) used to constrain the query.
+#' @param stn a character string specifying the station(s) used to constrain the query.
+#'  
+#' @return dataframe \code{dfe.data.types} returns a vector of stations and parameters.
 #' 
 #' 
 #' @examples
-#' a <- dfe.data.types(query = "flow")
+#' \dontrun{
+#' ### search by parameter:
+#' dfe.data.types(parameter = "salinity")
+#' 
+#' ### search by station:
+#' dfe.data.types(stn = "S333")
+#' dfe.data.types(stn = "S333", fixed = TRUE) # note that the function does not use exact matches unless requested to do so using \code{fixed = TRUE}
+#' }
+#' 
 #' 
 #' @importFrom utils read.delim
 #' 
@@ -19,7 +28,11 @@
 
 
 
-dfe.data.types <- function(query = "flow") {
+dfe.data.types <- function(parameter = "all", stn = "all", fixed = FALSE) {
+  
+  searchParam <- parameter
+  searchStn   <- toupper(stn)
+  
   list.loc     <- file.path(tempdir(), "stn_temp.lst")
   bash.script.loc  <- file.path(tempdir(), "bash_stnLike.sh")
   
@@ -36,9 +49,7 @@ dfe.data.types <- function(query = "flow") {
                 #
                 # Freely available software: see Appaserver.org
                 # ---------------------------------------------
-                
-                echo \"Starting: $0 $*\" 1>&2
-                
+
                 if [ \"$#\" -ne 1 ]
                                  then
                                echo \"Usage: $0 application\" 1>&2
@@ -74,8 +85,18 @@ dfe.data.types <- function(query = "flow") {
   stnDat <- utils::read.delim(list.loc, stringsAsFactors = FALSE, header = FALSE, na.strings = "null", skip = 1, dec = " ",
                 col.names = c("stn", "datetime_modified"), colClasses = c("character"))
 
-  stnDatReturn <- sapply(strsplit(x = stnDat$stn, split = " "), "[", 1)
-  invisible(stnDatReturn) 
+  stnDatReturn  <- sapply(strsplit(x = stnDat$stn, split = " "), "[", 1)
+  stnDatFinal <- data.frame(matrix(unlist(strsplit(stnDatReturn, "\\Q|\\E")), ncol=2, byrow=TRUE))
+  
+  names(stnDatFinal) <- c("stn", "parameter")
+  
+  if (!searchStn %in% "ALL") {
+    stnDatFinal <- stnDatFinal[grep(x = stnDatFinal$stn, pattern = searchStn, fixed = fixed), ]
+  }
+  if (!searchParam %in% "all") {
+    stnDatFinal <- stnDatFinal[stnDatFinal$parameter %in% searchParam, ]
+  }
+  stnDatFinal
   
   ########################
   ### clean up the temp folder

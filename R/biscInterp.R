@@ -1,5 +1,7 @@
 
-#' Make interpolated maps of Biscayne Bay
+#' Make interpolated maps
+#'
+#' @description Spatial interpolation of data from points to a user-provided polygon layer. 
 #'
 #' @param inputData dataframe with water quality data. Function works best with output of \code{dfe.wq() or dfe.hydro()} using \code{wide = TRUE}.
 #' @param paramCol character string, name of column containing the relevant water quality data
@@ -8,7 +10,7 @@
 #' @param returnRas TRUE/FALSE; should a raster layer be returned to the global environment
 #' @param exportRaster TRUE/FALSE; should a raster layer be saved to disk?
 #' @param fileName if a raster layer is exported, this argument sets the file address and name
-#' @param BISCmap SpatialPolygonDataFrame layer with outline of Biscayne Bay (data included in SNFRC package)
+#' @param BISCmap Can be any SpatialPolygonDataFrame layer. Default is a polygon layer of Biscayne Bay (included in SNFRC package)
 #' @param exportPlot TRUE/FALSE; should the displayed plot be saved to disk?
 #' @param plotName if the plot is exported, this argument sets the file address and name
 #' @param plotWidth width of the plot
