@@ -13,6 +13,20 @@ library(SFNRC)
 ```
 
 
+## Troubleshooting installation
+
+On some systems an initial call to library(SFNRC) generates the following error message: "Error: package ‘gstat’ could not be loaded"
+
+This can be resolved by restarting R, removing the packages "gstat", "sp", and "maps", and reinstalling gstat with argument "dependencies = TRUE":
+
+```r
+remove.packages(c("gstat", "sp", "maps"))
+install.packages("gstat", dependencies = TRUE)
+
+library(SFNRC)
+```
+
+
 
 ## License
 
