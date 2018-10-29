@@ -6,16 +6,10 @@
 #' ---
 #' 
 #' 
-## ----setup, include=FALSE------------------------------------------------
-knitr::opts_chunk$set(echo = FALSE)
-knitr::opts_chunk$set(fig.pos= "h")
-knitr::opts_chunk$set(message = FALSE)
-knitr::opts_chunk$set(warning = FALSE)
-knitr::opts_chunk$set(out.extra = '')
-knitr::opts_chunk$set(fig.height = 2)
-knitr::opts_chunk$set(fig.width = 6)
 
 
+
+library(SFNRC)
 library(segmented)
 library(multcomp)
 library(pwr)
@@ -35,7 +29,6 @@ library(tidyr)
 library(FactoMineR)
 library(quantmod)
 library(ggsn)
-library(SFNRC)
 
 
 
@@ -87,6 +80,11 @@ summary(wq.df[wq.df$bdl == 0, ])
 hydDat <- hydDat[c(!((hydDat$stn %in% "S356") & (hydDat$date < "2015-01-01"))), ] # remove 15-minute data from the S356 testing phase (summed to get those wildly high values)
 hydDat <- hydDat[c(!hydDat$stn %in% "S178"), ] # remove S178 - odd effects from backflow
 hydDat <- seas(hydDat, timeCol = "date")
+
+############################## added 20181029
+hydDat$flow[is.na(hydDat$flow)] <- 0
+##############################
+
 
 # make WQ dataset wide (one row per date)
 wq2  <- dcast(wq.df[grep(wq.df$param, pattern = target_analytes), ], date * stn ~ param, mean, na.rm = TRUE)
@@ -156,7 +154,7 @@ summary(glht(aov1, linfct = mcp(st.fac=testType))) # Tukey: S12D different from 
 
 aov1 <- aov(log(wq2[, "PHOSPHATE, TOTAL AS P"]) ~ st.fac, data = wq2)
 summary(glht(aov1, linfct = mcp(st.fac=testType))) # Dunnett: complex. S12A and S333 share letter, S12C and B share a letter
-# Tukey: Only insignificant difference is S12B-C and S12A-S333
+# Tukey: Only insignificant differences are S12B-C and S12A-S333
 
 # aov1 <- aov(log(wq2[, "TOTAL SUSPENDED SOLIDS"]) ~ st.fac, data = wq2)
 # summary(glht(aov1, linfct = mcp(st.fac=testType))) # Dunnett, Tukey: S333-S12D
@@ -220,24 +218,49 @@ ann_textTP <- data.frame(stn = c("S333", paste0("S12", toupper(letters[1:4]))),
                          lab = c("B", "A", "B", "B", "B"),
                          value = rep(0.50, times = 5))
 
-ggplot(dat2[(dat2$stn %in% stn.targets) & (!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"])), ], 
+FlowVsNoWpts <- ggplot(dat2[(dat2$stn %in% stn.targets) & (!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"])), ], 
        aes(x = group, y = `PHOSPHATE..TOTAL.AS.P`)) + 
   geom_jitter(width = 0.1, size = 0.3, col = "darkgray") +
   geom_boxplot(outlier.shape = NA) + 
   theme_classic() + facet_grid(. ~ stn) + scale_y_log10()+
   theme(legend.position="top",axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
-  ylab ("Total P (mg/L)") + xlab("") # +   geom_text(data = ann_textOrtho, label = ann_textOrtho$lab)
+  ylab (expression("Total P (mg P" %.%"L"^-1*")")) + xlab("") # +   geom_text(data = ann_textOrtho, label = ann_textOrtho$lab)
+
+FlowVsNo <- ggplot(dat2[(dat2$stn %in% stn.targets) & (!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"])), ], 
+                       aes(x = group, y = `PHOSPHATE..TOTAL.AS.P`)) + 
+  geom_boxplot(outlier.shape = NA) + 
+  theme_classic() + facet_grid(. ~ stn) + scale_y_log10(limits = c(0.01, 0.12))+
+  theme(legend.position="top",axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + 
+  annotate("text", x = 1.5, y = 0.105, label = c("*", "*", "*", "*", ""), size = 12) +
+  ylab (expression("Total P (mg P" %.%"L"^-1*")")) + xlab("") 
 
 
 
 
+### main thesis is that there's seasonality in P and flows, and that at S333 the P regime is similar, 
+### but that flow regimes are profoundly different, leading to homogenization of water quality rather than strong flow/no-flow disparities.
+### 
 
-#' 
-#'     
-#'     
-#' 
-#' 
-#' 
+# Other seasonal parameters - flow vs no-flow -----------------------------------------------
+### chloride diff at S12A and C
+### "CHLOROPHYLL.A" is good example - no diff only at S333
+### "TOTAL.NITROGEN" is a good example too, but no data for S12D
+
+targParam <- "CHLOROPHYLL.A"
+ttests <- dlply(dat2[dat2$stn %in% stn.targets, ], "stn", function(df)
+  t.test(log(df[df$group %in% "no flow", targParam]), log(df[df$group %in% "flow", targParam]))) # S-12s all sig at P < 0.001; no difference at S-333!
+
+ggplot(dat2[(dat2$stn %in% stn.targets) & (!is.na(dat2[, targParam])), ], 
+       aes(x = group, y = get(targParam))) + 
+  geom_jitter(width = 0.1, size = 0.3, col = "darkgray") +
+  geom_boxplot(outlier.shape = NA) + ylim(0, 10) + 
+  theme_classic() + facet_grid(. ~ stn) + #scale_y_log10()+
+  theme(legend.position="top",axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + 
+  # annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
+  ylab(expression("(mg" %.%"L"^-1*")")) + xlab("") 
+
+
+
 #' 
 ## ----boxplots, fig.height = 4, fig.width = 6.5, fig.cap = "\\label{fig:boxplots1}Phosphorus concentrations at S-12A:D (1976-2018) and S-333 (1978-2018). Top row includes all concentration data; bottom row shows concentrations only during times with active flow. Different letters indicate significant differences (P < 0.05) determined by ANOVA with Tukey's HSD post-hoc test. Data were ln-transformed to improve normality."----
 
@@ -271,32 +294,25 @@ ann_textOrtho <- data.frame(stn = stn.targets,
 
 all.data <- ggplot(wq.melt, aes(x = stn, y = value)) + 
   geom_jitter(width = 0.1, size = 0.3, col = "darkgray") + geom_boxplot(outlier.alpha=0) + 
-  theme_classic() + #geom_hline(yintercept = 0.010, lty = 2) +
-  theme(legend.position="none", #strip.text.x = element_text(size = 8),
+  theme_classic() + 
+  theme(legend.position="none", 
         axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable, scales = "free_y") + xlab("") + ylab("mg/L (all data)") + geom_text(data = ann_textTP, label = ann_textTP$lab) +
-  #geom_text(data = ann_textTSS, label = ann_textTSS$lab) + 
   scale_y_log10() + 
   geom_text(data = ann_textOrtho, label = ann_textOrtho$lab)
-# +  geom_text(data = ann_text, label = ann_text$lab[c(1,5,2, 6, 3, 7, 4, 8)])
 
 TP.DP.withPts <- ggplot(wq.melt[!wq.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
   geom_jitter(width = 0.1, size = 0.3, col = "darkgray") + 
-  geom_boxplot(outlier.alpha=0, alpha = 0.4) + 
-  theme_classic() + #geom_hline(yintercept = 0.010, lty = 2) +
-  theme(legend.position="none", #strip.text.x = element_text(size = 8),
+  geom_boxplot(outlier.alpha=0, alpha = 0.4) + theme_classic() + theme(legend.position="none",
         axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable) + xlab("") + 
-  ylab(expression("mg P" %.%"L"^-1~" (all data)")) + geom_text(data = ann_textTP, label = ann_textTP$lab) +
-  scale_y_log10() # + 
-  #geom_text(data = ann_textTSS, label = ann_textTSS$lab) + 
-  # geom_text(data = ann_textOrtho, label = ann_textOrtho$lab)
+  ylab(expression("mg P" %.%"L"^-1*" (all data)")) + geom_text(data = ann_textTP, label = ann_textTP$lab) +
+  scale_y_log10() 
+
 ann_textTP2 <- ann_textTP
 ann_textTP2$value <- 0.1
 TP.DP <- ggplot(wq.melt[!wq.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
-  geom_boxplot(outlier.alpha=0, alpha = 0.4) + 
-  theme_classic()  +
-  theme(legend.position="none", #strip.text.x = element_text(size = 8),
+  geom_boxplot(outlier.alpha=0, alpha = 0.4) + theme_classic() + theme(legend.position="none", 
         axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable) + xlab("") + 
-  ylab(expression("mg P" %.%"L"^-1~" (all data)")) + geom_text(data = ann_textTP2, label = ann_textTP2$lab) +
+  ylab(expression("mg P" %.%"L"^-1*" (all data)")) + geom_text(data = ann_textTP2, label = ann_textTP2$lab) +
   scale_y_log10(limits = c(0.002, 0.12))
 
 TP.DP
@@ -320,7 +336,7 @@ summary(glht(aov1, linfct = mcp(st.fac=testType))) # Tukey: only shared letter i
 
 a.means.flow <- ddply(subDat.flow, .(stn), numcolwise(mean, na.rm = TRUE))
 a.se.flow <- ddply(subDat.flow, .(stn), numcolwise(se))
-a.count.flow <- ddply(subDat.fl0ow, .(stn), numcolwise(function(x) sum(!is.na(x))))
+a.count.flow <- ddply(subDat.flow, .(stn), numcolwise(function(x) sum(!is.na(x))))
 
 
 ### panel plot
@@ -342,15 +358,11 @@ ann_textTP <- ann_textTP2 <- data.frame(stn = stn.targets,
 ann_textTP2$value <- 0.09
 
 flow.onlyWpoints <- ggplot(flow.only.melt[!flow.only.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
-  geom_jitter(width = 0.1, size = 0.3, col = "darkgray") + geom_boxplot(outlier.alpha=0) + 
-  theme_classic() + #geom_hline(yintercept = 0.010, lty = 2) +
-  theme(legend.position="none", #strip.text.x = element_text(size = 8),
-        axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable, scales = "free_y") + xlab("") + ylab("mg/L (positive flow)") + 
+  geom_jitter(width = 0.1, size = 0.3, col = "darkgray") + geom_boxplot(outlier.alpha=0) + theme_classic() + theme(legend.position="none", 
+        axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable, scales = "free_y") + xlab("") + 
+  ylab(expression("mg P" %.%"L"^-1~" (flow > 0)")) + 
   geom_text(data = ann_textTP, label = ann_textTP$lab) + 
-  # geom_text(data = ann_textOrtho, label = ann_textOrtho$lab) +
-  #geom_text(data = ann_textTSS, label = ann_textTSS$lab) + 
   scale_y_log10() 
-# +  geom_text(data = ann_text, label = ann_text$lab[c(1,5,2, 6, 3, 7, 4, 8)])
 
 flow.only <- ggplot(flow.only.melt[!flow.only.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
   geom_boxplot(outlier.alpha=0) + theme_classic() + theme(legend.position="none", 
@@ -363,30 +375,92 @@ grid.arrange(TP.DP, flow.only, nrow = 2)
 
 
 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
+# Simulation - modify flow regimes and simulate effect on P dynamics -------
+### approach 1 - use TP data from each station, but binary flow/no-flow data from S12D (then redo with S333 flow regimes). Does this all assume that TP and flow are independent?
+
+dat2.sub <- dat2[dat2$stn %in% stn.targets, c(1:3, 44, 64)]
+
+# dat2.sub.m <- dcast(dat2.sub, stn + date ~ numbers, value.var = PHOSPHATE..TOTAL.AS.P)
+
+pb <- txtProgressBar(style = 3, min = 0, max = nrow(dat2.sub))
+for (i in 1:nrow(dat2.sub)) {
+  ifelse(length(dat2.sub$group[(dat2.sub$stn %in% "S333") & (dat2.sub$date == dat2.sub$date[i])]) == 1, 
+    dat2.sub$group.S333[i] <- dat2.sub$group[(dat2.sub$stn %in% "S333") & (dat2.sub$date == dat2.sub$date[i])],
+    dat2.sub$group.S333[i] <- NA
+    )
+  ifelse(length(dat2.sub$group[(dat2.sub$stn %in% "S12D") & (dat2.sub$date == dat2.sub$date[i])]) == 1, 
+        dat2.sub$group.S12D[i] <- dat2.sub$group[(dat2.sub$stn %in% "S12D") & (dat2.sub$date == dat2.sub$date[i])],
+        dat2.sub$group.S12D[i] <- NA
+    )
+  setTxtProgressBar(pb, i)
+}
+
+tail(factor(dat2.sub$group.S12D, levels = c(1, 2), labels = c("no flow", "flow")))
+     
+dat2.sub$group.S12D <- factor(dat2.sub$group.S12D, levels = c(1, 2), labels = c("no flow", "flow"))
+dat2.sub$group.S333 <- factor(dat2.sub$group.S333, levels = c(1, 2), labels = c("no flow", "flow"))
+dat2.sub$st.fac     <- factor(dat2.sub$stn, levels = stn.targets)
+
+### base case
+ttests <- dlply(dat2.sub, "stn", function(df) 
+  t.test(log(df[df$group %in% "no flow", "PHOSPHATE..TOTAL.AS.P"]), log(df[df$group %in% "flow", "PHOSPHATE..TOTAL.AS.P"]))) # S-12s all sig at P < 0.001; no difference at S-333!
+aov1 <- aov(log(PHOSPHATE..TOTAL.AS.P) ~ st.fac, data = dat2.sub[dat2.sub$group %in% "flow", ])
+summary(glht(aov1, linfct = mcp(st.fac=testType))) # Tukey: only shared letter is S12C-S12A
+
+### Using S333 flows
+ttests.s333 <- dlply(dat2.sub[!is.na(dat2.sub$group.S333), ], "stn", function(df) # s12B remains different (flow vs no-flow)
+  t.test(log(df[df$group.S333 %in% "no flow", "PHOSPHATE..TOTAL.AS.P"]), log(df[df$group.S333 %in% "flow", "PHOSPHATE..TOTAL.AS.P"]))) 
+aov1 <- aov(log(PHOSPHATE..TOTAL.AS.P) ~ st.fac, data = dat2.sub[dat2.sub$group.S333 %in% "flow", ])
+summary(glht(aov1, linfct = mcp(st.fac=testType))) # Tukey: only shared letter is S12C-S12A
+
+### Using S12D flows
+ttests.s12d <- dlply(dat2.sub[!is.na(dat2.sub$group.S12D), ], "stn", function(df) # all are significantly different
+  t.test(log(df[df$group.S12D %in% "no flow", "PHOSPHATE..TOTAL.AS.P"]), log(df[df$group.S12D %in% "flow", "PHOSPHATE..TOTAL.AS.P"]))) 
+aov1 <- aov(log(PHOSPHATE..TOTAL.AS.P) ~ st.fac, data = dat2.sub[dat2.sub$group.S12D %in% "flow", ])
+summary(glht(aov1, linfct = mcp(st.fac=testType))) # Tukey: only shared letter is S12C-S12A
+
+
+
+
+
+S333flows <- ggplot(dat2.sub[!is.na(dat2.sub$group.S333), ], 
+                   aes(x = group.S333, y = `PHOSPHATE..TOTAL.AS.P`)) + 
+  geom_boxplot(outlier.shape = NA) + 
+  theme_classic() + facet_grid(. ~ stn) + scale_y_log10(limits = c(0.01, 0.12))+
+  theme(legend.position="top",axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + 
+  annotate("text", x = 1.5, y = 0.105, label = c("", "*", "", "", ""), size = 12) +
+  ylab (expression("Total P (mg P" %.%"L"^-1*"; using S333 flow data)")) + xlab("") 
+
+
+S12Dflows <- ggplot(dat2.sub[!is.na(dat2.sub$group.S12D), ], 
+                    aes(x = group.S12D, y = `PHOSPHATE..TOTAL.AS.P`)) + 
+  geom_boxplot(outlier.shape = NA) + 
+  theme_classic() + facet_grid(. ~ stn) + scale_y_log10(limits = c(0.01, 0.12))+
+  theme(legend.position="top",axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + 
+  annotate("text", x = 1.5, y = 0.105, label = c("*", "*", "*", "*", "*"), size = 12) +
+  ylab (expression("Total P (mg P" %.%"L"^-1*"; using S12D flow data)")) + xlab("") 
+
+FlowVsNo
+S333flows
+S12Dflows
+
+
+### approach 2 - can I recreate observed data by resampling from totality of a month's values?
+
+
+
+
+
+
+
 #' ## The effect of discharge on total P concentrations
 #' 
 #' 
 #' Focusing just on periods with active flow through the structures, the behavior of P at S-333 remains distinct in showing negligble variation as a function of discharge (Fig. \ref{fig:P-Q}). P at S-333 varies little in response to changes in flow, contrasting with P behavior at the S-12 structures, where concentrations decline as discharge increases consistent with dilution and possible source limitation.
 #' 
 #' 
-#' 
-#' 
-#' 
 #' CV~C~/CV~Q~ ratios were all above 1, indicating that TP concentrations had greater relative variation than flows (Fig. \ref{fig:b-CV}). The S-12 structures all had very similar ln(C)-ln(Q) relationships, but showed more variation in CV~C~/CV~Q~ ratios, which increased moving eastward along L-29. This ratio is driven by an east-west gradient of variation in concentrations, which could partly reflect that the main source of P is water carried down the L-67N. Proximity to that relatively stable source of nutrients could contribute to reduced variation in measured concentrations. 
 #' 
-#' 
-#' 
-#' 
-#'          
-#'     
 #' 
 ## ----flow-solute relationships - linear models, fig.cap = "\\label{fig:P-Q}Comparison of total P concentrations during flow and no-flow conditions at the S-333 and S-12 structures. For each station, significant differences between flow and no-flow concentrations are indicated by asterisks (all stations except S-333)."----
 
@@ -466,15 +540,14 @@ ggplot(modResults, aes(x = naca, y = `log(flow)`)) + theme_classic() + geom_poin
 
 # flow timing -------------------------------------------------------------
 
-str(wq2)
-wq2$mo       <- as.numeric(as.character(substr(wq2$date, 6, 7)))
-
-head(hydDat$date)
-head(hydDat$mo)
-
-q.mo <- ddply(hydDat[hydDat$stn %in% stns.wo.NAs, ], .(stn, mo), summarise,
+q.mo <- ddply(wq2[wq2$stn %in% stns.wo.NAs, ], .(stn, mo), summarise,
               Mm3.day = mean(flow, na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
-              Mm3.day.se = se(flow) * 0.0283168466 * 60 * 60 * 24 / 1e6
+              Mm3.day.se = se(flow) * 0.0283168466 * 60 * 60 * 24 / 1e6,
+              P          = mean(`PHOSPHATE, TOTAL AS P`, na.rm = TRUE),
+              P.se       = se(`PHOSPHATE, TOTAL AS P`),
+              chl        = mean(`CHLOROPHYLL-A`, na.rm = TRUE),
+              chl.se     = se(`CHLOROPHYLL-A`),
+              flow.binary= sum(flow > 0.001, na.rm = TRUE)
 ) # m3/day
 
 
@@ -483,7 +556,35 @@ ggplot(q.mo, aes(x = mo, y = Mm3.day)) +
   theme_classic() + facet_wrap(~ stn, scales = "free_y") +
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
   ylab(expression("Mean daily flow (1e"^6~"m"^3%.%"day"^-1~")"))
+
+
+flowSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Mm3.day)) + 
+  geom_point() + geom_errorbar(aes(ymin = Mm3.day - Mm3.day.se, ymax = Mm3.day + Mm3.day.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Mean daily flow (1e"^6~"m"^3%.%"day"^-1~")"))
+flowSeasS12s
 # ggsave(paste0("/opt/physical/troy/RDATA/flowVsMo-", todaysDate, ".png"), height = 7, width = 7)
+TPSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = P)) + 
+  geom_point() + geom_errorbar(aes(ymin = P - P.se, ymax = P + P.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Total P (mg P"%.%"L"^-1*")"))
+TPSeasS12s 
+
+chlSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = chl)) + 
+  geom_point() + geom_errorbar(aes(ymin = chl - chl.se, ymax = chl + chl.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Chlorophyll a (mg"%.%"L"^-1*")"))
+chlSeasS12s
+
+grid.arrange(flowSeasS12s, TPSeasS12s, chlSeasS12s, ncol = 3)
+
+
+
+
+
 
 
 ### ratio of flow during wet:dry season

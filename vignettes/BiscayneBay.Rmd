@@ -166,45 +166,33 @@ sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
 
 # kriging --------------------------------------------------------------
-# biscInterp(inputData = sitesInBay,paramCol = "SALINITY", year = "2016")
-    
-    ### store raster layer in working environment
-# biscRas <- biscInterp(inputData = sitesInBay,
-    # paramCol = "SALINITY", year = "2016", returnRas = TRUE)
+
+  ### re-run this loop when underlying data or shapefile change. otherwise, build data using csvs
+# for (j in 3:(length(names(sitesInBay) - 1))) {
+#   for (i in 1:length(unique(sitesInBay$year))) {
+#     targYear  <- unique(sitesInBay$year)[i]
+#     targParam <- names(sitesInBay)[j] # "SALINITY" 
+#     targDat   <- sitesInBay
+#     lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
+#     rasterFileAddr  <- paste0(rasterFolder, targParam, targYear, ".tif")
+#     csvMeanFileAddr <- paste0(rasterFolder, "mean/", targParam, targYear)
+#     csvSDFileAddr   <- paste0(rasterFolder, "sd/",   targParam, targYear)
+#     csvSub20FileAddr<- paste0(rasterFolder, "sub20/",   targParam, targYear)
+#     # if (!rasterFileAddr %in% list.files(rasterFolder, full.names = TRUE)) {
+#           tryCatch({
+#       dat.l <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "year", plotZLims = lims, returnRas = TRUE, exportRaster = TRUE, fileName = rasterFileAddr, minDataPoints = minPoints, BISCmap = polygonLayer)
+#       write.csv(x = t(extract(dat.l , polygonLayer, fun = mean, na.rm = TRUE)), file = csvMeanFileAddr, row.names = FALSE)
+#       write.csv(x = t(extract(dat.l , polygonLayer, fun = sd, na.rm = TRUE)), file =  csvSDFileAddr, row.names = FALSE)
+#       if(targParam %in% "SALINITY") {
+#         write.csv(x = t(extract(dat.l, polygonLayer, fun = function(x, ...) ecdf(x)(20), na.rm = TRUE)), file =  csvSub20FileAddr, row.names = FALSE)
+#       }}, error = function(e) {
+#             cat("error in outer loop for ", targParam, 
+#                 targYear, ":", conditionMessage(e), "\n")
+#         })
+#   }
+# }
 
 
-# ### 
-# targParam <- "SALINITY"
-# targYear  <- "2016"
-# a <- biscInterp(inputData = sitesInBay, 
-#            paramCol = targParam, year = targYear, yearCol = "year", returnRas = TRUE)
-           
-for (j in 4:(length(names(sitesInBay)))) {
-  # dat.l <- list()
-  for (i in 1:length(unique(sitesInBay$year))) {
-    targYear  <- unique(sitesInBay$year)[i]
-    targParam <- names(sitesInBay)[j] # "SALINITY" 
-    targDat   <- sitesInBay
-    lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
-    rasterFileAddr  <- paste0(rasterFolder, targParam, targYear, ".tif")
-    csvMeanFileAddr <- paste0(rasterFolder, "mean/", targParam, targYear)
-    csvSDFileAddr   <- paste0(rasterFolder, "sd/",   targParam, targYear)
-    csvSub20FileAddr<- paste0(rasterFolder, "sub20/",   targParam, targYear)
-    # if (!rasterFileAddr %in% list.files(rasterFolder, full.names = TRUE)) {
-          tryCatch({
-      dat.l <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "year", plotZLims = lims, returnRas = TRUE, exportRaster = TRUE, fileName = rasterFileAddr, minDataPoints = minPoints, BISCmap = polygonLayer)
-      write.csv(x = t(extract(dat.l , polygonLayer, fun = mean, na.rm = TRUE)), file = csvMeanFileAddr, row.names = FALSE)
-      write.csv(x = t(extract(dat.l , polygonLayer, fun = sd, na.rm = TRUE)), file =  csvSDFileAddr, row.names = FALSE)
-      if(targParam %in% "SALINITY") {
-        write.csv(x = t(extract(dat.l, polygonLayer, fun = function(x, ...) ecdf(x)(20), na.rm = TRUE)), file =  csvSub20FileAddr, row.names = FALSE)
-      }}, error = function(e) {
-            cat("error in outer loop for ", targParam, 
-                targYear, ":", conditionMessage(e), "\n")
-        })
-    # }
-
-  }
-}
     ### summarize data after compiling rasters for each parameter
     # https://gis.stackexchange.com/questions/270988/raster-data-extract-to-polygon-rcode
     # possible approach would be to create a raster stack (https://gis.stackexchange.com/questions/29118/how-to-find-the-average-raster-value-of-an-area-defined-by-a-shapefile-using-r)
@@ -213,21 +201,21 @@ for (j in 4:(length(names(sitesInBay)))) {
     # test     <- ldply(dat.l, function(x) cellStats(x, "mean"))
 
 
-### Or, load & process rasters from folder
-meanList        <- list.files(paste0(rasterFolder, "/mean"), full.names = TRUE)
+### load & process csvs from folder
+meanList        <- list.files(paste0(rasterFolder, "mean"), full.names = TRUE)
 adat       <- lapply(X = meanList, FUN = read.csv) # build a list with all rasters in the folder
 adat       <- do.call("rbind", adat)
 names(adat) <- gsub(x = names(adat), pattern = "V", replacement = "")
 adat$".id" <- gsub(x = meanList, pattern = paste0(rasterFolder, "mean/"), replacement = "")
 
-sdList             <- list.files(paste0(rasterFolder, "/sd"), full.names = TRUE)
+sdList             <- list.files(paste0(rasterFolder, "sd"), full.names = TRUE)
 adat.sd       <- lapply(X = sdList, FUN = read.csv) # build a list with all rasters in the folder
 adat.sd       <- do.call("rbind", adat.sd)
 names(adat.sd) <- gsub(x = names(adat.sd), pattern = "V", replacement = "")
 adat.sd$".id" <- gsub(x = sdList, pattern = paste0(rasterFolder, "sd/"), replacement = "")
                               
 
-sub20List          <- list.files(paste0(rasterFolder, "/sub20"), full.names = TRUE)
+sub20List          <- list.files(paste0(rasterFolder, "sub20"), full.names = TRUE)
 adat.20       <- lapply(X = sub20List, FUN = read.csv) # build a list with all rasters in the folder
 adat.20       <- do.call("rbind", adat.20)
 names(adat.20) <- gsub(x = names(adat.20), pattern = "V", replacement = "")
@@ -258,30 +246,6 @@ combd$yr    <- as.numeric(substr(combd[, ".id"], nchar(combd[, ".id"]) - 3, ncha
 ### change subregion from region number to BOX_CODE (can easily be replaced by another column)
 combd$subRegion <- as.character(polygonLayer@data$BOX_CODE)[as.numeric(as.character(combd$subRegion))]
 
-
-# ggplot(combd, aes(y = mean, x = yr, col = subregion)) + geom_point() + geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd)) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("")
-
-### I can't figure out how to generate multiple columns at the same time, avoiding the need to join_all. e.g., this doesn't work:
-# test <- ldply(sal.list, summarise,
-#               # name = names(x),
-#               mean = function(x) cellStats(x, "mean"),
-#               area_sub20 = function(x) cellStats(x, "ecdf(x)(20)"))
-
-# 
-# ### now repeat for all parameters
-# wq.list <- list()
-# for (j in 4:(length(names(sitesInBay)) - 1)) {
-#   for (i in 1:length(unique(sitesInBay$year))) {
-#     targYear  <- unique(sitesInBay$year)[i]
-#     targParam <- names(sitesInBay)[j]
-#     targDat   <- sitesInBay
-#     lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
-#     wq.list[i] <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "year", plotZLims = lims,returnRas = TRUE)
-#     names(wq.list)[i] <- paste0(targParam, targYear)
-#   }
-# }
-# 
-# test <- ldply(wq.list, function(x) cellStats(x, "mean"))
 
 ```
 
@@ -336,35 +300,33 @@ proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WG
 sitesInBay <- sp::over(finDat.coords, polygonLayer)
 sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
-
-for (j in 4:(length(names(sitesInBay)))) {
-  # seas.l <- list()
-  for (i in 1:length(unique(sitesInBay$seas2))) {
-    targYear  <- unique(sitesInBay$seas2)[i]
-    targParam <- names(sitesInBay)[j] # "SALINITY" 
-    targDat   <- sitesInBay
-    lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
-    
-    rasterFileAddr   <- paste0(rasterFolder, "seas/", targParam, targYear, ".tif")
-    csvMeanFileAddr  <- paste0(rasterFolder, "seas/mean/", targParam, targYear)
-    csvSDFileAddr    <- paste0(rasterFolder, "seas/sd/", targParam, targYear)
-    csvsub20FileAddr <- paste0(rasterFolder, "seas/sub20/", targParam, targYear)
-    # if (!rasterFileAddr %in% list.files(paste0(rasterFolder, "seas/"),  full.names = TRUE)) { # if you don't want to re-process/overwrite files
-          tryCatch({
-      seas.l <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "seas2", plotZLims = lims, 
-                       returnRas = TRUE, exportRaster = TRUE, fileName = rasterFileAddr, minDataPoints = minPoints, BISCmap = polygonLayer)
-      write.csv(x = t(extract( seas.l, polygonLayer, fun = mean, na.rm = TRUE)), file = csvMeanFileAddr, row.names = FALSE) # record results 
-      write.csv(x = t(extract( seas.l, polygonLayer, fun = sd, na.rm = TRUE)), file =  csvSDFileAddr, row.names = FALSE)
-      if(targParam %in% "SALINITY") {
-        write.csv(x = t(extract( seas.l, polygonLayer, fun = function(x, ...) ecdf(x)(20), na.rm = TRUE)), file =  csvSDFileAddr, row.names = FALSE)
-      }
-      
-      }, error = function(e) {
-            cat("error in outer loop for ", targParam, 
-                targYear, ":", conditionMessage(e), "\n")
-        })
-    # }
-  }}
+### re-run this loop when underlying data or shapefile change. otherwise, build data using csvs
+# for (j in 4:(length(names(sitesInBay)))) {
+#   for (i in 1:length(unique(sitesInBay$seas2))) {
+#     targYear  <- unique(sitesInBay$seas2)[i]
+#     targParam <- names(sitesInBay)[j] # "SALINITY" 
+#     targDat   <- sitesInBay
+#     lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
+#     
+#     rasterFileAddr   <- paste0(rasterFolder, "seas/", targParam, targYear, ".tif")
+#     csvMeanFileAddr  <- paste0(rasterFolder, "seas/mean/", targParam, targYear)
+#     csvSDFileAddr    <- paste0(rasterFolder, "seas/sd/", targParam, targYear)
+#     csvsub20FileAddr <- paste0(rasterFolder, "seas/sub20/", targParam, targYear)
+#     # if (!rasterFileAddr %in% list.files(paste0(rasterFolder, "seas/"),  full.names = TRUE)) { # if you don't want to re-process/overwrite files
+#           tryCatch({
+#       seas.l <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "seas2", plotZLims = lims, 
+#                        returnRas = TRUE, exportRaster = TRUE, fileName = rasterFileAddr, minDataPoints = minPoints, BISCmap = polygonLayer)
+#       write.csv(x = t(extract( seas.l, polygonLayer, fun = mean, na.rm = TRUE)), file = csvMeanFileAddr, row.names = FALSE) # record results 
+#       write.csv(x = t(extract( seas.l, polygonLayer, fun = sd, na.rm = TRUE)), file =  csvSDFileAddr, row.names = FALSE)
+#       if(targParam %in% "SALINITY") {
+#         write.csv(x = t(extract( seas.l, polygonLayer, fun = function(x, ...) ecdf(x)(20), na.rm = TRUE)), file =  csvsub20FileAddr, row.names = FALSE)
+#       }
+#       
+#       }, error = function(e) {
+#             cat("error in outer loop for ", targParam, 
+#                 targYear, ":", conditionMessage(e), "\n")
+#         })
+#   }}
 
 
 ### Load & process rasters from folder [this will change to a do.call/read.csv approach]
@@ -609,7 +571,7 @@ df <- join_all(list(flow.seas, aves, sds, prop20), by = c("seas", "waterYr", "su
 
 plot(df[, c(4, 6:11)])
 
-ggplot(df, aes(y = SALINITY.mean, x = m3, col = subRegion)) + geom_point() + theme_classic()
+ggplot(df, aes(y = SALINITY.sub20, x = m3, col = subRegion)) + geom_point() + theme_classic()
 
 ```
 
