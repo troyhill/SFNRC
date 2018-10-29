@@ -86,7 +86,7 @@ summary(wq.df[wq.df$bdl == 0, ])
 
 hydDat <- hydDat[c(!((hydDat$stn %in% "S356") & (hydDat$date < "2015-01-01"))), ] # remove 15-minute data from the S356 testing phase (summed to get those wildly high values)
 hydDat <- hydDat[c(!hydDat$stn %in% "S178"), ] # remove S178 - odd effects from backflow
-
+hydDat <- seas(hydDat, timeCol = "date")
 
 # make WQ dataset wide (one row per date)
 wq2  <- dcast(wq.df[grep(wq.df$param, pattern = target_analytes), ], date * stn ~ param, mean, na.rm = TRUE)
@@ -279,14 +279,27 @@ all.data <- ggplot(wq.melt, aes(x = stn, y = value)) +
   geom_text(data = ann_textOrtho, label = ann_textOrtho$lab)
 # +  geom_text(data = ann_text, label = ann_text$lab[c(1,5,2, 6, 3, 7, 4, 8)])
 
-TP.DP <- ggplot(wq.melt[!wq.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
-  geom_jitter(width = 0.1, size = 0.3, col = "darkgray") + geom_boxplot(outlier.alpha=0) + 
+TP.DP.withPts <- ggplot(wq.melt[!wq.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
+  geom_jitter(width = 0.1, size = 0.3, col = "darkgray") + 
+  geom_boxplot(outlier.alpha=0, alpha = 0.4) + 
   theme_classic() + #geom_hline(yintercept = 0.010, lty = 2) +
   theme(legend.position="none", #strip.text.x = element_text(size = 8),
-        axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable, scales = "free_y") + xlab("") + ylab("mg/L (all data)") + geom_text(data = ann_textTP, label = ann_textTP$lab) +
-  #geom_text(data = ann_textTSS, label = ann_textTSS$lab) + 
+        axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable) + xlab("") + 
+  ylab(expression("mg P" %.%"L"^-1~" (all data)")) + geom_text(data = ann_textTP, label = ann_textTP$lab) +
   scale_y_log10() # + 
+  #geom_text(data = ann_textTSS, label = ann_textTSS$lab) + 
   # geom_text(data = ann_textOrtho, label = ann_textOrtho$lab)
+ann_textTP2 <- ann_textTP
+ann_textTP2$value <- 0.1
+TP.DP <- ggplot(wq.melt[!wq.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
+  geom_boxplot(outlier.alpha=0, alpha = 0.4) + 
+  theme_classic()  +
+  theme(legend.position="none", #strip.text.x = element_text(size = 8),
+        axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable) + xlab("") + 
+  ylab(expression("mg P" %.%"L"^-1~" (all data)")) + geom_text(data = ann_textTP2, label = ann_textTP2$lab) +
+  scale_y_log10(limits = c(0.002, 0.12))
+
+TP.DP
 
 
 ### differences in periods with flow
@@ -294,15 +307,15 @@ TP.DP <- ggplot(wq.melt[!wq.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x
 wq2$st.fac <- factor(wq2$stn, levels = stn.targets)
 
 subDat.flow <- wq2[wq2$flow > 0, ]
-# testType <- "Tukey"
-# aov1 <- aov(log(subDat.flow[, "PHOSPHATE, DISSOLVED AS P"]) ~ st.fac, data = subDat.flow)
-# summary(glht(aov1, linfct = mcp(st.fac=testType))) # no differences
-# 
-# aov1 <- aov(log(subDat.flow[, "PHOSPHATE, ORTHO AS P"]) ~ st.fac, data = subDat.flow)
-# summary(glht(aov1, linfct = mcp(st.fac=testType))) # Tukey: S12D different from all stations; S-12A higher than S-333
-# 
-# aov1 <- aov(log(subDat.flow[, "PHOSPHATE, TOTAL AS P"]) ~ st.fac, data = subDat.flow)
-# summary(glht(aov1, linfct = mcp(st.fac=testType))) # Tukey: only shared letter is S12C-S12A
+testType <- "Tukey"
+aov1 <- aov(log(subDat.flow[, "PHOSPHATE, DISSOLVED AS P"]) ~ st.fac, data = subDat.flow)
+summary(glht(aov1, linfct = mcp(st.fac=testType))) # no differences
+
+aov1 <- aov(log(subDat.flow[, "PHOSPHATE, ORTHO AS P"]) ~ st.fac, data = subDat.flow)
+summary(glht(aov1, linfct = mcp(st.fac=testType))) # Tukey: S12D different from all stations; S-12A higher than S-333
+
+aov1 <- aov(log(subDat.flow[, "PHOSPHATE, TOTAL AS P"]) ~ st.fac, data = subDat.flow)
+summary(glht(aov1, linfct = mcp(st.fac=testType))) # Tukey: only shared letter is S12C-S12A
 
 
 a.means.flow <- ddply(subDat.flow, .(stn), numcolwise(mean, na.rm = TRUE))
@@ -312,6 +325,7 @@ a.count.flow <- ddply(subDat.fl0ow, .(stn), numcolwise(function(x) sum(!is.na(x)
 
 ### panel plot
 flow.only.melt <- melt(wq2[(wq2$flow > 0) & (wq2$stn %in% stn.targets), ], id.vars = "stn", measure.vars = c("PHOSPHATE, DISSOLVED AS P", "PHOSPHATE, ORTHO AS P", "PHOSPHATE, TOTAL AS P")) #, "TOTAL SUSPENDED SOLIDS"))
+flow.only.melt <- flow.only.melt[!is.na(flow.only.melt$stn), ]
 # ann_textTSS <- data.frame(stn = c("S333", paste0("S12", toupper(letters[1:4]))), 
 #                        variable = rep(c("TOTAL SUSPENDED SOLIDS"), times = 5),
 #                        lab = c("B", "AB", "AB", "AB", "A"),
@@ -321,23 +335,31 @@ ann_textOrtho <- data.frame(stn = stn.targets,
                             variable = rep(c("PHOSPHATE, ORTHO AS P"), times = 5),
                             lab = c("B", "A", "AB", "AB", "C"),
                             value = rep(0.12, times = 5))
-ann_textTP <- data.frame(stn = stn.targets, 
+ann_textTP <- ann_textTP2 <- data.frame(stn = stn.targets, 
                          variable = rep(c("PHOSPHATE, TOTAL AS P"), times = 5),
                          lab = c("D", "A", "B", "A", "C"),
                          value = rep(0.2, times = 5))
+ann_textTP2$value <- 0.09
 
-flow.only <- ggplot(flow.only.melt, aes(x = stn, y = value)) + 
+flow.onlyWpoints <- ggplot(flow.only.melt[!flow.only.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
   geom_jitter(width = 0.1, size = 0.3, col = "darkgray") + geom_boxplot(outlier.alpha=0) + 
   theme_classic() + #geom_hline(yintercept = 0.010, lty = 2) +
   theme(legend.position="none", #strip.text.x = element_text(size = 8),
         axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable, scales = "free_y") + xlab("") + ylab("mg/L (positive flow)") + 
   geom_text(data = ann_textTP, label = ann_textTP$lab) + 
-  geom_text(data = ann_textOrtho, label = ann_textOrtho$lab) +
+  # geom_text(data = ann_textOrtho, label = ann_textOrtho$lab) +
   #geom_text(data = ann_textTSS, label = ann_textTSS$lab) + 
   scale_y_log10() 
 # +  geom_text(data = ann_text, label = ann_text$lab[c(1,5,2, 6, 3, 7, 4, 8)])
 
-grid.arrange(all.data, flow.only, nrow = 2)
+flow.only <- ggplot(flow.only.melt[!flow.only.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
+  geom_boxplot(outlier.alpha=0) + theme_classic() + theme(legend.position="none", 
+        axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable) + xlab("") + 
+  ylab(expression("mg P" %.%"L"^-1~" (flow > 0)")) + 
+  geom_text(data = ann_textTP2, label = ann_textTP2$lab) + 
+  scale_y_log10(limits = c(0.002, 0.12)) 
+
+grid.arrange(TP.DP, flow.only, nrow = 2)
 
 
 
@@ -399,7 +421,7 @@ lm.mod <- function(df){
 mods <- dlply(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$group %in% "flow"), ], "stn", function(df)
   lm(log(`PHOSPHATE..TOTAL.AS.P`) ~ log(flow), data = df))
 # test <- l_ply(mods, summary, .print = TRUE) # tough to print the summaries! slope for S-332 isn't significant
-modResults  <- ldply(mods, coef)
+modResults1  <- ldply(mods, coef)
 modResults2 <- ldply(mods, function(x) summary(x)$coefficients[c(4,7:8)]) # p values for intercept and slope (in that order)
 names(modResults2)[2:4] <- c("slope.se", "pval.int", "pval.slope")
 modResults3 <- ldply(mods, function(x) summary(x)$r.squared) # r2 for model
@@ -412,17 +434,12 @@ cvDat <- ddply(dat2, .(stn), summarise, #  & (dat2$group %in% "flow") # flow-cri
                CVC = sd(`PHOSPHATE..TOTAL.AS.P`, na.rm = TRUE) / mean(`PHOSPHATE..TOTAL.AS.P`, na.rm = TRUE),
                naca = mean(naca, na.rm = TRUE))
 
-### flow.list doesn't include TAMBR stations
-cqDat <- ddply(flow.list, .(stn), summarise,
-               CVQ = sd(value, na.rm = TRUE) / mean(value, na.rm = TRUE))
-
-cqDatTam <- ddply(tm.flow[!is.na(tm.flow$wq.stn),], .(wq.stn), summarise,
-                  CVQ = sd(SectionFlow, na.rm = TRUE) / mean(SectionFlow, na.rm = TRUE))
-cq <- rbind(cqDat, setNames(cqDatTam, names(cqDat)))
+### hydDat doesn't include TAMBR stations
+cq <- ddply(hydDat, .(stn), summarise,
+            CVQ = sd(flow, na.rm = TRUE) / mean(flow, na.rm = TRUE))
 
 
-modResults  <- join_all(list(modResults, modResults2, modResults3, cvDat, cq), by = "stn")
-modResults$CVQ[modResults$stn %in% wq.coord.tambr$V1[wq.coord.tambr$flow.stn %in% "culvert_41"]] <- modResults$CVQ[modResults$stn %in% "TAMBR105"]
+modResults  <- join_all(list(modResults1, modResults2, modResults3, cvDat, cq), by = "stn")
 modResults$ratio <- modResults$CVC / modResults$CVQ
 
 
@@ -451,14 +468,13 @@ ggplot(modResults, aes(x = naca, y = `log(flow)`)) + theme_classic() + geom_poin
 
 str(wq2)
 wq2$mo       <- as.numeric(as.character(substr(wq2$date, 6, 7)))
-flow.list$mo <- as.numeric(as.character(substr(flow.list$date, 6, 7))) 
 
-head(flow.list$date)
-head(flow.list$mo)
+head(hydDat$date)
+head(hydDat$mo)
 
-q.mo <- ddply(flow.list[flow.list$stn %in% stns.wo.NAs, ], .(stn, mo), summarise,
-              Mm3.day = mean(value, na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
-              Mm3.day.se = se(value) * 0.0283168466 * 60 * 60 * 24 / 1e6
+q.mo <- ddply(hydDat[hydDat$stn %in% stns.wo.NAs, ], .(stn, mo), summarise,
+              Mm3.day = mean(flow, na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
+              Mm3.day.se = se(flow) * 0.0283168466 * 60 * 60 * 24 / 1e6
 ) # m3/day
 
 
@@ -474,26 +490,24 @@ ggplot(q.mo, aes(x = mo, y = Mm3.day)) +
 # q.mo$seas <- "wet"
 # q.mo$seas[(q.mo$seas > 10) & (q.mo$seas < 5)] <- "dry"
 
-q.seas <- ddply(flow.list[flow.list$stn %in% stns.wo.NAs, ], .(stn), summarise,
-                Mm3.day.wet = mean(value[seas %in% "wet"], na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
+q.seas <- ddply(hydDat[hydDat$stn %in% stns.wo.NAs, ], .(stn), summarise,
+                Mm3.day.wet = mean(flow[seas %in% "wet"], na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
                 #Mm3.day.se = se(flow) * 0.0283168466 * 60 * 60 * 24 / 1e6,
-                Mm3.day.dry = mean(value[seas %in% "dry"], na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
+                Mm3.day.dry = mean(flow[seas %in% "dry"], na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
                 wetDry  = Mm3.day.wet / Mm3.day.dry
 ) # m3/day
-cqDatTam <- ddply(tm.flow[!is.na(tm.flow$wq.stn),], .(wq.stn), summarise,
-                  CVQ = sd(SectionFlow, na.rm = TRUE) / mean(SectionFlow, na.rm = TRUE))
-
-
 
 modResults <- join_all(list(modResults, q.seas), by = "stn")
 
 plot(modResults[, c(3, 7:11, 14)])
 plot(modResults[!modResults$stn %in% grep("S356|S344", modResults$stn, value = TRUE), c(3, 7:11, 14)])
-plot(modResults[!modResults$stn %in% grep(paste0("S356|S344|", tam.stn.filter), modResults$stn, value = TRUE), c(3, 7:11, 14)])
 
 
 plot(ratio ~ wetDry, data = modResults, cex = 0.5, pch = 19)
 text(x = modResults$wetDry, y = modResults$ratio, labels = modResults$stn)
+
+plot(log(ratio) ~ log(wetDry), data = modResults, cex = 0.5, pch = 19)
+text(x = log(modResults$wetDry), y = log(modResults$ratio), labels = modResults$stn)
 
 
 #' 
