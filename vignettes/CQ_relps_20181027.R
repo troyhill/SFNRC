@@ -334,7 +334,7 @@ aov1 <- aov(log(subDat.flow[, "PHOSPHATE, TOTAL AS P"]) ~ st.fac, data = subDat.
 summary(glht(aov1, linfct = mcp(st.fac=testType))) # Tukey: only shared letter is S12C-S12A
 
 
-a.means.flow <- ddply(subDat.flow, .(stn), numcolwise(mean, na.rm = TRUE))
+a.means.flow <- ddply(subDat.flow[subDat.flow$stn %in% stn.targets, ], .(stn), numcolwise(mean, na.rm = TRUE))
 a.se.flow <- ddply(subDat.flow, .(stn), numcolwise(se))
 a.count.flow <- ddply(subDat.flow, .(stn), numcolwise(function(x) sum(!is.na(x))))
 
@@ -372,6 +372,8 @@ flow.only <- ggplot(flow.only.melt[!flow.only.melt$variable %in% "PHOSPHATE, ORT
   scale_y_log10(limits = c(0.002, 0.12)) 
 
 grid.arrange(TP.DP, flow.only, nrow = 2)
+plt <- arrangeGrob(TP.DP, flow.only, nrow = 2)
+# ggsave(plt, file = "/opt/physical/troy/RDATA/output/DP_TP.png", width = 5, height = 5, units = "in", dpi = 200)
 
 
 
@@ -400,6 +402,9 @@ tail(factor(dat2.sub$group.S12D, levels = c(1, 2), labels = c("no flow", "flow")
 dat2.sub$group.S12D <- factor(dat2.sub$group.S12D, levels = c(1, 2), labels = c("no flow", "flow"))
 dat2.sub$group.S333 <- factor(dat2.sub$group.S333, levels = c(1, 2), labels = c("no flow", "flow"))
 dat2.sub$st.fac     <- factor(dat2.sub$stn, levels = stn.targets)
+
+ddply(dat2.sub[dat2.sub$stn %in% stn.targets, ], .(stn, group.S333), numcolwise(mean, na.rm = TRUE))
+ddply(dat2.sub[dat2.sub$stn %in% stn.targets, ], .(stn, group.S12D), numcolwise(mean, na.rm = TRUE))
 
 ### base case
 ttests <- dlply(dat2.sub, "stn", function(df) 
@@ -440,10 +445,12 @@ S12Dflows <- ggplot(dat2.sub[!is.na(dat2.sub$group.S12D), ],
   annotate("text", x = 1.5, y = 0.105, label = c("*", "*", "*", "*", "*"), size = 12) +
   ylab (expression("Total P (mg P" %.%"L"^-1*"; using S12D flow data)")) + xlab("") 
 
-FlowVsNo
-S333flows
-S12Dflows
-
+FlowVsNo # base case - homogenization at S333
+# ggsave(file = "/opt/physical/troy/RDATA/output/flowVsNoFlow_base.png", width = 5, height = 3, units = "in", dpi = 200)
+S12Dflows # 
+# ggsave(file = "/opt/physical/troy/RDATA/output/flowVsNoFlow_S12DflowRegime.png", width = 5, height = 3, units = "in", dpi = 200)
+S333flows # if the S12s had S333's flow regime, how would that affect the difference between P concentrations in flow vs no-flow conditions?
+# ggsave(file = "/opt/physical/troy/RDATA/output/flowVsNoFlow_S333flowRegime.png", width = 5, height = 3, units = "in", dpi = 200)
 
 ### approach 2 - can I recreate observed data by resampling from totality of a month's values?
 
@@ -464,20 +471,25 @@ S12Dflows
 #' 
 ## ----flow-solute relationships - linear models, fig.cap = "\\label{fig:P-Q}Comparison of total P concentrations during flow and no-flow conditions at the S-333 and S-12 structures. For each station, significant differences between flow and no-flow concentrations are indicated by asterisks (all stations except S-333)."----
 
-lm.mod <- function(df){
-  m1<-lm(log(`PHOSPHATE..TOTAL.AS.P`) ~ log(flow), data = df)
+lm.mod <- function(df, param){
+  m1<-lm(log(param) ~ log(flow), data = df)
 }
 
-dat2$logC[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$group %in% "flow")]  <- log(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$group %in% "flow"), "PHOSPHATE..TOTAL.AS.P"])
-dat2$logQ[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$group %in% "flow")]  <- log(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$group %in% "flow"), "flow"])
+### "TOTAL.NITROGEN" "AMMONIA.N"    "SP.CONDUCTIVITY..FIELD" "PHOSPHATE..DISSOLVED.AS.P"   "PHOSPHATE..TOTAL.AS.P"   "TOTAL.SUSPENDED.SOLIDS"
+targParam <- "AMMONIA.N" # "PHOSPHATE..TOTAL.AS.P"   "CALCIUM"    "SODIUM"   "POTASSIUM" "MAGNESIUM" "SILICA"  "CHLOROPHYLL.A..CORRECTED" "CHLOROPHYLL.A"
 
-ggplot(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$group %in% "flow"), ], 
+dat2$logC[!is.na(dat2[, targParam]) & (dat2$group %in% "flow")]  <- log(dat2[!is.na(dat2[, targParam]) & (dat2$group %in% "flow"), targParam])
+dat2$logQ[!is.na(dat2[, targParam]) & (dat2$group %in% "flow")]  <- log(dat2[!is.na(dat2[, targParam]) & (dat2$group %in% "flow"), "flow"])
+
+ggplot(dat2[!is.na(dat2[, targParam]) & (dat2$group %in% "flow"), ], 
        aes(x = logQ, y = logC)) + 
   geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
-  theme_classic() + facet_wrap(~ stn) + #scale_y_log10()  +  scale_x_log10() +
+  theme_classic() + facet_wrap(~ stn, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
-  ylab ("Total P (mg/L; log scale)") + xlab("Discharge (cfs; log scale)")
+  ylab (paste0(targParam, " (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
+
+
 
 #
 #  by(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$flow > 0), ], "stn",                function(x) geom_smooth(data=x, method = lm, formula = lm.mod(x)))
