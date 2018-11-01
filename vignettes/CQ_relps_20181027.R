@@ -297,15 +297,13 @@ all.data <- ggplot(wq.melt, aes(x = stn, y = value)) +
   theme_classic() + 
   theme(legend.position="none", 
         axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable, scales = "free_y") + xlab("") + ylab("mg/L (all data)") + geom_text(data = ann_textTP, label = ann_textTP$lab) +
-  scale_y_log10() + 
   geom_text(data = ann_textOrtho, label = ann_textOrtho$lab)
 
 TP.DP.withPts <- ggplot(wq.melt[!wq.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
   geom_jitter(width = 0.1, size = 0.3, col = "darkgray") + 
   geom_boxplot(outlier.alpha=0, alpha = 0.4) + theme_classic() + theme(legend.position="none",
         axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable) + xlab("") + 
-  ylab(expression("mg P" %.%"L"^-1*" (all data)")) + geom_text(data = ann_textTP, label = ann_textTP$lab) +
-  scale_y_log10() 
+  ylab(expression("mg P" %.%"L"^-1*" (all data)")) + geom_text(data = ann_textTP, label = ann_textTP$lab) 
 
 ann_textTP2 <- ann_textTP
 ann_textTP2$value <- 0.1
@@ -313,7 +311,7 @@ TP.DP <- ggplot(wq.melt[!wq.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x
   geom_boxplot(outlier.alpha=0, alpha = 0.4) + theme_classic() + theme(legend.position="none", 
         axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable) + xlab("") + 
   ylab(expression("mg P" %.%"L"^-1*" (all data)")) + geom_text(data = ann_textTP2, label = ann_textTP2$lab) +
-  scale_y_log10(limits = c(0.002, 0.12))
+  ylim(0.002, 0.12)
 
 TP.DP
 
@@ -361,15 +359,13 @@ flow.onlyWpoints <- ggplot(flow.only.melt[!flow.only.melt$variable %in% "PHOSPHA
   geom_jitter(width = 0.1, size = 0.3, col = "darkgray") + geom_boxplot(outlier.alpha=0) + theme_classic() + theme(legend.position="none", 
         axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable, scales = "free_y") + xlab("") + 
   ylab(expression("mg P" %.%"L"^-1~" (flow > 0)")) + 
-  geom_text(data = ann_textTP, label = ann_textTP$lab) + 
-  scale_y_log10() 
+  geom_text(data = ann_textTP, label = ann_textTP$lab) + ylim(0, 0.035)
 
 flow.only <- ggplot(flow.only.melt[!flow.only.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x = stn, y = value)) + 
   geom_boxplot(outlier.alpha=0) + theme_classic() + theme(legend.position="none", 
         axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) +  facet_wrap(. ~ variable) + xlab("") + 
   ylab(expression("mg P" %.%"L"^-1~" (flow > 0)")) + 
-  geom_text(data = ann_textTP2, label = ann_textTP2$lab) + 
-  scale_y_log10(limits = c(0.002, 0.12)) 
+  geom_text(data = ann_textTP2, label = ann_textTP2$lab)  + ylim(0, 0.035)
 
 grid.arrange(TP.DP, flow.only, nrow = 2)
 plt <- arrangeGrob(TP.DP, flow.only, nrow = 2)
@@ -396,6 +392,7 @@ for (i in 1:nrow(dat2.sub)) {
     )
   setTxtProgressBar(pb, i)
 }
+beepr::beep(4)
 
 tail(factor(dat2.sub$group.S12D, levels = c(1, 2), labels = c("no flow", "flow")))
      
@@ -592,6 +589,9 @@ chlSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = chl)) +
 chlSeasS12s
 
 grid.arrange(flowSeasS12s, TPSeasS12s, chlSeasS12s, ncol = 3)
+
+
+
 
 
 
