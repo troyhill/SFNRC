@@ -120,7 +120,7 @@ summary(wqDat)   # canal water quality data (DERM data not likely to be relevant
 summary(hydDat)  # canal inflows
 
 
-registerDoMC(cores = 2) # register multicore parallel backend with the foreach package.
+registerDoMC(cores = 0) # register multicore parallel backend with the foreach package.
 useMC = TRUE # sent to ddply calls, whether multiple cores should be used
 
 ```
@@ -328,6 +328,8 @@ sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 #         })
 #   }}
 
+# r <- raster("/opt/physical/troy/RDATA/output/WQrasters/seas/DISSOLVEDOXYGEN2017-wet.tif")
+# persp(theta = 0, phi = 30, 2*r, border = "red", scale = FALSE)
 
 ### Load & process rasters from folder [this will change to a do.call/read.csv approach]
 meanList        <- list.files(paste0(rasterFolder, "seas/mean"), full.names = TRUE)

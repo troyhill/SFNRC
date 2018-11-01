@@ -473,12 +473,12 @@ lm.mod <- function(df, param){
 }
 
 ### "TOTAL.NITROGEN" "AMMONIA.N"    "SP.CONDUCTIVITY..FIELD" "PHOSPHATE..DISSOLVED.AS.P"   "PHOSPHATE..TOTAL.AS.P"   "TOTAL.SUSPENDED.SOLIDS"
-targParam <- "AMMONIA.N" # "PHOSPHATE..TOTAL.AS.P"   "CALCIUM"    "SODIUM"   "POTASSIUM" "MAGNESIUM" "SILICA"  "CHLOROPHYLL.A..CORRECTED" "CHLOROPHYLL.A"
+targParam <- "PHOSPHATE..TOTAL.AS.P" # "PHOSPHATE..TOTAL.AS.P"   "CALCIUM"    "SODIUM"   "POTASSIUM" "MAGNESIUM" "SILICA"  "CHLOROPHYLL.A..CORRECTED" "CHLOROPHYLL.A"
 
 dat2$logC[!is.na(dat2[, targParam]) & (dat2$group %in% "flow")]  <- log(dat2[!is.na(dat2[, targParam]) & (dat2$group %in% "flow"), targParam])
 dat2$logQ[!is.na(dat2[, targParam]) & (dat2$group %in% "flow")]  <- log(dat2[!is.na(dat2[, targParam]) & (dat2$group %in% "flow"), "flow"])
 
-ggplot(dat2[!is.na(dat2[, targParam]) & (dat2$group %in% "flow"), ], 
+ggplot(dat2[!is.na(dat2[, targParam]) & (dat2$group %in% "flow") & (dat2$stn %in% stn.targets), ], 
        aes(x = logQ, y = logC)) + 
   geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
   theme_classic() + facet_wrap(~ stn, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
@@ -487,6 +487,74 @@ ggplot(dat2[!is.na(dat2[, targParam]) & (dat2$group %in% "flow"), ],
   ylab (paste0(targParam, " (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
 
 
+
+
+
+#  C-Q relps by season, rising/falling water level ----------------
+
+ggplot(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$stn %in% stn.targets), ], 
+       aes(x = head_water, y = log(PHOSPHATE..TOTAL.AS.P))) + 
+  geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
+  theme_classic() + facet_grid( ~ stn, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+  theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
+        text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
+  ylab (paste0("TP (mg/L; log scale)")) + xlab("headwater (ft)")
+
+
+ggplot(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$group %in% "flow") & (dat2$stn %in% stn.targets), ], 
+       aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P))) + 
+  geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
+  theme_classic() + facet_grid(seas ~ stn, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+  theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
+        text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
+  ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
+
+
+ggplot(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$group %in% "flow") & (dat2$stn %in% stn.targets), ], 
+       aes(x = flow, y = PHOSPHATE..TOTAL.AS.P)) + 
+  geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
+  theme_classic() + facet_grid(seas ~ stn, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+  theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
+        text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
+  ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
+
+
+### identify periods of rising stage
+dat3 <- dat2[dat2$stn %in% stn.targets, ] %>% arrange(stn, head_water) %>%
+  group_by(stn) %>% 
+  mutate(rank = rank(head_water, ties.method = "first"))
+
+dat3 <- dat2[dat2$stn %in% stn.targets, ] %>% arrange(stn, flow) %>%
+  group_by(stn) %>% 
+  mutate(qtile = cut(flow, 
+    breaks=4, labels = FALSE,
+    include.lowest=TRUE))
+
+ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), ], 
+       aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P))) + 
+  geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
+  theme_classic() + facet_grid(stn ~ mo, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+  theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
+        text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
+  ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
+
+
+ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), ], 
+       aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P), col = head_water)) + 
+  geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
+  theme_classic() + facet_grid(stn ~ mo, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+  theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
+        text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
+  ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)") + scale_colour_distiller(palette = "Spectral")
+
+
+ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), ], 
+       aes(x = head_water, y = log(PHOSPHATE..TOTAL.AS.P))) + 
+  geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
+  theme_classic() + facet_grid(stn ~ mo, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+  theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
+        text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
+  ylab (paste0("TP (mg/L; log scale)")) + xlab("headwater (ft NGVD29?)")
 
 #
 #  by(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$flow > 0), ], "stn",                function(x) geom_smooth(data=x, method = lm, formula = lm.mod(x)))
@@ -550,6 +618,8 @@ ggplot(modResults, aes(x = naca, y = `log(flow)`)) + theme_classic() + geom_poin
 # flow timing -------------------------------------------------------------
 
 q.mo <- ddply(wq2[wq2$stn %in% stns.wo.NAs, ], .(stn, mo), summarise,
+              headwtr    = mean(head_water, na.rm = TRUE),
+              headwtr.se = se(head_water),
               Mm3.day = mean(flow, na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
               Mm3.day.se = se(flow) * 0.0283168466 * 60 * 60 * 24 / 1e6,
               P          = mean(`PHOSPHATE, TOTAL AS P`, na.rm = TRUE),
@@ -560,11 +630,16 @@ q.mo <- ddply(wq2[wq2$stn %in% stns.wo.NAs, ], .(stn, mo), summarise,
 ) # m3/day
 
 
-ggplot(q.mo, aes(x = mo, y = Mm3.day)) + 
+ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Mm3.day)) + 
   geom_point() + geom_errorbar(aes(ymin = Mm3.day - Mm3.day.se, ymax = Mm3.day + Mm3.day.se), width = 0) +
-  theme_classic() + facet_wrap(~ stn, scales = "free_y") +
+  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
   ylab(expression("Mean daily flow (1e"^6~"m"^3%.%"day"^-1~")"))
+ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = headwtr)) + 
+  geom_point() + geom_errorbar(aes(ymin = headwtr - headwtr.se, ymax = headwtr + headwtr.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Mean headwater (ft NGVD29?)"))
 
 
 flowSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Mm3.day)) + 
@@ -594,7 +669,7 @@ grid.arrange(flowSeasS12s, TPSeasS12s, chlSeasS12s, ncol = 3)
 
 
 
-
+### 
 
 
 
