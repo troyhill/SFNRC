@@ -18,6 +18,7 @@
 #' @param plotRes resolution of the plot
 #' @param minDataPoints minimum number of data points considered necessary for interpolation
 #' @param plotZLims range for colors plotted in figure. This is useful for standardizing when multiple plots are being produced
+#' @param interpMethod interpolation method - can be "ordinary kriging" or "nearest neighbor"
 #' @param vgModelType model type passed to \code{fit.variogram()} to interpolate data. See \code{?fit.variogram} for more details
 #'
 #' @return plot, raster layer, and/or raster data
@@ -71,6 +72,7 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
                        exportPlot   = FALSE, plotName     = "NA.png",
                        plotWidth    = 4,     plotHeight   = 5, plotRes = 200,
                        plotZLims    = "range", minDataPoints = 2,
+                       interpMethod = "ordinary kriging",
                        vgModelType  = c("Exp", "Mat", "Gau", "Sph", "Ste")
 ) {
   ## make sure bnp and pts have same projections. Add bnp to package
@@ -118,46 +120,51 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       template.ras <- raster::raster(BISCmap, res = c(0.001, 0.001))
       blank.ras    <- methods::as(template.ras, "SpatialGrid") # sf::as may work
       
-      ### predict values
-      k  <- gstat::gstat(formula = get(paramCol) ~ 1, location = pts, model = fve)
-      
-      setTimeLimit(30) # set time limit to prevent this from running forever
-      # try(ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1), silent = TRUE)
-      # try(ras_pred <- raster::mask(ras_pred, BISCmap), silent = TRUE)
-      
-      tryCatch({
-        ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1)
-        ras_pred <- raster::mask(ras_pred, BISCmap)
-      }, error=function(e){cat("timeout on ordinary kriging of ", paramCol, year, ":",conditionMessage(e), "\n")})
-      
-      setTimeLimit()
-      
-      
-      ### TODO: if kriging interpolation fails, use IDW or nearest neighbor interpolation considering nmax neighbors
-      if (!exists("ras_pred") || sum(!is.na(ras_pred@data@values)) < 1) {
-        # # ### Alternative: nearest neighbor. 
-        # # ### Create nearest neighbor polygons
-        # vlocs         <- dismo::voronoi(pts)
-        # # plot(vlocs)
-        # bnp_ag        <- raster::aggregate(BISCmap)
-        # bnp_intsct    <- raster::intersect(vlocs, bnp_ag)
-        # # spplot(bnp_intsct, paramCol, col.regions = rev(get_col_regions()))
-        # 
-        # ### rasterize
-        # fl.ras       <- raster::raster(bnp, nrows = 1000, ncols = 1000)
-        # ras_pred     <- raster::rasterize(bnp_intsct, fl.ras, paramCol)
-        # # plot(ras_pred)
-        # # plot(BISCmap, add = TRUE)
-        # # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
+      if (interpMethod %in% "ordinary kriging") {
+        ### predict values
+        k  <- gstat::gstat(formula = get(paramCol) ~ 1, location = pts, model = fve)
         
-        ### Alternative: use inverse distance weighted interpolation
-        ras_pred <- raster::raster(raster::predict(gs, blank.ras), layer = 1)
-        ras_pred <- raster::mask(ras_pred, BISCmap)
+        setTimeLimit(30) # set time limit to prevent this from running forever
+        # try(ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1), silent = TRUE)
+        # try(ras_pred <- raster::mask(ras_pred, BISCmap), silent = TRUE)
+        
+        tryCatch({
+          ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1)
+          ras_pred <- raster::mask(ras_pred, BISCmap)
+        }, error=function(e){cat("timeout on ordinary kriging of ", paramCol, year, ":",conditionMessage(e), "\n")})
+        
+        setTimeLimit()
+        
+        ### TODO: if kriging interpolation fails, use IDW or nearest neighbor interpolation considering nmax neighbors
+        if (!exists("ras_pred") || sum(!is.na(ras_pred@data@values)) < 1) {
+          ### Alternative: use inverse distance weighted interpolation
+          ras_pred <- raster::raster(raster::predict(gs, blank.ras), layer = 1)
+          ras_pred <- raster::mask(ras_pred, BISCmap)
+          # plot(ras_pred)
+          # plot(BISCmap, add = TRUE)
+          # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
+        }
+      }
+      
+      
+     if (interpMethod %in% "nearest neighbor") {
+        # ### Alternative: nearest neighbor.
+        # ### Create nearest neighbor polygons
+        vlocs         <- dismo::voronoi(pts)
+        # plot(vlocs)
+        bnp_ag        <- raster::aggregate(BISCmap)
+        bnp_intsct    <- raster::intersect(vlocs, bnp_ag)
+        # spplot(bnp_intsct, paramCol, col.regions = rev(get_col_regions()))
+
+        ### rasterize
+        fl.ras       <- raster::raster(BISCmap, nrows = 1000, ncols = 1000)
+        ras_pred     <- raster::rasterize(bnp_intsct, fl.ras, paramCol)
         # plot(ras_pred)
         # plot(BISCmap, add = TRUE)
         # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
       }
       
+    
       
       
       #################

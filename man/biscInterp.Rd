@@ -9,7 +9,8 @@ biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
   fileName = "NA.tif", BISCmap = SFNRC::bnp, exportPlot = FALSE,
   plotName = "NA.png", plotWidth = 4, plotHeight = 5,
   plotRes = 200, plotZLims = "range", minDataPoints = 2,
-  vgModelType = c("Exp", "Mat", "Gau", "Sph", "Ste"))
+  interpMethod = "ordinary kriging", vgModelType = c("Exp", "Mat",
+  "Gau", "Sph", "Ste"))
 }
 \arguments{
 \item{inputData}{dataframe with water quality data. Function works best with output of \code{dfe.wq() or dfe.hydro()} using \code{wide = TRUE}.}
@@ -41,6 +42,8 @@ biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
 \item{plotZLims}{range for colors plotted in figure. This is useful for standardizing when multiple plots are being produced}
 
 \item{minDataPoints}{minimum number of data points considered necessary for interpolation}
+
+\item{interpMethod}{interpolation method - can be "ordinary kriging" or "nearest neighbor"}
 
 \item{vgModelType}{model type passed to \code{fit.variogram()} to interpolate data. See \code{?fit.variogram} for more details}
 }
