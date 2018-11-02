@@ -2,9 +2,9 @@
 % Please edit documentation in R/seas.R
 \name{seas}
 \alias{seas}
-\title{Create columns indicating wet/dry season and water year}
+\title{Create columns indicating wet/dry season and federal water year}
 \usage{
-seas(inputData, timeCol = "datetime", wetSeas = c("May", "Oct"), waterYearBegin = "Nov")
+seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sept"), waterYearBegin = "Oct")
 }
 \arguments{
 \item{inputData}{input dataframe}

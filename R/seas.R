@@ -1,8 +1,8 @@
-#' @title Create columns indicating wet/dry season and water year 
+#' @title Create columns indicating wet/dry season and federal water year 
 #'
 #' @description See above. Water year 2015 runs from Oct 01 2014 - Sept 30 2015.
 #' 
-#' @usage seas(inputData, timeCol = "datetime", wetSeas = c("May", "Oct"), waterYearBegin = "Nov")
+#' @usage seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sept"), waterYearBegin = "Oct")
 #' 
 #' @param inputData input dataframe 
 #' @param timeCol POSIXct column of timestamps
@@ -22,7 +22,7 @@
 #' @export
 
 seas <- function(inputData, timeCol = "datetime", 
-                 wetSeas = c("May", "Oct"), waterYearBegin = "Nov") {
+                 wetSeas = c("May", "Sept"), waterYearBegin = "Oct") {
   ### assign wet/dry season status
   wetStart         <- which(month.abb %in% wetSeas[1])
   wetEnd           <- which(month.abb %in% wetSeas[2])

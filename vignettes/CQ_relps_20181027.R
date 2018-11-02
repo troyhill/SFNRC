@@ -79,7 +79,7 @@ summary(wq.df[wq.df$bdl == 0, ])
 
 hydDat <- hydDat[c(!((hydDat$stn %in% "S356") & (hydDat$date < "2015-01-01"))), ] # remove 15-minute data from the S356 testing phase (summed to get those wildly high values)
 hydDat <- hydDat[c(!hydDat$stn %in% "S178"), ] # remove S178 - odd effects from backflow
-hydDat <- seas(hydDat, timeCol = "date")
+hydDat <- seas(hydDat, timeCol = "date", wetSeas = c("May", "Sept"), waterYearBegin = "Oct")
 
 ############################## added 20181029
 hydDat$flow[is.na(hydDat$flow)] <- 0
@@ -493,18 +493,18 @@ ggplot(dat2[!is.na(dat2[, targParam]) & (dat2$group %in% "flow") & (dat2$stn %in
 #  C-Q relps by season, rising/falling water level ----------------
 
 ggplot(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$stn %in% stn.targets), ], 
-       aes(x = head_water, y = log(PHOSPHATE..TOTAL.AS.P))) + 
+       aes(x = head_water, y = log(PHOSPHATE..TOTAL.AS.P), col = stn)) + 
   geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
-  theme_classic() + facet_grid( ~ stn, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+  theme_classic() + facet_grid(seas ~ ., scales = "free_y") + 
   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
   ylab (paste0("TP (mg/L; log scale)")) + xlab("headwater (ft)")
 
 
 ggplot(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$group %in% "flow") & (dat2$stn %in% stn.targets), ], 
-       aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P))) + 
+       aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P), col = stn)) + 
   geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
-  theme_classic() + facet_grid(seas ~ stn, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+  theme_classic() + facet_grid(seas ~ ., scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
   ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
@@ -555,6 +555,12 @@ ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), 
   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
   ylab (paste0("TP (mg/L; log scale)")) + xlab("headwater (ft NGVD29?)")
+
+
+### find highest flow at each foot interval, for each station
+# fed wtr year starts oct 1st - Sept 30
+# SFWMD water year runs May 1 - Apr 30
+
 
 #
 #  by(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$flow > 0), ], "stn",                function(x) geom_smooth(data=x, method = lm, formula = lm.mod(x)))
