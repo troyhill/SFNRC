@@ -1,8 +1,9 @@
+### dataset assembled in script_dermDFE_prep_20181019.R and script_derm_supplement_20181019, both in /opt/physical/troy/RDATA/biscayne/scripts/
 #' Data: Merged DERM and DataForever water quality data
 #'
 #'
 #'
-#' @format A dataframe with 291461 observations of 7 variables. Created on 16 October 2018.
+#' @format A dataframe with 337667 observations of 7 variables. Created on 13 November 2018.
 #' \describe{
 #' \item{stn}{station name}
 #' \item{date}{date of observation}

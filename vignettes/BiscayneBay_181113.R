@@ -1,22 +1,4 @@
----
-title: 'Water quality in Biscayne Bay: Status and trends'
-subtitle: ''
-output: 
-  pdf_document: 
-    latex_engine: pdflatex
-vignette: >
-  %\VignetteIndexEntry{DataForEver}
-  %\VignetteEngine{knitr::knitr}
-  %\usepackage[UTF-8]{inputenc}
-mainfont: FreeMono
-header-includes:
-- \usepackage{pdflscape}
-- \newcommand{\blandscape}{\begin{landscape}}
-- \newcommand{\elandscape}{\end{landscape}}
-- \usepackage[utf8]{inputenc}
----
-
-```{r setup, include=FALSE, echo=FALSE}
+## ----setup, include=FALSE, echo=FALSE------------------------------------
 
 ### TODO: amend bnpMod to include bay subregions used for regulatory water quality criteria, or include additional polygon files in package
 
@@ -81,19 +63,8 @@ library(rgdal)
 library(raster)
 
 knitr::opts_chunk$set(echo = TRUE, comment=NA)
-```
 
-## Summary
-
-Water quality trends in Biscayne Bay were evaluated using data from DataForEver and the Miami-Dade Department of Environmental Resources Management. Spatial and temporal trends were evaluated for subregions of the bay using interpolated raster layers for each water quality parameter. This approach minimizes, but does not eliminate, artifacts introduced by varying sampling locations. The effect of canal inflows on water quality in Biscayne Bay was also evaluated.
-
-
-\vspace{3mm}\hrule
-
-**Keywords:** Biscayne Bay, water quality
-
-
-```{r, echo = FALSE, include=FALSE}
+## ---- echo = FALSE, include=FALSE----------------------------------------
 # if the NitrogenUptake2016 package isn't installed, use devtools to do so:
 # devtools::install_github("troyhill/NitrogenUptake2016")
 
@@ -123,74 +94,10 @@ summary(hydDat)  # canal inflows
 registerDoMC(cores = 0) # register multicore parallel backend with the foreach package.
 useMC = TRUE # sent to ddply calls, whether multiple cores should be used
 
-```
 
 
-
-## Water quality trends in Biscayne Bay
-
-
-**1.1 Annual water quality trends in Biscayne Bay**
-
-- Calculated annual geometric means, by station, for each calendar year
-
-- Interpolated over entire bay, then extracted summary statistics for subregions
-
-- Statistical analysis of trends: loess decomposition, breakpoints
-
-
-```{r interpolated water quality rasters, echo=FALSE, include=FALSE}
-
-# http://rspatial.org/analysis/rst/4-interpolation.html ------------------
-fin2 <- dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
-fin2 <- seas(fin2, timeCol = "date")
-fin2$seas2  <- paste0(fin2$waterYr,"-", fin2$seas)
-
-
-# Create interpolated maps of annual geometric means ----------------------
-### Data are not finalized, so this is just laying out the conceptual approach. Interpolate for the whole bay and then clip for regions.
-agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
-names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
-names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
-
-
-finDat.coords <- plyr::join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
-finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
-
-coordinates(finDat.coords) <- c("long", "lat")
-proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
-
-sitesInBay <- sp::over(finDat.coords, polygonLayer)
-sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
-
-
-
-# kriging --------------------------------------------------------------
-
-  ### re-run this loop when underlying data or shapefile change. otherwise, build data using csvs
-# for (j in 3:(length(names(sitesInBay) - 1))) {
-#   for (i in 1:length(unique(sitesInBay$year))) {
-#     targYear  <- unique(sitesInBay$year)[i]
-#     targParam <- names(sitesInBay)[j] # "SALINITY" 
-#     targDat   <- sitesInBay
-#     lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
-#     rasterFileAddr  <- paste0(rasterFolder, targParam, targYear, ".tif")
-#     csvMeanFileAddr <- paste0(rasterFolder, "mean/", targParam, targYear)
-#     csvSDFileAddr   <- paste0(rasterFolder, "sd/",   targParam, targYear)
-#     csvSub20FileAddr<- paste0(rasterFolder, "sub20/",   targParam, targYear)
-#     # if (!rasterFileAddr %in% list.files(rasterFolder, full.names = TRUE)) {
-#           tryCatch({
-#       dat.l <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "year", plotZLims = lims, returnRas = TRUE, exportRaster = TRUE, fileName = rasterFileAddr, minDataPoints = minPoints, BISCmap = polygonLayer)
-#       write.csv(x = t(extract(dat.l , polygonLayer, fun = mean, na.rm = TRUE)), file = csvMeanFileAddr, row.names = FALSE)
-#       write.csv(x = t(extract(dat.l , polygonLayer, fun = sd, na.rm = TRUE)), file =  csvSDFileAddr, row.names = FALSE)
-#       if(targParam %in% "SALINITY") {
-#         write.csv(x = t(extract(dat.l, polygonLayer, fun = function(x, ...) ecdf(x)(20), na.rm = TRUE)), file =  csvSub20FileAddr, row.names = FALSE)
-#       }}, error = function(e) {
-#             cat("error in outer loop for ", targParam, 
-#                 targYear, ":", conditionMessage(e), "\n")
-#         })
-#   }
-# }
+### to re-do kriging:
+# source("/home/thill/RDATA/git-repos/SFNRC/vignettes/BiscayneBay_generate_181113.R")
 
 
     ### summarize data after compiling rasters for each parameter
@@ -202,45 +109,25 @@ sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
 
 ### load & process csvs from folder
-meanList        <- list.files(paste0(rasterFolder, "mean"), full.names = TRUE)
+meanList        <- list.files(paste0(rasterFolder, "/mean"), full.names = TRUE)
 adat       <- lapply(X = meanList, FUN = read.csv) # build a list with all rasters in the folder
 adat       <- do.call("rbind", adat)
 names(adat) <- gsub(x = names(adat), pattern = "V", replacement = "")
-adat$".id" <- gsub(x = meanList, pattern = paste0(rasterFolder, "mean/"), replacement = "")
+adat$".id" <- gsub(x = meanList, pattern = paste0(rasterFolder, "/mean/"), replacement = "")
 
-sdList             <- list.files(paste0(rasterFolder, "sd"), full.names = TRUE)
+sdList             <- list.files(paste0(rasterFolder, "/sd"), full.names = TRUE)
 adat.sd       <- lapply(X = sdList, FUN = read.csv) # build a list with all rasters in the folder
 adat.sd       <- do.call("rbind", adat.sd)
 names(adat.sd) <- gsub(x = names(adat.sd), pattern = "V", replacement = "")
-adat.sd$".id" <- gsub(x = sdList, pattern = paste0(rasterFolder, "sd/"), replacement = "")
+adat.sd$".id" <- gsub(x = sdList, pattern = paste0(rasterFolder, "/sd/"), replacement = "")
                               
 
-sub20List          <- list.files(paste0(rasterFolder, "sub20"), full.names = TRUE)
+sub20List          <- list.files(paste0(rasterFolder, "/sub20"), full.names = TRUE)
 adat.20       <- lapply(X = sub20List, FUN = read.csv) # build a list with all rasters in the folder
 adat.20       <- do.call("rbind", adat.20)
 names(adat.20) <- gsub(x = names(adat.20), pattern = "V", replacement = "")
-adat.20$".id" <- gsub(x = sub20List, pattern = paste0(rasterFolder, "sub20/"), replacement = "")
+adat.20$".id" <- gsub(x = sub20List, pattern = paste0(rasterFolder, "/sub20/"), replacement = "")
  
-# 
-# rasList <- list.files(rasterFolder, pattern = ".tif$", full.names = TRUE)
-# dat.l <- lapply(X = rasList, FUN = raster) # build a list with all rasters in the folder
-#     adat    <- ldply(dat.l, function(x) t(extract(x, polygonLayer, fun = mean, na.rm = TRUE)), .parallel = useMC)
-#     adat.20 <- ldply(dat.l[grep(pattern = "SALINITY", x = rasList)], function(x) t(extract(x, polygonLayer, fun = function(x,...)ecdf(x)(20), na.rm = TRUE)), .parallel = useMC)
-#     # adat.20 <- ldply(dat.l, function(x) t(extract(x, polygonLayer, fun = function(x,...)ecdf(x)(20), na.rm = TRUE)))
-#     adat.sd <- ldply(dat.l, function(x) t(raster::extract(x, polygonLayer, fun = sd, na.rm = TRUE)), .parallel = useMC)
-# adat$'.id' <- adat.20$'.id' <- adat.sd$'.id' <- gsub(x = gsub(x = rasList, pattern = rasterFolder, replacement = ""), pattern = ".tif", replacement = "") # names
-# ##
-
-
-# ### explore and confirm data
-# ### view all rasters as a ratser brick
-# rasList <- list.files(rasterFolder, pattern = "SALINITY.*?.tif$", full.names = TRUE)
-# brk <- do.call(brick, lapply(rasList, raster))
-# plot(brk)
-# 
-# agm[(agm$year %in% 1984) & (agm$SALINITY > 40), ]
-
-
 
 ### to make a long dataset with columns: param, year, loc, mean, sd, ecdf20
 combd <- join_all(list(
@@ -258,11 +145,8 @@ combd$yr    <- as.numeric(substr(combd[, ".id"], nchar(combd[, ".id"]) - 3, ncha
 combd$subRegion <- as.character(polygonLayer@data$BOX_CODE)[as.numeric(as.character(combd$subRegion))]
 
 
-```
 
-
-
-```{r Subregion map, fig.width = 4, fig.height = 4, message = FALSE, echo=FALSE}
+## ----Subregion map, fig.width = 4, fig.height = 4, message = FALSE, echo=FALSE----
 par(mar = c(4,4,0.5,0.5))
 cols.sub <- colors()[grep(x = colors(), pattern = "yellow|cyan|red|blue|green|brown")]
 cols <- cols.sub[sample(x =  length(cols.sub), size = length(unique(polygonLayer@data$BOX_CODE)))]
@@ -271,73 +155,18 @@ cols <- cols.sub[sample(x =  length(cols.sub), size = length(unique(polygonLayer
 plot(polygonLayer, col = cols)
 pointLabel(coordinates(polygonLayer), labels = polygonLayer$BOX_CODE)
 
-```
-Figure 1. Map of sub-regions used in Biscayne Bay, with numeric labels. 
 
-
-
-```{r parameter trends, fig.width = 6, fig.height = 4, message = FALSE, echo=FALSE}
+## ----parameter trends, fig.width = 6, fig.height = 4, message = FALSE, echo=FALSE----
 ggplot(combd, aes(y = mean, x = yr, col = subRegion)) + #geom_point(size  = 1, position = pd3) + 
   geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, fatten = 1) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("") 
 
-```
-Figure 2. Annual water quality trends for Biscayne Bay subregions. Spatially-weighted mean (+- SD) of interpolated annual geometric means from individual stations.
 
-
-
-
-
-**1.1.	 Annual trends in wet season water quality **
-```{r interpolated wet season data, echo = FALSE, include = FALSE, message = FALSE}
+## ----interpolated wet season data, echo = FALSE, include = FALSE, message = FALSE----
 ### same as above but for wet season.
 ### memory constraints may require saving rasters to disk or instantly summarizing & deleting them
-fin2 <- dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
-fin2 <- seas(fin2, timeCol = "date")
-fin2$seas2  <- paste0(fin2$waterYr,"-", fin2$seas)
 
 
-# Create interpolated maps of geometric means ----------------------
-agm <- plyr::ddply(fin2[, -c(grep(x = names(fin2), pattern = "date|water"))], plyr::.(seas2, seas, stn), plyr::numcolwise(geoMean))
-names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
-names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
 
-
-finDat.coords <- plyr::join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
-finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
-
-coordinates(finDat.coords) <- c("long", "lat")
-proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
-
-sitesInBay <- sp::over(finDat.coords, polygonLayer)
-sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
-
-### re-run this loop when underlying data or shapefile change. otherwise, build data using csvs
-# for (j in 4:(length(names(sitesInBay)))) {
-#   for (i in 1:length(unique(sitesInBay$seas2))) {
-#     targYear  <- unique(sitesInBay$seas2)[i]
-#     targParam <- names(sitesInBay)[j] # "SALINITY" 
-#     targDat   <- sitesInBay
-#     lims      <- as.numeric(quantile(data.frame(targDat@data[, targParam]), c(0, 1), na.rm = TRUE))
-#     
-#     rasterFileAddr   <- paste0(rasterFolder, "seas/", targParam, targYear, ".tif")
-#     csvMeanFileAddr  <- paste0(rasterFolder, "seas/mean/", targParam, targYear)
-#     csvSDFileAddr    <- paste0(rasterFolder, "seas/sd/", targParam, targYear)
-#     csvsub20FileAddr <- paste0(rasterFolder, "seas/sub20/", targParam, targYear)
-#     # if (!rasterFileAddr %in% list.files(paste0(rasterFolder, "seas/"),  full.names = TRUE)) { # if you don't want to re-process/overwrite files
-#           tryCatch({
-#       seas.l <- biscInterp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "seas2", plotZLims = lims, 
-#                        returnRas = TRUE, exportRaster = TRUE, fileName = rasterFileAddr, minDataPoints = minPoints, BISCmap = polygonLayer)
-#       write.csv(x = t(extract( seas.l, polygonLayer, fun = mean, na.rm = TRUE)), file = csvMeanFileAddr, row.names = FALSE) # record results 
-#       write.csv(x = t(extract( seas.l, polygonLayer, fun = sd, na.rm = TRUE)), file =  csvSDFileAddr, row.names = FALSE)
-#       if(targParam %in% "SALINITY") {
-#         write.csv(x = t(extract( seas.l, polygonLayer, fun = function(x, ...) ecdf(x)(20), na.rm = TRUE)), file =  csvsub20FileAddr, row.names = FALSE)
-#       }
-#       
-#       }, error = function(e) {
-#             cat("error in outer loop for ", targParam, 
-#                 targYear, ":", conditionMessage(e), "\n")
-#         })
-#   }}
 
 # r <- raster("/opt/physical/troy/RDATA/output/WQrasters/seas/DISSOLVEDOXYGEN2017-wet.tif")
 # persp(theta = 0, phi = 30, 2*r, border = "red", scale = FALSE)
@@ -381,31 +210,13 @@ combd.seas$seas  <- substr(combd.seas[, '.id'], nchar(combd.seas[, '.id']) - 2, 
 combd.seas$subregion <- as.character(polygonLayer@data$BOX_CODE)[as.numeric(as.character(combd.seas$subRegion))]
 
 
-```
 
-
-```{r annual wet/dry season trends, fig.width = 7, fig.height = 4, message = FALSE, echo=FALSE}
+## ----annual wet/dry season trends, fig.width = 7, fig.height = 4, message = FALSE, echo=FALSE----
 ggplot(combd.seas, aes(y = mean, x = yr, col = subregion)) + #geom_point(size  = 0.25, position = pd3) + 
   geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, fatten = 1) + theme_classic() + facet_grid(param ~ seas, scales = "free_y") + ylab("") 
 
-```
 
-**1.2.	 Annual trends in dry season water quality **
-
-
-
-**1.3.	 Monthly trends in water quality **
-
-Will run into serious memory issues
-
-
-
-## 2. Effect of canals
-
-**2.1.	 Quantifying water inflows**
-
-
-```{r annual water inflows from canals, include=FALSE, echo=FALSE}
+## ----annual water inflows from canals, include=FALSE, echo=FALSE---------
 # Prep canal water quality data for merging with flows --------------------------------
 wqCanal <- reshape(wqDat[wqDat$param %in% compareParams, c("stn", "date", "param", "value")], id.vars = c("stn", "date") ) # # limit to relevant params and reshape dataset
 
@@ -534,40 +345,21 @@ flow.seas$waterYr <- as.numeric(as.character(flow.seas$waterYr))
 
 
 
-```
 
-
-
-Flows through \code{structs} were used to calculate annual water inflow to the bay through canals.
-
-
-
-mass = (height$\cdot$a + b)^1/$\lambda$^ 
-
-
-```{r Figure - flow to bay, fig.width = 6, fig.height = 4, message = FALSE, include=FALSE, echo=FALSE}
+## ----Figure - flow to bay, fig.width = 6, fig.height = 4, message = FALSE, include=FALSE, echo=FALSE----
 
 ggplot(flow.seas, aes(y = m3 / 1e6, x = waterYr, col = subRegion)) + geom_line() + theme_classic() + facet_grid(seas ~ subRegion) + xlab("water year") + ylab("inflow to bay (1e6 m3 per season)")
 ggplot(flow.seas, aes(y = m3 / ha, x = waterYr, col = subRegion)) + geom_line() + theme_classic() + facet_grid(seas ~ subRegion) + xlab("water year") + ylab("inflow to bay (m3 per ha per season)")
-```
 
-
-
-**2.1.	Solute delivery from canals**
-
-
-```{r annual solute delivery from canals, include=FALSE, echo=FALSE}
+## ----annual solute delivery from canals, include=FALSE, echo=FALSE-------
 soluteDF <- melt(flow.seas, id.vars = c("seas", "waterYr", "subRegion", "ha"))
 
 ggplot(soluteDF, aes(y = value, x = waterYr, col = subRegion)) + geom_line() + theme_classic() + facet_grid(variable ~ seas, scales = "free") + xlab("water year") + ylab("flux to bay (per season)")
 ggplot(soluteDF, aes(y = value / ha, x = waterYr, col = subRegion)) + geom_line() + theme_classic() + facet_grid(variable ~ seas, scales = "free") + xlab("water year") + ylab("flux to bay (per ha per season)")
 
 
-```
 
-
-
-```{r solute delivery vs subregion concentrations, include=FALSE, echo=FALSE}
+## ----solute delivery vs subregion concentrations, include=FALSE, echo=FALSE----
 ### combine wide datasets
 head(flow.seas)
 aves   <- dcast(combd.seas, seas + yr + subregion ~ param, value.var = "mean")
@@ -585,10 +377,5 @@ df <- join_all(list(flow.seas, aves, sds, prop20), by = c("seas", "waterYr", "su
 plot(df[, c(4, 6:11)])
 
 ggplot(df, aes(y = SALINITY.sub20, x = m3, col = subRegion)) + geom_point() + theme_classic()
-
-```
-
-
-
 
 

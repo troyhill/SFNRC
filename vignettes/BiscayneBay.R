@@ -1,22 +1,4 @@
----
-title: 'Water quality in Biscayne Bay: Status and trends'
-subtitle: ''
-output: 
-  pdf_document: 
-    latex_engine: pdflatex
-vignette: >
-  %\VignetteIndexEntry{DataForEver}
-  %\VignetteEngine{knitr::knitr}
-  %\usepackage[UTF-8]{inputenc}
-mainfont: FreeMono
-header-includes:
-- \usepackage{pdflscape}
-- \newcommand{\blandscape}{\begin{landscape}}
-- \newcommand{\elandscape}{\end{landscape}}
-- \usepackage[utf8]{inputenc}
----
-
-```{r setup, include=FALSE, echo=FALSE}
+## ----setup, include=FALSE, echo=FALSE------------------------------------
 
 ### TODO: amend bnpMod to include bay subregions used for regulatory water quality criteria, or include additional polygon files in package
 
@@ -81,19 +63,8 @@ library(rgdal)
 library(raster)
 
 knitr::opts_chunk$set(echo = TRUE, comment=NA)
-```
 
-## Summary
-
-Water quality trends in Biscayne Bay were evaluated using data from DataForEver and the Miami-Dade Department of Environmental Resources Management. Spatial and temporal trends were evaluated for subregions of the bay using interpolated raster layers for each water quality parameter. This approach minimizes, but does not eliminate, artifacts introduced by varying sampling locations. The effect of canal inflows on water quality in Biscayne Bay was also evaluated.
-
-
-\vspace{3mm}\hrule
-
-**Keywords:** Biscayne Bay, water quality
-
-
-```{r, echo = FALSE, include=FALSE}
+## ---- echo = FALSE, include=FALSE----------------------------------------
 # if the NitrogenUptake2016 package isn't installed, use devtools to do so:
 # devtools::install_github("troyhill/NitrogenUptake2016")
 
@@ -123,23 +94,8 @@ summary(hydDat)  # canal inflows
 registerDoMC(cores = 0) # register multicore parallel backend with the foreach package.
 useMC = TRUE # sent to ddply calls, whether multiple cores should be used
 
-```
 
-
-
-## Water quality trends in Biscayne Bay
-
-
-**1.1 Annual water quality trends in Biscayne Bay**
-
-- Calculated annual geometric means, by station, for each calendar year
-
-- Interpolated over entire bay, then extracted summary statistics for subregions
-
-- Statistical analysis of trends: loess decomposition, breakpoints
-
-
-```{r interpolated water quality rasters, echo=FALSE, include=FALSE}
+## ----interpolated water quality rasters, echo=FALSE, include=FALSE-------
 
 # http://rspatial.org/analysis/rst/4-interpolation.html ------------------
 fin2 <- dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
@@ -258,11 +214,8 @@ combd$yr    <- as.numeric(substr(combd[, ".id"], nchar(combd[, ".id"]) - 3, ncha
 combd$subRegion <- as.character(polygonLayer@data$BOX_CODE)[as.numeric(as.character(combd$subRegion))]
 
 
-```
 
-
-
-```{r Subregion map, fig.width = 4, fig.height = 4, message = FALSE, echo=FALSE}
+## ----Subregion map, fig.width = 4, fig.height = 4, message = FALSE, echo=FALSE----
 par(mar = c(4,4,0.5,0.5))
 cols.sub <- colors()[grep(x = colors(), pattern = "yellow|cyan|red|blue|green|brown")]
 cols <- cols.sub[sample(x =  length(cols.sub), size = length(unique(polygonLayer@data$BOX_CODE)))]
@@ -271,24 +224,13 @@ cols <- cols.sub[sample(x =  length(cols.sub), size = length(unique(polygonLayer
 plot(polygonLayer, col = cols)
 pointLabel(coordinates(polygonLayer), labels = polygonLayer$BOX_CODE)
 
-```
-Figure 1. Map of sub-regions used in Biscayne Bay, with numeric labels. 
 
-
-
-```{r parameter trends, fig.width = 6, fig.height = 4, message = FALSE, echo=FALSE}
+## ----parameter trends, fig.width = 6, fig.height = 4, message = FALSE, echo=FALSE----
 ggplot(combd, aes(y = mean, x = yr, col = subRegion)) + #geom_point(size  = 1, position = pd3) + 
   geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, fatten = 1) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("") 
 
-```
-Figure 2. Annual water quality trends for Biscayne Bay subregions. Spatially-weighted mean (+- SD) of interpolated annual geometric means from individual stations.
 
-
-
-
-
-**1.1.	 Annual trends in wet season water quality **
-```{r interpolated wet season data, echo = FALSE, include = FALSE, message = FALSE}
+## ----interpolated wet season data, echo = FALSE, include = FALSE, message = FALSE----
 ### same as above but for wet season.
 ### memory constraints may require saving rasters to disk or instantly summarizing & deleting them
 fin2 <- dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
@@ -381,31 +323,13 @@ combd.seas$seas  <- substr(combd.seas[, '.id'], nchar(combd.seas[, '.id']) - 2, 
 combd.seas$subregion <- as.character(polygonLayer@data$BOX_CODE)[as.numeric(as.character(combd.seas$subRegion))]
 
 
-```
 
-
-```{r annual wet/dry season trends, fig.width = 7, fig.height = 4, message = FALSE, echo=FALSE}
+## ----annual wet/dry season trends, fig.width = 7, fig.height = 4, message = FALSE, echo=FALSE----
 ggplot(combd.seas, aes(y = mean, x = yr, col = subregion)) + #geom_point(size  = 0.25, position = pd3) + 
   geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, fatten = 1) + theme_classic() + facet_grid(param ~ seas, scales = "free_y") + ylab("") 
 
-```
 
-**1.2.	 Annual trends in dry season water quality **
-
-
-
-**1.3.	 Monthly trends in water quality **
-
-Will run into serious memory issues
-
-
-
-## 2. Effect of canals
-
-**2.1.	 Quantifying water inflows**
-
-
-```{r annual water inflows from canals, include=FALSE, echo=FALSE}
+## ----annual water inflows from canals, include=FALSE, echo=FALSE---------
 # Prep canal water quality data for merging with flows --------------------------------
 wqCanal <- reshape(wqDat[wqDat$param %in% compareParams, c("stn", "date", "param", "value")], id.vars = c("stn", "date") ) # # limit to relevant params and reshape dataset
 
@@ -534,40 +458,21 @@ flow.seas$waterYr <- as.numeric(as.character(flow.seas$waterYr))
 
 
 
-```
 
-
-
-Flows through \code{structs} were used to calculate annual water inflow to the bay through canals.
-
-
-
-mass = (height$\cdot$a + b)^1/$\lambda$^ 
-
-
-```{r Figure - flow to bay, fig.width = 6, fig.height = 4, message = FALSE, include=FALSE, echo=FALSE}
+## ----Figure - flow to bay, fig.width = 6, fig.height = 4, message = FALSE, include=FALSE, echo=FALSE----
 
 ggplot(flow.seas, aes(y = m3 / 1e6, x = waterYr, col = subRegion)) + geom_line() + theme_classic() + facet_grid(seas ~ subRegion) + xlab("water year") + ylab("inflow to bay (1e6 m3 per season)")
 ggplot(flow.seas, aes(y = m3 / ha, x = waterYr, col = subRegion)) + geom_line() + theme_classic() + facet_grid(seas ~ subRegion) + xlab("water year") + ylab("inflow to bay (m3 per ha per season)")
-```
 
-
-
-**2.1.	Solute delivery from canals**
-
-
-```{r annual solute delivery from canals, include=FALSE, echo=FALSE}
+## ----annual solute delivery from canals, include=FALSE, echo=FALSE-------
 soluteDF <- melt(flow.seas, id.vars = c("seas", "waterYr", "subRegion", "ha"))
 
 ggplot(soluteDF, aes(y = value, x = waterYr, col = subRegion)) + geom_line() + theme_classic() + facet_grid(variable ~ seas, scales = "free") + xlab("water year") + ylab("flux to bay (per season)")
 ggplot(soluteDF, aes(y = value / ha, x = waterYr, col = subRegion)) + geom_line() + theme_classic() + facet_grid(variable ~ seas, scales = "free") + xlab("water year") + ylab("flux to bay (per ha per season)")
 
 
-```
 
-
-
-```{r solute delivery vs subregion concentrations, include=FALSE, echo=FALSE}
+## ----solute delivery vs subregion concentrations, include=FALSE, echo=FALSE----
 ### combine wide datasets
 head(flow.seas)
 aves   <- dcast(combd.seas, seas + yr + subregion ~ param, value.var = "mean")
@@ -585,10 +490,5 @@ df <- join_all(list(flow.seas, aves, sds, prop20), by = c("seas", "waterYr", "su
 plot(df[, c(4, 6:11)])
 
 ggplot(df, aes(y = SALINITY.sub20, x = m3, col = subRegion)) + geom_point() + theme_classic()
-
-```
-
-
-
 
 
