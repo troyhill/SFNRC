@@ -4,7 +4,7 @@
 \alias{seas}
 \title{Create columns indicating wet/dry season and federal water year}
 \usage{
-seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sept"), waterYearBegin = "Oct")
+seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sep"), waterYearBegin = "Oct")
 }
 \arguments{
 \item{inputData}{input dataframe}

@@ -69,7 +69,7 @@ knitr::opts_chunk$set(echo = TRUE, comment=NA)
 # devtools::install_github("troyhill/NitrogenUptake2016")
 
 # set some constants
-rasterFolder <- "/opt/physical/troy/RDATA/output/WQrasters"
+rasterFolder <- "/opt/physical/troy/RDATA/output/WQrasters_NN"
 todaysDate <- substr(as.character(Sys.time()), 1, 10)
 pointSize <- 2 # for ggplot graphics
 pd <- pd2 <- position_dodge(1.2)
@@ -78,8 +78,9 @@ grayColor <- 0.55
 fig2Col   <- "gray55"
 minPoints <- 8 # minimum number of sampling points required for interpolation
 polygonLayer <- bnpMod # shapefile to be used for subsetting data, interpolation, etc.
+interpMeth <- "nearest neighbor"
 
-compareParams <- c("AMMONIA-N", "NITRATE+NITRITE-N",
+compareParams <- c("AMMONIA-N", "NITRATE+NITRITE-N", "TEMP",
                    "SALINITY", "PH, FIELD", "CHLOROPHYLL-A", "TURBIDITY", "DISSOLVED OXYGEN", 
                    "PHOSPHATE, TOTAL AS P", "PHOSPHATE, ORTHO AS P")
 
@@ -172,24 +173,24 @@ ggplot(combd, aes(y = mean, x = yr, col = subRegion)) + #geom_point(size  = 1, p
 # persp(theta = 0, phi = 30, 2*r, border = "red", scale = FALSE)
 
 ### Load & process rasters from folder [this will change to a do.call/read.csv approach]
-meanList        <- list.files(paste0(rasterFolder, "seas/mean"), full.names = TRUE)
+meanList        <- list.files(paste0(rasterFolder, "/seas/mean"), full.names = TRUE)
 adat.seas       <- lapply(X = meanList, FUN = read.csv) # build a list with all rasters in the folder
 adat.seas       <- do.call("rbind", adat.seas)
 names(adat.seas) <- gsub(x = names(adat.seas), pattern = "V", replacement = "")
-adat.seas$".id" <- gsub(x = meanList, pattern = paste0(rasterFolder, "seas/mean/"), replacement = "")
+adat.seas$".id" <- gsub(x = meanList, pattern = paste0(rasterFolder, "/seas/mean/"), replacement = "")
 
-sdList             <- list.files(paste0(rasterFolder, "seas/sd"), full.names = TRUE)
+sdList             <- list.files(paste0(rasterFolder, "/seas/sd"), full.names = TRUE)
 adat.seas.sd       <- lapply(X = sdList, FUN = read.csv) # build a list with all rasters in the folder
 adat.seas.sd       <- do.call("rbind", adat.seas.sd)
 names(adat.seas.sd) <- gsub(x = names(adat.seas.sd), pattern = "V", replacement = "")
-adat.seas.sd$".id" <- gsub(x = sdList, pattern = paste0(rasterFolder, "seas/sd/"), replacement = "")
+adat.seas.sd$".id" <- gsub(x = sdList, pattern = paste0(rasterFolder, "/seas/sd/"), replacement = "")
                               
 
-sub20List          <- list.files(paste0(rasterFolder, "seas/sub20"), full.names = TRUE)
+sub20List          <- list.files(paste0(rasterFolder, "/seas/sub20"), full.names = TRUE)
 adat.seas.20       <- lapply(X = sub20List, FUN = read.csv) # build a list with all rasters in the folder
 adat.seas.20       <- do.call("rbind", adat.seas.20)
 names(adat.seas.20) <- gsub(x = names(adat.seas.20), pattern = "V", replacement = "")
-adat.seas.20$".id" <- gsub(x = sub20List, pattern = paste0(rasterFolder, "seas/sub20/"), replacement = "")
+adat.seas.20$".id" <- gsub(x = sub20List, pattern = paste0(rasterFolder, "/seas/sub20/"), replacement = "")
                               
 
 
@@ -218,7 +219,7 @@ ggplot(combd.seas, aes(y = mean, x = yr, col = subregion)) + #geom_point(size  =
 
 ## ----annual water inflows from canals, include=FALSE, echo=FALSE---------
 # Prep canal water quality data for merging with flows --------------------------------
-wqCanal <- reshape(wqDat[wqDat$param %in% compareParams, c("stn", "date", "param", "value")], id.vars = c("stn", "date") ) # # limit to relevant params and reshape dataset
+# wqCanal <- stats::reshape(wqDat[wqDat$param %in% compareParams, c("stn", "date", "param", "value")], idvar = c("stn", "date") ) # # limit to relevant params and reshape dataset
 
 wqCanal <- stats::reshape(wqDat[wqDat$param %in% compareParams, c("stn", "date", "param", "value")], idvar = c("stn", "date"), 
             timevar = "param", direction = "wide")
@@ -241,9 +242,8 @@ biscHyd <- join_all(list(biscHyd, wqCanal), by = c("stn", "date"))
 
 biscHyd$kacft <- biscHyd$flow * 2.29569e-5 / 1000 * 60 * 60 * 24 # convert cfs to thousand acre feet per day
 biscHyd$m3d   <- biscHyd$flow * 2446.58 # convert cfs to cubic meters per day
-biscHyd       <- seas(biscHyd, timeCol = "date")              # aggregate up to month or year
+biscHyd       <- seas(biscHyd, timeCol = "date", wetSeas = c("May", "Sep"))              # aggregate up to month or year
 
-summary(biscHyd)
 coordinates(biscHyd) <- c("long", "lat")
 proj4string(biscHyd) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 # plot(bnp)
@@ -293,7 +293,7 @@ text(biscHyd.proj, labels = biscHyd.proj$stn, offset = 0.5, pos = 2)
 ### annual flux from each structure
 # a <- ddply(biscHyd2, .(stn, year), summarise, kacft = sum(kacft, na.rm = TRUE), salt.flux.kg = sum(salt.flux.kg, na.rm = TRUE),             N.flux.kg = sum(N.flux.kg, na.rm = TRUE), H.flux.kg = sum(H.flux.kg, na.rm = TRUE),                   P.flux.kg = sum(P.flux.kg, na.rm = TRUE)) 
 # ddply(a[a$year %in% 1980:1989, ], .(stn), summarise, mean(kacft, na.rm = TRUE)) # some values differ dramatically from table on page 49 of 1995 SWIM plan summary
-ddply(biscHyd2, .(subRegion, year), summarise, kacft = sum(kacft, na.rm = TRUE), salt.flux.kg = sum(salt.flux.kg, na.rm = TRUE),             N.flux.kg = sum(N.flux.kg, na.rm = TRUE), H.flux.kg = sum(H.flux.kg, na.rm = TRUE),                   P.flux.kg = sum(P.flux.kg, na.rm = TRUE)) 
+# ddply(biscHyd2, .(subRegion, year), summarise, kacft = sum(kacft, na.rm = TRUE), salt.flux.kg = sum(salt.flux.kg, na.rm = TRUE),             N.flux.kg = sum(N.flux.kg, na.rm = TRUE), H.flux.kg = sum(H.flux.kg, na.rm = TRUE),                   P.flux.kg = sum(P.flux.kg, na.rm = TRUE)) 
 
 
 ### spatial scale: whole bay.
@@ -361,7 +361,6 @@ ggplot(soluteDF, aes(y = value / ha, x = waterYr, col = subRegion)) + geom_line(
 
 ## ----solute delivery vs subregion concentrations, include=FALSE, echo=FALSE----
 ### combine wide datasets
-head(flow.seas)
 aves   <- dcast(combd.seas, seas + yr + subregion ~ param, value.var = "mean")
 sds    <- dcast(combd.seas, seas + yr + subregion ~ param, value.var = "sd")
 prop20 <- dcast(combd.seas, seas + yr + subregion ~ param, value.var = "propSub20")
@@ -376,6 +375,7 @@ df <- join_all(list(flow.seas, aves, sds, prop20), by = c("seas", "waterYr", "su
 
 plot(df[, c(4, 6:11)])
 
-ggplot(df, aes(y = SALINITY.sub20, x = m3, col = subRegion)) + geom_point() + theme_classic()
+ggplot(df, aes(y = SALINITY.sub20, x = m3, col = subRegion)) + geom_point() + theme_classic() 
+ggplot(df[df$SALINITY.sub20 > 0.001, ], aes(y = SALINITY.sub20, x = m3, col = subRegion)) + geom_point() + theme_classic() + geom_smooth(method = "lm")
 
 
