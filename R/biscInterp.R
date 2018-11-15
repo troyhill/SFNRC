@@ -108,17 +108,21 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       template.ras <- raster::raster(BISCmap, res = c(0.001, 0.001))
       blank.ras    <- methods::as(template.ras, "SpatialGrid") # sf::as may work
       
+      
+      
       if (interpMethod %in% "ordinary kriging") {
-        ### inverse distance weighted interpolation
-        # http://rspatial.org/analysis/rst/4-interpolation.html
-        gs  <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) 
-        v   <- gstat::variogram(gs) # generate variogram
-        # fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0.9, model = vgModelType, range = max(v$dist) / 2, nugget = 0))
-        fve <- gstat::fit.variogram(v, gstat::vgm(vgModelType), fit.kappa = TRUE) # https://www.r-spatial.org/r/2016/02/14/gstat-variogram-fitting.html
-        ### look into automap::autoKrige. coordinate system issues are obstacle. See also more generally: https://gis.stackexchange.com/questions/147660/strange-spatial-interpolation-results-from-ordinary-kriging
-        ### TODO: report specs on interpolation
-        ### function doesn't handle convergence errors well
-        
+        tryCatch({ # if ordinary kriging is chosen, try to fit a variogram model
+          ### inverse distance weighted interpolation
+          # http://rspatial.org/analysis/rst/4-interpolation.html
+          gs  <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0))
+          v   <- gstat::variogram(gs) # generate variogram
+          # fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0.9, model = vgModelType, range = max(v$dist) / 2, nugget = 0))
+          
+          fve <- gstat::fit.variogram(v, gstat::vgm(vgModelType), fit.kappa = TRUE) # https://www.r-spatial.org/r/2016/02/14/gstat-variogram-fitting.html
+          ### look into automap::autoKrige. coordinate system issues are obstacle. See also more generally: https://gis.stackexchange.com/questions/147660/strange-spatial-interpolation-results-from-ordinary-kriging
+          ### TODO: report specs on interpolation
+          ### function doesn't handle convergence errors well
+          ### Try to run ordinary kriging, default to nearest neighbor if fit.variogram doesn't converge
         ### predict values
         k  <- gstat::gstat(formula = get(paramCol) ~ 1, location = pts, model = fve)
         
@@ -142,6 +146,16 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
           # plot(BISCmap, add = TRUE)
           # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
         }
+      }, warning = function(cond) {
+        message(paste("\n no convergence in variogram; using nearest neighbor"))
+        message(paste("Original warning message:", cond, "\n"))
+        # run nearest neighbor method
+        vlocs         <- dismo::voronoi(pts)
+        bnp_intsct    <- raster::intersect(vlocs, BISCmap)
+        fl.ras       <- raster::raster(BISCmap, nrows = 1000, ncols = 1000)
+        ras_pred     <<- raster::rasterize(bnp_intsct, fl.ras, paramCol)
+        # return(ras_pred)
+      })
       }
       
       
@@ -150,15 +164,11 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
         # ### Create nearest neighbor polygons
         vlocs         <- dismo::voronoi(pts)
         # plot(vlocs)
-        
         bnp_intsct    <- raster::intersect(vlocs, BISCmap)
         # spplot(bnp_intsct, paramCol, col.regions = rev(get_col_regions()))
-
         ### rasterize
         fl.ras       <- raster::raster(BISCmap, nrows = 1000, ncols = 1000)
         ras_pred     <- raster::rasterize(bnp_intsct, fl.ras, paramCol)
-        # plot(ras_pred)
-        # plot(BISCmap, add = TRUE)
         # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
       }
       

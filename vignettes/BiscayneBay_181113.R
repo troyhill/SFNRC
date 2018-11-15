@@ -66,7 +66,7 @@ knitr::opts_chunk$set(echo = TRUE, comment=NA)
 
 ## ---- echo = FALSE, include=FALSE----------------------------------------
 # if the NitrogenUptake2016 package isn't installed, use devtools to do so:
-# devtools::install_github("troyhill/NitrogenUptake2016")
+# devtools::install_github("troyhill/SFNRC")
 
 # set some constants
 rasterFolder <- "/opt/physical/troy/RDATA/output/WQrasters_NN"

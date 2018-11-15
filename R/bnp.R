@@ -24,4 +24,13 @@
 #' @examples 
 #' plot(bnp)
 #' 
+#' \dontrun{
+#' ### code used to generate object
+#' shp <- "/opt/physical/troy/ESRIDATA/enp_boundary_line/PublicLandsBoundary.shp" # "/opt/physical/troy/ESRIDATA/BNP_boundary.shp"
+#' bnp <- readOGR(shp, layer = basename(strsplit(shp, "\\.")[[1]])[1], pointDropZ = TRUE, stringsAsFactors = FALSE)
+#' bnp <- spTransform(bnp, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#' ### isolate just the areas of interest
+#' bnp <- bnp[as.character(bnp$OBJECTID) %in% c("423", "363", "290", "192"), ]
+#' }
+#' 
 NULL
