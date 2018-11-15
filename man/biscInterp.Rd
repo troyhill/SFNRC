@@ -8,7 +8,7 @@ biscInterp(inputData, paramCol = "SALINITY", yearCol = "year",
   year = "2016", returnRas = FALSE, exportRaster = FALSE,
   fileName = "NA.tif", BISCmap = SFNRC::bnp, exportPlot = FALSE,
   plotName = "NA.png", plotWidth = 4, plotHeight = 5,
-  plotRes = 200, plotZLims = "range", minDataPoints = 2,
+  plotRes = 200, plotZLims = NA, minDataPoints = 2,
   interpMethod = "ordinary kriging", vgModelType = c("Exp", "Mat",
   "Gau", "Sph", "Ste"))
 }

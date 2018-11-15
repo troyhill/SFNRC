@@ -68,10 +68,10 @@
 biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$stn %in% finalSites), ], 
                        paramCol     = "SALINITY", yearCol = "year", year      = "2016", 
                        returnRas    = FALSE, # option to return raster as an object
-                       exportRaster = FALSE, fileName     = "NA.tif", BISCmap = SFNRC::bnp,
+                       exportRaster = FALSE, fileName     = "NA.tif", BISCmap = SFNRC::bnp, 
                        exportPlot   = FALSE, plotName     = "NA.png",
                        plotWidth    = 4,     plotHeight   = 5, plotRes = 200,
-                       plotZLims    = "range", minDataPoints = 2,
+                       plotZLims    = NA, minDataPoints = 2,
                        interpMethod = "ordinary kriging",
                        vgModelType  = c("Exp", "Mat", "Gau", "Sph", "Ste")
 ) {
@@ -81,7 +81,7 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
   cat(length(unique(pts$stn)), "stations with", paramCol, "data in", year, "       ")
   if (nrow(pts) > minDataPoints) { # only interpolate if there's more than x data points.
     
-    if (plotZLims %in% "range") {
+    if (sum(!is.na(plotZLims) < 2)) { # set range
       plotZLims <- range(pts@data[, paramCol], na.rm = TRUE)
     }
     
@@ -103,24 +103,22 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
       ###
       
       # pts@data
-      
-
-      
-      ### inverse distance weighted interpolation
-      # http://rspatial.org/analysis/rst/4-interpolation.html
-      gs  <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) 
-      v   <- gstat::variogram(gs) # generate variogram
-      # fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0.9, model = vgModelType, range = max(v$dist) / 2, nugget = 0))
-      fve <- gstat::fit.variogram(v, gstat::vgm(vgModelType), fit.kappa = TRUE) # https://www.r-spatial.org/r/2016/02/14/gstat-variogram-fitting.html
-      ### look into automap::autoKrige. coordinate system issues are obstacle. See also more generally: https://gis.stackexchange.com/questions/147660/strange-spatial-interpolation-results-from-ordinary-kriging
-      ### TODO: report specs on interpolation
-      ### function doesn't handle convergence errors well
-      
+     
       ### kriging using the variogram
       template.ras <- raster::raster(BISCmap, res = c(0.001, 0.001))
       blank.ras    <- methods::as(template.ras, "SpatialGrid") # sf::as may work
       
       if (interpMethod %in% "ordinary kriging") {
+        ### inverse distance weighted interpolation
+        # http://rspatial.org/analysis/rst/4-interpolation.html
+        gs  <- gstat::gstat(formula = get(paramCol) ~ 1, locations = pts, nmax = 5, set = list(idp = 0)) 
+        v   <- gstat::variogram(gs) # generate variogram
+        # fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0.9, model = vgModelType, range = max(v$dist) / 2, nugget = 0))
+        fve <- gstat::fit.variogram(v, gstat::vgm(vgModelType), fit.kappa = TRUE) # https://www.r-spatial.org/r/2016/02/14/gstat-variogram-fitting.html
+        ### look into automap::autoKrige. coordinate system issues are obstacle. See also more generally: https://gis.stackexchange.com/questions/147660/strange-spatial-interpolation-results-from-ordinary-kriging
+        ### TODO: report specs on interpolation
+        ### function doesn't handle convergence errors well
+        
         ### predict values
         k  <- gstat::gstat(formula = get(paramCol) ~ 1, location = pts, model = fve)
         
@@ -152,8 +150,8 @@ biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@dat
         # ### Create nearest neighbor polygons
         vlocs         <- dismo::voronoi(pts)
         # plot(vlocs)
-        bnp_ag        <- raster::aggregate(BISCmap)
-        bnp_intsct    <- raster::intersect(vlocs, bnp_ag)
+        
+        bnp_intsct    <- raster::intersect(vlocs, BISCmap)
         # spplot(bnp_intsct, paramCol, col.regions = rev(get_col_regions()))
 
         ### rasterize
