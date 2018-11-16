@@ -19,6 +19,17 @@ Data: Biscayne Bay model boundaries
 \examples{
 plot(bnpMod)
 
+\dontrun{
+### code used to generate object
+shp <- "/opt/physical/troy/ESRIDATA/enp_boundary_line/modelBoxes.shp" # "/opt/physical/troy/ESRIDATA/BNP_boundary.shp"
+bnpMod <- readOGR(shp, layer = basename(strsplit(shp, "\\\\.")[[1]])[1], pointDropZ = TRUE, stringsAsFactors = FALSE)
+bnpMod <- bnpMod[as.character(bnpMod$BOX_CODE) \%in\% c("SNB", "NCI", "NCO", "NNB", "SCO", "SCI", "SCM", "CS", "FBE"), ]
+bnpMod <- spTransform(bnpMod, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+# simplify the polygons to remove intersections
+bnpMod2 <- gSimplify(bnpMod, tol = 0.00001) 
+bnpMod  <- SpatialPolygonsDataFrame(bnpMod2, data.frame(bnpMod@data))
+}
+
 }
 \keyword{bay,}
 \keyword{biscayne}

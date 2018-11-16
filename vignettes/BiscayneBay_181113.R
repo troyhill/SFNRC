@@ -78,7 +78,7 @@ grayColor <- 0.55
 fig2Col   <- "gray55"
 minPoints <- 8 # minimum number of sampling points required for interpolation
 polygonLayer <- bnpMod # shapefile to be used for subsetting data, interpolation, etc.
-interpMeth <- "nearest neighbor"
+interpMeth <- "ordinary kriging" # uses OK where variogram converges, otherwise uses nearest neighbor
 
 compareParams <- c("AMMONIA-N", "NITRATE+NITRITE-N", "TEMP",
                    "SALINITY", "PH, FIELD", "CHLOROPHYLL-A", "TURBIDITY", "DISSOLVED OXYGEN", 
@@ -150,7 +150,7 @@ combd$subRegion <- as.character(polygonLayer@data$BOX_CODE)[as.numeric(as.charac
 ## ----Subregion map, fig.width = 4, fig.height = 4, message = FALSE, echo=FALSE----
 par(mar = c(4,4,0.5,0.5))
 cols.sub <- colors()[grep(x = colors(), pattern = "yellow|cyan|red|blue|green|brown")]
-cols <- cols.sub[sample(x =  length(cols.sub), size = length(unique(polygonLayer@data$BOX_CODE)))]
+cols <- cols.sub[sample(x =  length(cols.sub), size = length(names(polygonLayer@data$BOX_CODE)))]
 cols <- cols.sub[sample(x =  length(cols.sub), size = length(unique(polygonLayer@data$BOX_CODE)))]
 
 plot(polygonLayer, col = cols)
