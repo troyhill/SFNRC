@@ -2,23 +2,23 @@
 #'
 #' @description Identifies parameters available from the DataForEver hydrology database
 #' 
-#' @usage dfe.data.types(parameter = "all", stn = "all", fixed = FALSE)
+#' @usage getDataTypes(parameter = "all", stn = "all", fixed = FALSE)
 #' 
 #' @param parameter a character string specifying the parameter(s) used to constrain the query.
 #' @param stn a character string specifying the station(s) used to constrain the query.
 #' @param fixed If \code{TRUE}, station name must be an exact match with the \code{stn} argument
 #'  
-#' @return dataframe \code{dfe.data.types} returns a vector of stations and parameters.
+#' @return dataframe \code{getDataTypes} returns a vector of stations and parameters.
 #' 
 #' 
 #' @examples
 #' \dontrun{
 #' ### search by parameter:
-#' dfe.data.types(parameter = "salinity")
+#' getDataTypes(parameter = "salinity")
 #' 
 #' ### search by station:
-#' dfe.data.types(stn = "S333")
-#' dfe.data.types(stn = "S333", fixed = TRUE) # note that the function does not use exact matches
+#' getDataTypes(stn = "S333")
+#' getDataTypes(stn = "S333", fixed = TRUE) # note that the function does not use exact matches
 #'      # unless requested to do so using \code{fixed = TRUE}
 #' }
 #' 
@@ -30,7 +30,7 @@
 
 
 
-dfe.data.types <- function(parameter = "all", stn = "all", fixed = FALSE) {
+getDataTypes <- function(parameter = "all", stn = "all", fixed = FALSE) {
   
   searchParam <- parameter
   searchStn   <- toupper(stn)

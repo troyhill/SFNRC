@@ -2,7 +2,7 @@
 #'
 #' @description Downloads and compiles DataForEver water quality data. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
 #' 
-#' @usage dfe.wq(stns, target_analytes = "all", 
+#' @usage getWQ(stns, target_analytes = "all", 
 #' matricesToExclude = "analyte_free_water",
 #' output_colNames = c("stn", "date", "time", "param", "units", 
 #' "matrix", "mdl", "value"),
@@ -16,15 +16,15 @@
 #' @param output_colNames names of columns in output (changing this is not recommended; this argument is more of a placeholder)
 #' @param output_colClasses classes of columns in output (changing this is not recommended; this argument is more of a placeholder)
 #' @param rFriendlyParamNames TRUE/FALSE; indicates whether parameter names should be modified to be R-friendly (no special characters, commas, or spaces). Advisable for analysis, as this makes analysis easier and pre-empts changes coerced by, e.g., \code{plyr::ddply}
-#' @return dataframe \code{dfe.wq} returns a dataframe with water quality measurements from each station identified in \code{stns}.
+#' @return dataframe \code{getWQ} returns a dataframe with water quality measurements from each station identified in \code{stns}.
 #' 
-#' @seealso \code{\link{dfe.hydro}}
+#' @seealso \code{\link{getHydro}}
 #' 
 #' @examples
 #' \dontrun{
 #' stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
 #' 
-#' head(dfe.wq(stns = stations, target_analytes = c("PHOSPHATE|NITROGEN|AMMONI")))
+#' head(getWQ(stns = stations, target_analytes = c("PHOSPHATE|NITROGEN|AMMONI")))
 #' 
 #' ### to generate the wqDat dataframe included in package:
 #' targetStns <- c("AC01", "BB02", "BB04", "BB05A", "BB06", "BB09", "BB10", "BB11", 
@@ -47,7 +47,7 @@
 #' "S21A", "S21", "S22", "S25", "S25A", "S25B", "S26", "S27", "S28", 
 #' "G58", "S700", "G93", "S123", "S197")
 #' 
-#' wq.df <- dfe.wq(stns = targetStns)
+#' wq.df <- getWQ(stns = targetStns)
 #' }
 #' 
 #' @importFrom utils write.table
@@ -58,7 +58,7 @@
 
 ### DataForEver water quality data: downloads data and compiles a dataframe of water quality data based on a list of stations. 
 ### Works only on linux, issues system commands and modifies files on disk
-dfe.wq <- function(stns, target_analytes = "all", 
+getWQ <- function(stns, target_analytes = "all", 
                    matricesToExclude = "analyte_free_water",
                    output_colNames = c("stn",         "date",      "time",      "param",     "units",     "matrix",    "mdl",       "value"),
                    output_colClasses = c("character", "character", "character", "character", "character", "character", "numeric", "numeric"),

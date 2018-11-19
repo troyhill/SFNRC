@@ -4,7 +4,7 @@
 #'
 #' @details This function is tailored specifically for DERM datasets.
 #' 
-#' @usage derm.wq(filename = "/opt/physical/troy/RDATA/biscayne/data/data_BBWQall_20180517.txt",
+#' @usage procDERM(filename = "/opt/physical/troy/RDATA/biscayne/data/data_BBWQall_20180517.txt",
 #' remove_QC_codes = c("B|H|J|K|Q|Y|\\\\?|\\\\*"), 
 #' new_names = c("stn", "date", "time", "param", "method", "units", 
 #' "QCcode", "mdl", "value", "dilution.factor", "depth", "depth.code", 
@@ -21,7 +21,7 @@
 #' 
 #' @examples
 #' \dontrun{
-#' head(derm.wq())
+#' head(procDERM())
 #' }
 #' 
 #' @importFrom utils write.table
@@ -33,7 +33,7 @@
 
 
 
-derm.wq <- function(filename = "/opt/physical/troy/RDATA/biscayne/data/data_BBWQall_20180517.txt",
+procDERM <- function(filename = "/opt/physical/troy/RDATA/biscayne/data/data_BBWQall_20180517.txt",
                     remove_QC_codes = c("B|H|J|K|Q|Y|\\?|\\*"), 
                     new_names = c("stn", "date", "time", "param", "method", 
                                   "units", "QCcode", "mdl", "value", "dilution.factor", 

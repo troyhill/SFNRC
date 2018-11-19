@@ -2,7 +2,7 @@
 #'
 #' @description Downloads and compiles DataForEver hydrology and water quality data. Creates plot and returns descriptive statistics and raw data in list form. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
 #' 
-#' @usage dfe.CQ(stn, parameter_list = c("flow", "tail_water", "head_water", "stage"),
+#' @usage plotCQ(stn, parameter_list = c("flow", "tail_water", "head_water", "stage"),
 #' target_analytes = "PHOSPHATE, TOTAL AS P", date_range = "all", rFriendlyParamNames = TRUE
 #' )
 #' 
@@ -12,13 +12,13 @@
 #' @param date_range date range to be included. Default is entire period of record.
 #' @param rFriendlyParamNames TRUE/FALSE; indicates whether parameter names should be modified to be R-friendly (no special characters, commas, or spaces). Advisable for analysis, as this makes analysis easier and pre-empts changes coerced by, e.g., \code{plyr::ddply}
 #' 
-#' @return list \code{dfe.CQ} returns a plot of the CQ dataframe with water quality measurements from each station identified in \code{stns}.
+#' @return list \code{getWQ} returns a plot of the CQ dataframe with water quality measurements from each station identified in \code{stns}.
 #' 
-#' @seealso \code{\link{dfe.wq}}, \code{\link{dfe.hydro}}
+#' @seealso \code{\link{getWQ}}, \code{\link{getHydro}}
 #' 
 #' @examples
 #' \dontrun{
-#' dfe.CQ(stn = "S333")
+#' plotCQ(stn = "S333")
 #' }
 #' 
 #' @importFrom utils write.table
@@ -32,17 +32,17 @@
 
 
 
-dfe.CQ <- function(stn, 
+plotCQ <- function(stn, 
                     parameter_list = c("flow", "tail_water", "head_water", "stage"),
                     target_analytes = "PHOSPHATE, TOTAL AS P", date_range = "all", 
                    rFriendlyParamNames = TRUE) {
   
   ### get hydro data
-  hyd <- dfe.hydro(stns = stn, data_shape = "wide")
+  hyd <- getHydro(stns = stn, data_shape = "wide")
   # hyd <- hydDat[hydDat$stn %in% "S700", ] ### for testing
 
   ### get water quality data
-  wq <- dfe.wq(stns = stn, target_analytes = toupper(target_analytes), rFriendlyParamNames = rFriendlyParamNames)
+  wq <- getWQ(stns = stn, target_analytes = toupper(target_analytes), rFriendlyParamNames = rFriendlyParamNames)
   # wq <- wqDat[(wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$stn %in% "S700"), ] ### for testing
   ### convert wq to wide format
   

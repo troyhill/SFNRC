@@ -92,12 +92,12 @@ stations   <- c("S333", "S12A", "S12B", "S12C", "S12D")
 targParams <- c("flow", "head_water")
 
 # usage examples: 
-# hyd.long  <- dfe.hydro(stns = stations, parameter_list = targParams)
-# hyd.wide <- dfe.hydro(stns = stations, parameter_list = targParams, data_shape = "wide")
-# hyd.vwide <- dfe.hydro(stns = stations, parameter_list = targParams, data_shape = "really_wide")
+# hyd.long  <- getHydro(stns = stations, parameter_list = targParams)
+# hyd.wide <- getHydro(stns = stations, parameter_list = targParams, data_shape = "wide")
+# hyd.vwide <- getHydro(stns = stations, parameter_list = targParams, data_shape = "really_wide")
 #    
 # # simultaneously grab water quality data:
-# hyd.wq <- dfe.hydro(stns = stations, parameter_list = targParams, getWaterQuality = TRUE, parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
+# hyd.wq <- getHydro(stns = stations, parameter_list = targParams, getWaterQuality = TRUE, parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
 
 
 # 

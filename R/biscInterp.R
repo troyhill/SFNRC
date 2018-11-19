@@ -38,11 +38,11 @@
 #' sitesInBay <- sp::over(finDat.coords, bnp)
 #' sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 #' 
-#' biscInterp(inputData = sitesInBay,
+#' interp(inputData = sitesInBay,
 #'     paramCol = "SALINITY", year = "2016")
 #'     
 #'     ### store raster layer in working environment
-#' biscRas <- biscInterp(inputData = sitesInBay,
+#' biscRas <- interp(inputData = sitesInBay,
 #'     paramCol = "SALINITY", year = "2016", returnRas = TRUE)
 #'     }
 #' 
@@ -65,7 +65,7 @@
 #' @importFrom graphics par 
 #' @importFrom graphics plot
 #' 
-biscInterp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$stn %in% finalSites), ], 
+interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$stn %in% finalSites), ], 
                        paramCol     = "SALINITY", yearCol = "year", year      = "2016", 
                        returnRas    = FALSE, # option to return raster as an object
                        exportRaster = FALSE, fileName     = "NA.tif", BISCmap = SFNRC::bnp, 

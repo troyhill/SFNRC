@@ -2,7 +2,7 @@
 #'
 #' @description Downloads and compiles DataForEver hydrology data. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
 #' 
-#' @usage dfe.hydro(stns, parameter_list = c("flow", "tail_water", "head_water", "stage"),
+#' @usage getHydro(stns, parameter_list = c("flow", "tail_water", "head_water", "stage"),
 #' data_shape = "long", getWaterQuality = FALSE, ...
 #' )
 #' 
@@ -12,21 +12,21 @@
 #' @param getWaterQuality if \code{TRUE}, water quality data are also downloaded and combined into a single dataframe. If \code{getWaterQuality = TRUE}, then \code{data_shape} is automatically set to \code{wide}.
 #' @param ... additional arguments sent to \code{dfe.wq}
 #' 
-#' @return dataframe \code{dfe.hydro} returns a dataframe with water quality measurements from each station identified in \code{stns}.
+#' @return dataframe \code{getHydro} returns a dataframe with water quality measurements from each station identified in \code{stns}.
 #' 
-#' @seealso \code{\link{dfe.wq}}
+#' @seealso \code{\link{getWQ}}
 #' 
 #' @examples
 #' \dontrun{
 #' stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
 #' 
 #'   # usage examples: 
-#'   hydro.test  <- dfe.hydro(stns = stations)
-#'   hydro.test2 <- dfe.hydro(stns = stations, data_shape = "wide")
-#'   hydro.test3 <- dfe.hydro(stns = stations, data_shape = "really_wide")
+#'   hydro.test  <- getHydro(stns = stations)
+#'   hydro.test2 <- getHydro(stns = stations, data_shape = "wide")
+#'   hydro.test3 <- getHydro(stns = stations, data_shape = "really_wide")
 #'   
 #'   # simultaneously grab water quality data:
-#'   hydro.test4 <- dfe.hydro(stns = stations, data_shape = "wide", getWaterQuality = TRUE, 
+#'   hydro.test4 <- getHydro(stns = stations, data_shape = "wide", getWaterQuality = TRUE, 
 #'        parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
 #'        
 #'  plot(PHOSPHATETOTALASP ~ flow, data = hydro.test4[hydro.test4$flow > 0, ], pch = 19, las = 1)
@@ -54,7 +54,7 @@
 #' "S21A", "S21", "S22", "S25", "S25A", "S25B", "S26", "S27", "S28", 
 #' "G58", "S700", "G93", "S123", "S197")
 #' 
-#' hyd.df <- dfe.hydro(stns = targetStns, parameter_list = c("flow", "head_water", "salinity", 
+#' hyd.df <- getHydro(stns = targetStns, parameter_list = c("flow", "head_water", "salinity", 
 #'      "temperature", "tail_water", "stage", "rainfall", "precipitation", "ppt"), 
 #'      data_shape = "wide")
 #' }
@@ -69,7 +69,7 @@
 
 
 
-dfe.hydro <- function(stns, 
+getHydro <- function(stns, 
                       parameter_list = c("flow", "tail_water", "head_water", "stage"),
                       data_shape = "long", getWaterQuality = FALSE, ...) {
   ### TODO: write bash script using contents of parameter_list rather than post-dl filtering
@@ -259,7 +259,7 @@ dfe.hydro <- function(stns,
   ### merge with water quality data if TRUE
   ########################
   if (getWaterQuality == TRUE) {
-    wq <- dfe.wq(stns = stns, ...) # target_analytes = toupper(target_analytes)
+    wq <- getWQ(stns = stns, ...) # target_analytes = toupper(target_analytes)
 
     wq.temp <- stats::reshape(wq, idvar = c("stn", "date", "year", "mo", "day", "time", "datetime"), timevar = "param", direction = "wide")
     names(wq.temp) <- gsub(x = names(wq.temp), pattern = "value.| |,", replacement = "")

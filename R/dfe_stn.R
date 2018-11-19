@@ -2,16 +2,16 @@
 #'
 #' @description Identifies DataForEver stations matching query
 #' 
-#' @usage dfe.stn(query = "S33")
+#' @usage getStn(query = "S33")
 #' 
 #' @param query a character string. Case insensitive.
 #' 
-#' @return dataframe \code{dfe.stn} returns a vector of stations
+#' @return dataframe \code{getStn} returns a vector of stations
 #' 
 #' 
 #' @examples
-#' a <- dfe.stn(query = "S33")
-#' a <- dfe.stn(query = "s333")
+#' a <- getStn(query = "S33")
+#' a <- getStn(query = "s333")
 #' 
 #' @importFrom utils read.delim
 #' 
@@ -20,7 +20,7 @@
 
 
 
-dfe.stn <- function(query = "S33") {
+getStn <- function(query = "S33") {
   stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
   bash.script.loc  <- file.path(tempdir(), "bash_stnLike.sh")
   

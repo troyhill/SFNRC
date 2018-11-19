@@ -44,7 +44,7 @@
 #' "G58", "S700", "G93", # new structures since SWIM plan?
 #' "S123",  "S21A", "S21", "S20", "S20F", "S20G", "S197"))
 #' 
-#' testDat <- dfe.wq(stns = targetStations)
+#' testDat <- getWQ(stns = targetStations)
 #' 
 #' 
 #' ### export to .csv: 
