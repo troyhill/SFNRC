@@ -254,7 +254,7 @@ dfe.hydro <- function(stns,
   tempDat$date     <- as.POSIXct(tempDat$date, format = "%Y-%m-%d")
   
   tempDat <- tempDat[order(tempDat$date), ]
-  
+  mergDat <- tempDat
   ########################
   ### merge with water quality data if TRUE
   ########################
