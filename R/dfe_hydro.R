@@ -3,11 +3,14 @@
 #' @description Downloads and compiles DataForEver hydrology data. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
 #' 
 #' @usage dfe.hydro(stns, parameter_list = c("flow", "tail_water", "head_water", "stage"),
-#' data_shape = "long")
+#' data_shape = "long", getWaterQuality = FALSE, ...
+#' )
 #' 
 #' @param stns a single-column dataframe of DataForEver station names. 
 #' @param parameter_list vector of desired parameters. 
 #' @param data_shape shape of output dataframe. Default is \code{long} (one row per date-station-param) but can also be \code{wide} (one row per date-station) or \code{really_wide} (one row per date)
+#' @param getWaterQuality if \code{TRUE}, water quality data are also downloaded and combined into a single dataframe. If \code{getWaterQuality = TRUE}, then \code{data_shape} is automatically set to \code{wide}.
+#' @param ... additional arguments sent to \code{dfe.wq}
 #' 
 #' @return dataframe \code{dfe.hydro} returns a dataframe with water quality measurements from each station identified in \code{stns}.
 #' 
@@ -18,10 +21,13 @@
 #' stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
 #' 
 #'   # usage examples: 
-#'   hydro.test <- dfe.hydro(stns = stations)
+#'   hydro.test  <- dfe.hydro(stns = stations)
 #'   hydro.test2 <- dfe.hydro(stns = stations, data_shape = "wide")
 #'   hydro.test3 <- dfe.hydro(stns = stations, data_shape = "really_wide")
 #'   
+#'   # simultaneously grab water quality data:
+#'   hydro.test4 <- dfe.hydro(stns = stations, data_shape = "wide", getWaterQuality = TRUE, 
+#'        parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
 #'   
 #'   
 #'   ### to generate the hydDat dataframe included in package:
@@ -53,6 +59,7 @@
 #' @importFrom utils write.table
 #' @importFrom utils read.delim
 #' @importFrom stats reshape
+#' @importFrom plyr join_all
 #' 
 #' @export
 
@@ -61,8 +68,14 @@
 
 dfe.hydro <- function(stns, 
                       parameter_list = c("flow", "tail_water", "head_water", "stage"),
-                      data_shape = "long") {
+                      data_shape = "long", getWaterQuality = FALSE, ...) {
   ### TODO: write bash script using contents of parameter_list rather than post-dl filtering
+  
+  ### temporary hack. will make function more robust
+  if(getWaterQuality) {
+    data_shape <- "wide"
+  }
+  
   
   files.in.tmp     <- list.files(tempdir(), recursive = TRUE)
   stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
@@ -218,7 +231,7 @@ dfe.hydro <- function(stns,
   tempDat <- dat.list[dat.list$param %in% parameter_list, ] # seems duplicative
   
   ### data are output in long form. manipulate to wide or really wide if desired.
-  if (grepl(x = data_shape, pattern = "long")) {
+  if (!grepl(x = data_shape, pattern = "long")) {
     tempDat <- stats::reshape(tempDat, idvar = c("stn", "date"), timevar = "param", direction = "wide")
     names(tempDat) <- gsub(x = names(tempDat), pattern = "value.", replacement = "")
     # names(tempDat) <- c(hydro_col_names[c(1, 3)], "cfs", "hw.ft", "tw.ft", "stg.ft") # changes depending on parameters selected. should define by mapping new names to value.stage etc.
@@ -238,7 +251,21 @@ dfe.hydro <- function(stns,
   tempDat$date     <- as.POSIXct(tempDat$date, format = "%Y-%m-%d")
   
   tempDat <- tempDat[order(tempDat$date), ]
-  invisible(tempDat) 
+  
+  ########################
+  ### merge with water quality data if TRUE
+  ########################
+  if (getWaterQuality == TRUE) {
+    wq <- dfe.wq(stns = stns, ...) # target_analytes = toupper(target_analytes)
+
+    wq.temp <- stats::reshape(wq, idvar = c("stn", "date", "year", "mo", "day", "time", "datetime"), timevar = "param", direction = "wide")
+    names(wq.temp) <- gsub(x = names(wq.temp), pattern = "value.| |,", replacement = "")
+    
+    wqDatForMerge <- wq.temp[, c("stn", "date", grep(x = names(wq.temp), pattern = "units|mdl|matrix", value = TRUE), names(wq.temp)[length(names(wq.temp))])]
+    mergDat <- plyr::join_all(list(tempDat, wqDatForMerge), by = c("stn", "date"))
+  }
+
+  invisible(mergDat) 
   
   ########################
   ### clean up the temp folder

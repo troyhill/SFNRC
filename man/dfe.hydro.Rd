@@ -5,7 +5,8 @@
 \title{DataForEver hydrology database API}
 \usage{
 dfe.hydro(stns, parameter_list = c("flow", "tail_water", "head_water", "stage"),
-data_shape = "long")
+data_shape = "long", getWaterQuality = FALSE, ...
+)
 }
 \arguments{
 \item{stns}{a single-column dataframe of DataForEver station names.}
@@ -13,6 +14,10 @@ data_shape = "long")
 \item{parameter_list}{vector of desired parameters.}
 
 \item{data_shape}{shape of output dataframe. Default is \code{long} (one row per date-station-param) but can also be \code{wide} (one row per date-station) or \code{really_wide} (one row per date)}
+
+\item{getWaterQuality}{if \code{TRUE}, water quality data are also downloaded and combined into a single dataframe. If \code{getWaterQuality = TRUE}, then \code{data_shape} is automatically set to \code{wide}.}
+
+\item{...}{additional arguments sent to \code{dfe.wq}}
 }
 \value{
 dataframe \code{dfe.hydro} returns a dataframe with water quality measurements from each station identified in \code{stns}.
@@ -25,10 +30,13 @@ Downloads and compiles DataForEver hydrology data. This function Works only on l
 stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
 
   # usage examples: 
-  hydro.test <- dfe.hydro(stns = stations)
+  hydro.test  <- dfe.hydro(stns = stations)
   hydro.test2 <- dfe.hydro(stns = stations, data_shape = "wide")
   hydro.test3 <- dfe.hydro(stns = stations, data_shape = "really_wide")
   
+  # simultaneously grab water quality data:
+  hydro.test4 <- dfe.hydro(stns = stations, data_shape = "wide", getWaterQuality = TRUE, 
+       parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
   
   
   ### to generate the hydDat dataframe included in package:
