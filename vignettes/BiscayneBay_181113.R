@@ -216,6 +216,19 @@ combd.seas$subregion <- as.character(polygonLayer@data$BOX_CODE)[as.numeric(as.c
 ggplot(combd.seas, aes(y = mean, x = yr, col = subregion)) + #geom_point(size  = 0.25, position = pd3) + 
   geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, fatten = 1) + theme_classic() + facet_grid(param ~ seas, scales = "free_y") + ylab("") 
 
+ggplot(combd.seas[grepl(x = combd.seas$param, pattern = "TEMP"), ], aes(y = mean, x = yr, col = subregion)) + #geom_point(size  = 0.25, position = pd3) + 
+  geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, fatten = 1) + theme_classic() + facet_grid(param ~ seas, scales = "free_y") + ylab("") +
+  geom_smooth()
+
+ggplot(combd.seas[grepl(x = combd.seas$param, pattern = "SALINITY"), ], aes(y = mean, x = yr, col = subregion)) + #geom_point(size  = 0.25, position = pd3) + 
+  geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, fatten = 1) + theme_classic() + facet_grid(param ~ seas, scales = "free_y") + ylab("") +
+  geom_smooth()
+
+ggplot(combd.seas[grepl(x = combd.seas$param, pattern = "CHLORO"), ], aes(y = mean, x = yr, col = subregion)) + #geom_point(size  = 0.25, position = pd3) + 
+  geom_pointrange(aes(ymin = mean - sd, ymax = mean + sd), position = pd3, fatten = 1) + theme_classic() + facet_grid(param ~ seas, scales = "free_y") + ylab("") +
+  geom_smooth()
+
+
 
 ## ----annual water inflows from canals, include=FALSE, echo=FALSE---------
 # Prep canal water quality data for merging with flows --------------------------------

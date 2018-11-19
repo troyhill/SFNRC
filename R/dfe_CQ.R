@@ -23,7 +23,9 @@
 #' 
 #' @importFrom utils write.table
 #' @importFrom utils read.delim
+#' @importFrom graphics abline
 #' @importFrom stats reshape
+#' @importFrom stats lm
 #' 
 #' @export
 
@@ -54,8 +56,8 @@ dfe.CQ <- function(stn,
   plot(log(get(names(tempDat)[length(names(tempDat))])) ~ log(flow), data = mergDat[(mergDat[, names(tempDat)[length(names(tempDat))]] > 0)  & (mergDat$flow > 0), ],
        ylab = paste0(names(tempDat)[length(names(tempDat))], " (log)"), xlab = "Flow (log)")
   
-  summary(lmTmp <- lm(log(get(names(tempDat)[length(names(tempDat))])) ~ log(flow), data = mergDat[(mergDat[, names(tempDat)[length(names(tempDat))]] > 0) & (mergDat$flow > 0), ]))
-  abline(lmTmp, col = "red")
+  summary(lmTmp <- stats::lm(log(get(names(tempDat)[length(names(tempDat))])) ~ log(flow), data = mergDat[(mergDat[, names(tempDat)[length(names(tempDat))]] > 0) & (mergDat$flow > 0), ]))
+  graphics::abline(lmTmp, col = "red")
   
   ### return data
   mergDat

@@ -38,7 +38,7 @@ stn.targets <- c("S333", paste0("S12", toupper(letters[1:4])))
 # station coordinate file
 
 # Load SFNRC water quality data ---------------------------------
-head(wqDat)
+summary(wqDat[wqDat$param %in% "PHOSPHATE, TOTAL AS P", ])
 target_analytes <- c("PHOSPHATE|NITROGEN|AMMONI|SUSPENDED|DISSOLVED OXYGEN|CALCIUM|POTASSIUM|HARDNESS|SODIUM|CHLORIDE|TEMP|CONDUCTIVITY, FIELD|SILICA|LEAD, TOTAL|MAGNESIUM|TURBIDITY|CHLOROPHYLL|MERCURY, TOTAL|SULFATE|ZINC, TOTAL|CHLORDANE|MALATHION|CARBOPHENOTHION|PH, FIELD")
 
 
@@ -235,7 +235,8 @@ FlowVsNo <- ggplot(dat2[(dat2$stn %in% stn.targets) & (!is.na(dat2[, "PHOSPHATE.
   ylab (expression("Total P (mg P" %.%"L"^-1*")")) + xlab("") 
 
 
-
+# dat <- dat2[dat2$stn %in% stn.targets, ]
+# save(list = c("dat"), file = "/opt/physical/troy/RDATA/dataForJoe.RData")
 
 ### main thesis is that there's seasonality in P and flows, and that at S333 the P regime is similar, 
 ### but that flow regimes are profoundly different, leading to homogenization of water quality rather than strong flow/no-flow disparities.

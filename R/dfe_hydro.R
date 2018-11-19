@@ -45,7 +45,9 @@
 #' "S21A", "S21", "S22", "S25", "S25A", "S25B", "S26", "S27", "S28", 
 #' "G58", "S700", "G93", "S123", "S197")
 #' 
-#' hyd.df <- dfe.hydro(stns = targetStns, parameter_list = c("flow", "head_water", "salinity", "temperature", "tail_water", "stage", "rainfall", "precipitation", "ppt"), data_shape = "wide")
+#' hyd.df <- dfe.hydro(stns = targetStns, parameter_list = c("flow", "head_water", "salinity", 
+#'      "temperature", "tail_water", "stage", "rainfall", "precipitation", "ppt"), 
+#'      data_shape = "wide")
 #' }
 #' 
 #' @importFrom utils write.table
@@ -124,7 +126,7 @@ dfe.hydro <- function(stns,
                     hydroParam=${3:-flow}
                     
                     while read station; do  
-                    echo \"Saving $3 data from $station to ${station}_${hydroParam}.dat, if data available\"
+                    echo \"Saving $3 data from $station to ${station}_${hydroParam}.dat, if data are available\"
                     ", sql.script.loc, " $station $hydroParam 1960-01-01 $(date +%Y-%m-%d) daily aggregate_statistic validation_level units_converted 		\\
                     | gawk -F \"|\" '{printf\"%s\\t%s\\t%s\\t%s\\n\", $1, $2, $3, $4}' 				\\
                     > $1/${station}_${hydroParam}.dat;   
@@ -181,38 +183,48 @@ dfe.hydro <- function(stns,
   ########################
   ### load downloaded files into R
   ########################
-  hydro_col_names <- c("stn", "param", "date", "value")
-  dat.files.flow   <- grep(list.files(folder_with_data, full.names = TRUE), pattern = "_flow", value = TRUE)
-  dat.files.stg    <- grep(list.files(folder_with_data, full.names = TRUE), pattern = "_stage", value = TRUE)
-  dat.files.hw     <- grep(list.files(folder_with_data, full.names = TRUE), pattern = "_head_water", value = TRUE)
-  dat.files.tw     <- grep(list.files(folder_with_data, full.names = TRUE), pattern = "_tail_water", value = TRUE)
   
-  flow.list <- do.call(rbind, lapply(dat.files.flow, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE, na.strings = "null",
-                                                                                   col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
-  flow.list$value[is.na(flow.list$value)] <- 0
-  hw.list <- do.call(rbind, lapply(dat.files.hw, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE,  na.strings = "null",
-                                                                               col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
-  hw.list$value <- as.numeric(trimws(hw.list$value))
-  tw.list <- do.call(rbind, lapply(dat.files.tw, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE,  na.strings = "null",
-                                                                               col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
-  hw.list$value <- as.numeric(trimws(hw.list$value))
-  stg.list <- do.call(rbind, lapply(dat.files.stg, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE,  na.strings = "null",
-                                                                                 col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
+  ### identify unique params by extracting file names
+  # paramNames <- unique(lapply(strsplit(x = rev(gsub(x = list.files(folder_with_data), pattern = ".dat", replacement = "")), split = "_"), "[", 1))
+  hydro_col_names <- c("stn", "param", "date", "value")
+  dat.files   <- grep(list.files(folder_with_data, full.names = TRUE), pattern = paste0("_", parameter_list, collapse = "|"), value = TRUE)
+  
+  dat.list <- do.call(rbind, lapply(dat.files, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE, na.strings = "null",
+              col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
+                                                                                   
+  
+  # dat.files.flow   <- grep(list.files(folder_with_data, full.names = TRUE), pattern = "_flow", value = TRUE)
+  # dat.files.stg    <- grep(list.files(folder_with_data, full.names = TRUE), pattern = "_stage", value = TRUE)
+  # dat.files.hw     <- grep(list.files(folder_with_data, full.names = TRUE), pattern = "_head_water", value = TRUE)
+  # dat.files.tw     <- grep(list.files(folder_with_data, full.names = TRUE), pattern = "_tail_water", value = TRUE)
+  # 
+  # flow.list <- do.call(rbind, lapply(dat.files.flow, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE, na.strings = "null",
+  #                                                                                  col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
+  # flow.list$value[is.na(flow.list$value)] <- 0
+  # hw.list <- do.call(rbind, lapply(dat.files.hw, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE,  na.strings = "null",
+  #                                                                              col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
+  # hw.list$value <- as.numeric(trimws(hw.list$value))
+  # tw.list <- do.call(rbind, lapply(dat.files.tw, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE,  na.strings = "null",
+  #                                                                              col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
+  # hw.list$value <- as.numeric(trimws(hw.list$value))
+  # stg.list <- do.call(rbind, lapply(dat.files.stg, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE,  na.strings = "null",
+  #                                                                                col.names = hydro_col_names, colClasses = c("character", "character", "character", "numeric"))))
   
   ########################
   ### merge all the data
   ########################
-  tempDat <- do.call(rbind, list(flow.list, hw.list, tw.list, stg.list))
-  tempDat <- tempDat[tempDat$param %in% parameter_list, ]
+  # tempDat <- do.call(rbind, list(flow.list, hw.list, tw.list, stg.list))
+  # tempDat <- tempDat[tempDat$param %in% parameter_list, ]
+  tempDat <- dat.list[dat.list$param %in% parameter_list, ] # seems duplicative
   
   ### data are output in long form. manipulate to wide or really wide if desired.
-  if (grep(x = data_shape, pattern = "wide")) {
+  if (grepl(x = data_shape, pattern = "long")) {
     tempDat <- stats::reshape(tempDat, idvar = c("stn", "date"), timevar = "param", direction = "wide")
     names(tempDat) <- gsub(x = names(tempDat), pattern = "value.", replacement = "")
     # names(tempDat) <- c(hydro_col_names[c(1, 3)], "cfs", "hw.ft", "tw.ft", "stg.ft") # changes depending on parameters selected. should define by mapping new names to value.stage etc.
   }
   
-  if (data_shape %in% "really_wide") {
+  if (grepl(x = data_shape, pattern = "really_wide")) {
     tempDat <- stats::reshape(tempDat, idvar = c("date"), timevar = c("stn"), direction = "wide")
   }
   

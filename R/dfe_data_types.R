@@ -2,10 +2,11 @@
 #'
 #' @description Identifies parameters available from the DataForEver hydrology database
 #' 
-#' @usage dfe.data.types(parameter = "all", station = "all", fixed = FALSE)
+#' @usage dfe.data.types(parameter = "all", stn = "all", fixed = FALSE)
 #' 
 #' @param parameter a character string specifying the parameter(s) used to constrain the query.
 #' @param stn a character string specifying the station(s) used to constrain the query.
+#' @param fixed If \code{TRUE}, station name must be an exact match with the \code{stn} argument
 #'  
 #' @return dataframe \code{dfe.data.types} returns a vector of stations and parameters.
 #' 
@@ -17,7 +18,8 @@
 #' 
 #' ### search by station:
 #' dfe.data.types(stn = "S333")
-#' dfe.data.types(stn = "S333", fixed = TRUE) # note that the function does not use exact matches unless requested to do so using \code{fixed = TRUE}
+#' dfe.data.types(stn = "S333", fixed = TRUE) # note that the function does not use exact matches
+#'      # unless requested to do so using \code{fixed = TRUE}
 #' }
 #' 
 #' 
@@ -89,6 +91,10 @@ dfe.data.types <- function(parameter = "all", stn = "all", fixed = FALSE) {
   stnDatFinal <- data.frame(matrix(unlist(strsplit(stnDatReturn, "\\Q|\\E")), ncol=2, byrow=TRUE))
   
   names(stnDatFinal) <- c("stn", "parameter")
+  
+  ### Not sure how these get converted to factors
+  stnDatFinal$stn       <- as.character(stnDatFinal$stn)
+  stnDatFinal$parameter <- as.character(stnDatFinal$parameter)
   
   if (!searchStn %in% "ALL") {
     stnDatFinal <- stnDatFinal[grep(x = stnDatFinal$stn, pattern = searchStn, fixed = fixed), ]

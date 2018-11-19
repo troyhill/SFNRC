@@ -52,7 +52,9 @@ stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
 "S21A", "S21", "S22", "S25", "S25A", "S25B", "S26", "S27", "S28", 
 "G58", "S700", "G93", "S123", "S197")
 
-hyd.df <- dfe.hydro(stns = targetStns, parameter_list = c("flow", "head_water", "salinity", "temperature", "tail_water", "stage", "rainfall", "precipitation", "ppt"), data_shape = "wide")
+hyd.df <- dfe.hydro(stns = targetStns, parameter_list = c("flow", "head_water", "salinity", 
+     "temperature", "tail_water", "stage", "rainfall", "precipitation", "ppt"), 
+     data_shape = "wide")
 }
 
 }

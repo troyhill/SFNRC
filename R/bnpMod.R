@@ -1,6 +1,6 @@
 #' Data: Biscayne Bay model boundaries
 #'
-#'
+#' @description Biscayne Bay box model boundaries, simplified using Ramer-Douglas-Peucker algorithm.
 #'
 #' @format A shapefile of model boundaries in Biscayne Bay, Florida. Coordinate reference system is "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 #' \describe{
@@ -17,13 +17,17 @@
 #' 
 #' \dontrun{
 #' ### code used to generate object
-#' shp <- "/opt/physical/troy/ESRIDATA/enp_boundary_line/modelBoxes.shp" # "/opt/physical/troy/ESRIDATA/BNP_boundary.shp"
-#' bnpMod <- readOGR(shp, layer = basename(strsplit(shp, "\\.")[[1]])[1], pointDropZ = TRUE, stringsAsFactors = FALSE)
-#' bnpMod <- bnpMod[as.character(bnpMod$BOX_CODE) %in% c("SNB", "NCI", "NCO", "NNB", "SCO", "SCI", "SCM", "CS", "FBE"), ]
-#' bnpMod <- spTransform(bnpMod, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#' shp <- "/opt/physical/troy/ESRIDATA/enp_boundary_line/modelBoxes.shp" 
+#'       # "/opt/physical/troy/ESRIDATA/BNP_boundary.shp"
+#' bnpMod <- readOGR(shp, layer = basename(strsplit(shp, "\\.")[[1]])[1], 
+#'      pointDropZ = TRUE, stringsAsFactors = FALSE)
+#' bnpMod <- bnpMod[as.character(bnpMod$BOX_CODE) \%in\% 
+#'       c("SNB", "NCI", "NCO", "NNB", "SCO", "SCI", "SCM", "CS", "FBE"), ]
+#' bnpMod <- spTransform(bnpMod, 
+#'       CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 #' # simplify the polygons to remove intersections
 #' bnpMod2 <- gSimplify(bnpMod, tol = 0.00001) 
-#' bnpMod  <- SpatialPolygonsDataFrame(bnpMod2, data.frame(bnpMod@data))
+#' bnpMod  <- SpatialPolygonsDataFrame(bnpMod2, data.frame(bnpMod@@data))
 #' }
 #' 
 NULL

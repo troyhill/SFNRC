@@ -23,7 +23,9 @@ write.csv(masterCoords, file = file.path(tempdir(), "masterCoords.csv"))
 #### used to generate coordinate object
 \dontrun{
 library(dplyr)
-masterCoords <- read.csv(file = "/home/thill/RDATA/dataForEver/WQdata/station_coordinates/stnCoords_all.csv", stringsAsFactors = FALSE)
+masterCoords <- read.csv(file = 
+     "/home/thill/RDATA/dataForEver/WQdata/station_coordinates/stnCoords_all.csv",
+     stringsAsFactors = FALSE)
 masterCoords <- masterCoords \%>\% group_by(stn) \%>\% filter(duplicated(stn) | n()==1)
 coordinates(masterCoords) <- c("long", "lat")
 proj4string(masterCoords) <- CRS("+init=epsg:3512")
