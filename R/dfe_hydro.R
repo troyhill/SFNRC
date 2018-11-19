@@ -29,8 +29,8 @@
 #'   hydro.test4 <- dfe.hydro(stns = stations, data_shape = "wide", getWaterQuality = TRUE, 
 #'        parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
 #'        
-#'  plot(PHOSPHATETOTALASP ~ flow, data = hydro.test4, pch = 19, las = 1, ylim = c(0, 1))
-#'  plot(PHOSPHATETOTALASP ~ head_water, data = hydro.test4, pch = 19, las = 1, ylim = c(0, 1))
+#'  plot(PHOSPHATETOTALASP ~ flow, data = hydro.test4[hydro.test4$flow > 0, ], pch = 19, las = 1)
+#'  plot(PHOSPHATETOTALASP ~ head_water, data = hydro.test4[hydro.test4$flow > 0, ], pch = 19, las = 1)
 #'   
 #'   
 #'   ### to generate the hydDat dataframe included in package:
