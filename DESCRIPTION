@@ -16,11 +16,11 @@ Depends:
     dismo,
     gstat,
     raster,
+    plyr,
     methods
 RoxygenNote: 6.1.0
 Suggests: knitr,
     rmarkdown,
-    plyr,
     reshape2,
     ggplot2,
     scales

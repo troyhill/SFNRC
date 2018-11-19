@@ -50,9 +50,10 @@ knitr::opts_chunk$set(echo = TRUE, comment=NA)
 
 
 
-## 1. 
+## 1. Introduction
 
 
+The \code{SFNRC} R package
 
 \vspace{3mm}\hrule
 
@@ -87,26 +88,28 @@ mass = (height$\cdot$a + b)^1/$\lambda$^
 ```{r allometry, include=TRUE, echo=FALSE}
 
 
-stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
+stations   <- c("S333", "S12A", "S12B", "S12C", "S12D")
+targParams <- c("flow", "head_water")
+
 # usage examples: 
-hyd.long  <- dfe.hydro(stns = stations)
-hyd.wide <- dfe.hydro(stns = stations, data_shape = "wide")
-hyd.vwide <- dfe.hydro(stns = stations, data_shape = "really_wide")
-   
-# simultaneously grab water quality data:
-hydro.test4 <- dfe.hydro(stns = stations, data_shape = "wide", getWaterQuality = TRUE, parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
+# hyd.long  <- dfe.hydro(stns = stations, parameter_list = targParams)
+# hyd.wide <- dfe.hydro(stns = stations, parameter_list = targParams, data_shape = "wide")
+# hyd.vwide <- dfe.hydro(stns = stations, parameter_list = targParams, data_shape = "really_wide")
+#    
+# # simultaneously grab water quality data:
+# hyd.wq <- dfe.hydro(stns = stations, parameter_list = targParams, getWaterQuality = TRUE, parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
 
 
-
-# find stations and parameters
-bsc.stns <- dfe.data.types(stn = "BISC|BB")
-unique(bsc.stns$parameter)
-stns <- as.character(unique(bsc.stns[bsc.stns$parameter %in% "salinity", "stn"]))
-
-# get data
-paramsToGet <- c("salinity", "surface_temperature", "bottom_temperature", "oxygen_solubility")
-bsc      <- dfe.hydro(stns = stns, parameter_list = paramsToGet)
-bsc.wide <- dfe.hydro(stns = stns, parameter_list = paramsToGet, data_shape = "wide")
+# 
+# # find stations and parameters
+# bsc.stns <- dfe.data.types(stn = "BISC|BB")
+# unique(bsc.stns$parameter)
+# stns <- as.character(unique(bsc.stns[bsc.stns$parameter %in% "salinity", "stn"]))
+# 
+# # get data
+# paramsToGet <- c("salinity", "surface_temperature", "bottom_temperature", "oxygen_solubility")
+# bsc      <- dfe.hydro(stns = stns, parameter_list = paramsToGet)
+# bsc.wide <- dfe.hydro(stns = stns, parameter_list = paramsToGet, data_shape = "wide")
 
 ```
 

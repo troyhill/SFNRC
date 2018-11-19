@@ -50,10 +50,12 @@ targetStations <- c("COOPERTN", "FROGCITY", "G311", "G342A", "G342B", "G342C",
 
 testDat <- dfe.wq(stns = targetStations)
 
-}
 
 ### export to .csv: 
-write.csv(wqDat, file = file.path(tempdir(), "wqDat.csv"))
+write.csv(testDat, file = file.path(tempdir(), "wqDat.csv"))
+}
+head(wqDat)
+
 }
 \keyword{data,}
 \keyword{quality}

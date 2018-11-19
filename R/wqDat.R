@@ -46,8 +46,10 @@
 #' 
 #' testDat <- dfe.wq(stns = targetStations)
 #' 
-#' }
 #' 
 #' ### export to .csv: 
-#' write.csv(wqDat, file = file.path(tempdir(), "wqDat.csv"))
+#' write.csv(testDat, file = file.path(tempdir(), "wqDat.csv"))
+#' }
+#' head(wqDat)
+#' 
 NULL
