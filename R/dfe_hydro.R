@@ -28,6 +28,9 @@
 #'   # simultaneously grab water quality data:
 #'   hydro.test4 <- dfe.hydro(stns = stations, data_shape = "wide", getWaterQuality = TRUE, 
 #'        parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
+#'        
+#'  plot(PHOSPHATETOTALASP ~ flow, data = hydro.test4, pch = 19, las = 1, ylim = c(0, 1))
+#'  plot(PHOSPHATETOTALASP ~ head_water, data = hydro.test4, pch = 19, las = 1, ylim = c(0, 1))
 #'   
 #'   
 #'   ### to generate the hydDat dataframe included in package:
@@ -261,7 +264,7 @@ dfe.hydro <- function(stns,
     wq.temp <- stats::reshape(wq, idvar = c("stn", "date", "year", "mo", "day", "time", "datetime"), timevar = "param", direction = "wide")
     names(wq.temp) <- gsub(x = names(wq.temp), pattern = "value.| |,", replacement = "")
     
-    wqDatForMerge <- wq.temp[, c("stn", "date", grep(x = names(wq.temp), pattern = "units|mdl|matrix", value = TRUE), names(wq.temp)[length(names(wq.temp))])]
+    wqDatForMerge <- wq.temp[, c("stn", "date", grep(x = names(wq.temp), pattern = "units|mdl", value = TRUE), names(wq.temp)[length(names(wq.temp))])]
     mergDat <- plyr::join_all(list(tempDat, wqDatForMerge), by = c("stn", "date"))
   }
 
