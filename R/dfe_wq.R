@@ -117,7 +117,7 @@ getWQ <- function(stns, target_analytes = "all",
                                                                      colClasses = output_colClasses)))
   
   if (!target_analytes %in% "all") {
-    tempDat <- tempDat[tempDat$param %in% target_analytes, ]
+    tempDat <- tempDat[grepl(x = tempDat$param, pattern = target_analytes), ]
   }
   
   if (rFriendlyParamNames) {

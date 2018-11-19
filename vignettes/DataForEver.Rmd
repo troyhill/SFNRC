@@ -1,5 +1,5 @@
 ---
-title: 'Working with DataForEver data'
+title: 'Exploring DataForEver data'
 subtitle: ''
 output: 
   pdf_document: 
@@ -52,8 +52,20 @@ knitr::opts_chunk$set(echo = TRUE, comment=NA)
 
 ## 1. Introduction
 
+First and foremost, the `SFNRC` R package provides a simple, streamlined means of interacting with the DataForEver hydrology and water quality databases from within an analytical programming envrionment (RStudio). Additional tools are also included in the package, including:
 
-The \code{SFNRC} R package
+- APIs for the South Florida Water Management District's DBHYDRO database
+
+- A function to process data collected by the Miami-Dade Department of Environmental and Resources Management in preparation for merging it with DataForEver data
+
+- A responsive tool for spatial interpolation of data
+
+- Utility functions to calculate annual geometric means, label seasons and water years, and similar rudimentary tasks.
+
+This vignette demonstrates some of the functionality of the `SFNRC` R package. 
+
+But before demonstrating the package's capabilities, it is important to highlight some critical limitations of the `SFNRC` R package. The DataForEver APIs can only be used on Linux machines connected to the SFNRC's internal network. When DataForEver's data are opened up to the general public, the capabilities in this R package will be adapted to provide broader access to these world-class databases. Another important aspect to draw attention to is the construction and use of BASH shell scripts by the DataForEver API functions. This dependence on BASH is the reason the APIs only work on Linux operating systems.
+
 
 \vspace{3mm}\hrule
 
@@ -80,16 +92,26 @@ fig2Col   <- "gray55"
 
 
 
-**2.1.	 text**
+**2. Downloading DataForEver data**
 
-mass = (height$\cdot$a + b)^1/$\lambda$^ 
-
-
-```{r allometry, include=TRUE, echo=FALSE}
+Using `SFNRC` to download DataForEver data is very straightforward. The water quality database is accessed using the function `getWQ()`:
 
 
+```{r wq, include=TRUE, echo=FALSE, results = "hide"}
+# identify desired stations and water quality parameters
 stations   <- c("S333", "S12A", "S12B", "S12C", "S12D")
-targParams <- c("flow", "head_water")
+wqParams   <- c("PHOSPHATE|NITROGEN|AMMONI|SUSPENDED")
+dat <- getWQ(stns = stations, target_analytes = wqParams)
+```
+
+```{r wq_print, include=TRUE, echo=TRUE}
+head(dat)
+```
+
+
+
+```{r hydrology, include=TRUE, echo=FALSE}
+hydroParams <- c("flow", "head_water")
 
 # usage examples: 
 # hyd.long  <- getHydro(stns = stations, parameter_list = targParams)
@@ -97,7 +119,7 @@ targParams <- c("flow", "head_water")
 # hyd.vwide <- getHydro(stns = stations, parameter_list = targParams, data_shape = "really_wide")
 #    
 # # simultaneously grab water quality data:
-# hyd.wq <- getHydro(stns = stations, parameter_list = targParams, getWaterQuality = TRUE, parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
+# hyd.wq <- getHydro(stns = stations, parameter_list = targParams, getWaterQuality = TRUE, target_analytes = "PHOSPHATE, TOTAL AS P")
 
 
 # 
