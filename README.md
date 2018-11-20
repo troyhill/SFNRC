@@ -7,10 +7,17 @@ Install the SFNRC R package from GitHub using the following commands in the R co
 
 ```r
 install.packages("devtools")
-devtools::install_github("troyhill/SFNRC")
+devtools::install_github("troyhill/SFNRC", build_vignettes = TRUE)
 
 library(SFNRC)
 ```
+
+The package comes with an introductory vignette showing some capabilities and usgae examples:
+
+```r
+vignette("DataForEver")
+```
+
 
 
 ## Troubleshooting installation
