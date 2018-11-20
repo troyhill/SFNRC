@@ -26,7 +26,8 @@
 #'
 #' @examples  
 #' \dontrun{
-#' fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param, fun.aggregate = mean) # long to wide
+#' fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param, 
+#'         fun.aggregate = mean) # long to wide
 #' agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 #' names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
 #' names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")

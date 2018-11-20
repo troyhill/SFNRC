@@ -1,7 +1,7 @@
 ---
 title: 'Exploring DataForEver data using the SFNRC R package'
 subtitle: ''
-output: 
+output: pdf_document
   pdf_document: 
     latex_engine: pdflatex
 vignette: >
@@ -38,10 +38,14 @@ if(!require(scales)){
 if(!require(gridExtra)){
   install.packages("gridExtra", repos='http://cran.us.r-project.org')
 }
+if(!require(sp)){
+  install.packages("sp", repos='http://cran.us.r-project.org')
+}
 
 # then load the package:
 library(knitr)
 library(rmarkdown)
+library(sp)
 library(plyr)
 library(reshape2)
 library(ggplot2)
@@ -314,21 +318,21 @@ bsc <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param, fun.aggreg
 ```{r interp_prep3, message = FALSE, include=TRUE, echo=TRUE, warning = FALSE, fig.width = 4, fig.height = 5}
 
 ### assign wet/dry seasons
-bsc <- seas(bsc, wetSeas = c("May", "Sep"), waterYearBegin = "Oct", timeCol = "date")
+bsc        <- seas(bsc, wetSeas = c("May", "Sep"), waterYearBegin = "Oct", timeCol = "date")
 bsc$seas2  <- paste0(bsc$waterYr,"-", bsc$seas)
 
 ### calculate annual geometric means
-agm <- plyr::ddply(bsc, plyr::.(stn, seas2), plyr::numcolwise(geoMean))
+agm        <- ddply(bsc, plyr::.(stn, seas2), plyr::numcolwise(geoMean))
 
 ### add coordinates to make point data spatial
 names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
 names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
-finDat.coords <- plyr::join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
+finDat.coords <- join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
 finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
 coordinates(finDat.coords) <- c("long", "lat")
 proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
-sitesInBay <- sp::over(finDat.coords, bnp)
+sitesInBay <- over(finDat.coords, bnp)
 sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
 

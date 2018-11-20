@@ -23,5 +23,6 @@ Suggests: knitr,
     rmarkdown,
     reshape2,
     ggplot2,
+    gridExtra,
     scales
 VignetteBuilder: knitr
