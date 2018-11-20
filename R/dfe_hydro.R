@@ -264,7 +264,7 @@ getHydro <- function(stns,
     wq.temp <- stats::reshape(wq, idvar = c("stn", "date", "year", "mo", "day", "time", "datetime"), timevar = "param", direction = "wide")
     names(wq.temp) <- gsub(x = names(wq.temp), pattern = "value.| |,", replacement = "")
     
-    wqDatForMerge <- wq.temp[, c("stn", "date", grep(x = names(wq.temp), pattern = "units|mdl", value = TRUE), names(wq.temp)[length(names(wq.temp))])]
+    wqDatForMerge <- wq.temp[, c(grep(x = names(wq.temp), pattern = "matrix", value = TRUE, invert = TRUE))] # exclude matrix columns
     mergDat <- plyr::join_all(list(tempDat, wqDatForMerge), by = c("stn", "date"))
   }
 

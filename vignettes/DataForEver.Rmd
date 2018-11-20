@@ -102,18 +102,22 @@ fig2Col   <- "gray55"
 
 Users can search for stations in the DataForEver databases:
 
-```{r stn_query, include=TRUE, echo=TRUE}
-head(getStn(query = "s33"))
+```{r stn_query, include=TRUE, echo=TRUE, eval=FALSE}
+getStn(query = "s33")
 ```
 \vspace{12pt}
 
 Users can also query the parameters available for each station in the DataForEver hydrology database, using parameter and/or station names as constraints:
 
-```{r stn_query2, include=TRUE, echo=TRUE}
-head(getDataTypes(parameter = "salinity"))
+```{r stn_query2, include=TRUE, echo=TRUE, eval=FALSE}
+getDataTypes(parameter = "salinity")
 
 
-head(getDataTypes(stn = "S333"))
+getDataTypes(stn = "S333")
+
+## to search for exact matches, set `fixed = TRUE`
+getDataTypes(stn = "S333", fixed = TRUE)
+
 ```
 
 
@@ -131,10 +135,13 @@ Using `SFNRC` to download DataForEver data is very straightforward. The water qu
 # identify desired stations and water quality parameters
 stations   <- c("S333", "S12A")
 wqParams   <- c("PHOSPH|NITROGEN|AMMONI|SUSPENDED|TURBIDITY")
-dat <- getWQ(stns = stations, target_analytes = wqParams)
+
 ```
 
-```{r wq_print, include=TRUE, echo=TRUE}
+```{r wq2, include=TRUE, echo=FALSE, results = "hide", eval=FALSE}
+dat <- getWQ(stns = stations, target_analytes = wqParams)
+
+
 head(dat)
 ```
 
@@ -145,7 +152,9 @@ The `SFNRC` R package can also be used to download data from the DataForEver hyd
 
 ```{r hydro_get_data, include=TRUE, echo=FALSE}
 hydroParams <- c("flow", "head_water")
+```
 
+```{r hydro_get_data, include=TRUE, echo=FALSE, eval=FALSE}
 ### by default, data are in "long" format, with one row per value (a unique row for every date-station-parameter combination):
 hyd.long  <- getHydro(stns = stations, parameter_list = hydroParams)
 
@@ -156,7 +165,7 @@ hyd.vwide <- getHydro(stns = stations, parameter_list = hydroParams, data_shape 
 ```
 
 
-```{r hydro_show, include=TRUE, echo=TRUE}
+```{r hydro_show, include=TRUE, echo=TRUE, eval=FALSE}
 head(hyd.long) # one row for every date-station-parameter combination
 
 head(hyd.wide) # one row for every date-station combination
@@ -173,7 +182,7 @@ head(hyd.vwide) # one row for every date
 Merging water quality and hydrology data is a routine task that is automated by `SFNRC`. Instead of navigating the two databases and then figuring out how to merge the two datasets, water quality data can be downloaded at the same time as flow/hydrology data by setting `getWaterQuality = TRUE` in a call to `getHydro()`. To reduce the number of columns in the returned dataset, it is recommended that water quality parameters be specified manually in this workflow, because the returned dataset will have two columns per parameter (returning the MDL and the value).
 
 
-```{r hydro_get_data2, include=TRUE, echo=FALSE}
+```{r hydro_get_data2, include=TRUE}
 ### simultaneously download hydrology and water quality data:
 hyd.wq <- getHydro(stns = stations, parameter_list = hydroParams, 
                    getWaterQuality = TRUE, 
@@ -183,7 +192,7 @@ hyd.wq <- getHydro(stns = stations, parameter_list = hydroParams,
 
 
 ```{r hydro_show_merged, include=TRUE, echo=TRUE}
-head(hyd.wq)
+ggplot(data = hyd.wq, aes(y = PHOSPHOROUSTOTALASP, x = ))
 
 ```
 
