@@ -1,7 +1,9 @@
 ---
 title: 'Exploring DataForEver data using the SFNRC R package'
 subtitle: ''
-output: pdf_document
+output: 
+  pdf_document: 
+latex_engine: pdflatex
 vignette: >
   %\VignetteIndexEntry{DataForEver}
   %\VignetteEngine{knitr::rmarkdown}
