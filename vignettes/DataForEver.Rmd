@@ -59,7 +59,7 @@ knitr::opts_chunk$set(echo = TRUE, comment=NA)
 
 ## 1. Introduction
 
-First and foremost, the `SFNRC` R package provides a simple, streamlined means of interacting with the DataForEver hydrology and water quality databases from within an analytical programming envrionment (RStudio). Additional tools are also included in the package, including:
+The `SFNRC` R package provides a simple, streamlined means of interacting with the DataForEver hydrology and water quality databases from within an analytical programming environment (RStudio). Additional tools are also included in the package, including:
 
 - APIs for the South Florida Water Management District's DBHYDRO database
 
@@ -330,7 +330,7 @@ finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
 coordinates(finDat.coords) <- c("long", "lat")
 proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
-sitesInBay <- over(finDat.coords, bnp)
+sitesInBay <- over(finDat.coords, bnpMod)
 sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
 
