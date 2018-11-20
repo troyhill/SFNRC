@@ -6,7 +6,7 @@
 \usage{
 interp(inputData, paramCol = "SALINITY", yearCol = "year",
   year = "2016", returnRas = FALSE, exportRaster = FALSE,
-  fileName = "NA.tif", BISCmap = SFNRC::bnp, exportPlot = FALSE,
+  fileName = "NA.tif", mapLayer = SFNRC::bnp, exportPlot = FALSE,
   plotName = "NA.png", plotWidth = 4, plotHeight = 5,
   plotRes = 200, plotZLims = NA, minDataPoints = 2,
   interpMethod = "ordinary kriging", vgModelType = c("Exp", "Mat",
@@ -27,7 +27,7 @@ interp(inputData, paramCol = "SALINITY", yearCol = "year",
 
 \item{fileName}{if a raster layer is exported, this argument sets the file address and name}
 
-\item{BISCmap}{Can be any SpatialPolygonDataFrame layer. Default is a polygon layer of Biscayne Bay (included in SNFRC package)}
+\item{mapLayer}{Can be any SpatialPolygonDataFrame layer. Default is a polygon layer of Biscayne Bay (included in SNFRC package)}
 
 \item{exportPlot}{TRUE/FALSE; should the displayed plot be saved to disk?}
 
@@ -56,7 +56,7 @@ Spatial interpolation of data from points to a user-provided polygon layer.
 \examples{
  
 \dontrun{
-fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
+fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param, fun.aggregate = mean) # long to wide
 agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
 names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")

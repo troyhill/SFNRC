@@ -10,7 +10,7 @@
 #' @param returnRas TRUE/FALSE; should a raster layer be returned to the global environment
 #' @param exportRaster TRUE/FALSE; should a raster layer be saved to disk?
 #' @param fileName if a raster layer is exported, this argument sets the file address and name
-#' @param BISCmap Can be any SpatialPolygonDataFrame layer. Default is a polygon layer of Biscayne Bay (included in SNFRC package)
+#' @param mapLayer Can be any SpatialPolygonDataFrame layer. Default is a polygon layer of Biscayne Bay (included in SNFRC package)
 #' @param exportPlot TRUE/FALSE; should the displayed plot be saved to disk?
 #' @param plotName if the plot is exported, this argument sets the file address and name
 #' @param plotWidth width of the plot
@@ -26,7 +26,7 @@
 #'
 #' @examples  
 #' \dontrun{
-#' fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param) # long to wide
+#' fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param, fun.aggregate = mean) # long to wide
 #' agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 #' names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
 #' names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
@@ -68,7 +68,7 @@
 interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$stn %in% finalSites), ], 
                        paramCol     = "SALINITY", yearCol = "year", year      = "2016", 
                        returnRas    = FALSE, # option to return raster as an object
-                       exportRaster = FALSE, fileName     = "NA.tif", BISCmap = SFNRC::bnp, 
+                       exportRaster = FALSE, fileName     = "NA.tif", mapLayer = SFNRC::bnp, 
                        exportPlot   = FALSE, plotName     = "NA.png",
                        plotWidth    = 4,     plotHeight   = 5, plotRes = 200,
                        plotZLims    = NA, minDataPoints = 2,
@@ -105,7 +105,7 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
       # pts@data
      
       ### kriging using the variogram
-      template.ras <- raster::raster(BISCmap, res = c(0.001, 0.001))
+      template.ras <- raster::raster(mapLayer, res = c(0.001, 0.001))
       blank.ras    <- methods::as(template.ras, "SpatialGrid") # sf::as may work
       
       
@@ -128,11 +128,11 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
         
         setTimeLimit(30) # set time limit to prevent this from running forever
         # try(ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1), silent = TRUE)
-        # try(ras_pred <- raster::mask(ras_pred, BISCmap), silent = TRUE)
+        # try(ras_pred <- raster::mask(ras_pred, mapLayer), silent = TRUE)
         
         tryCatch({
           ras_pred <- raster::raster(raster::predict(k, blank.ras), layer = 1)
-          ras_pred <- raster::mask(ras_pred, BISCmap)
+          ras_pred <- raster::mask(ras_pred, mapLayer)
         }, error=function(e){cat("timeout on ordinary kriging of ", paramCol, year, ":",conditionMessage(e), "\n")})
         
         setTimeLimit()
@@ -141,9 +141,9 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
         if (!exists("ras_pred") || sum(!is.na(ras_pred@data@values)) < 1) {
           ### Alternative: use inverse distance weighted interpolation
           ras_pred <- raster::raster(raster::predict(gs, blank.ras), layer = 1)
-          ras_pred <- raster::mask(ras_pred, BISCmap)
+          ras_pred <- raster::mask(ras_pred, mapLayer)
           # plot(ras_pred)
-          # plot(BISCmap, add = TRUE)
+          # plot(mapLayer, add = TRUE)
           # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
         }
       }, warning = function(cond) {
@@ -151,8 +151,8 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
         message(paste("Original warning message:", cond, "\n"))
         # run nearest neighbor method
         vlocs         <- dismo::voronoi(pts)
-        bnp_intsct    <- raster::intersect(vlocs, BISCmap)
-        fl.ras       <- raster::raster(BISCmap, nrows = 1000, ncols = 1000)
+        bnp_intsct    <- raster::intersect(vlocs, mapLayer)
+        fl.ras       <- raster::raster(mapLayer, nrows = 1000, ncols = 1000)
         ras_pred     <<- raster::rasterize(bnp_intsct, fl.ras, paramCol)
         # return(ras_pred)
       })
@@ -164,10 +164,10 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
         # ### Create nearest neighbor polygons
         vlocs         <- dismo::voronoi(pts)
         # plot(vlocs)
-        bnp_intsct    <- raster::intersect(vlocs, BISCmap)
+        bnp_intsct    <- raster::intersect(vlocs, mapLayer)
         # spplot(bnp_intsct, paramCol, col.regions = rev(get_col_regions()))
         ### rasterize
-        fl.ras       <- raster::raster(BISCmap, nrows = 1000, ncols = 1000)
+        fl.ras       <- raster::raster(mapLayer, nrows = 1000, ncols = 1000)
         ras_pred     <- raster::rasterize(bnp_intsct, fl.ras, paramCol)
         # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
       }
@@ -183,7 +183,7 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
       } 
       graphics::par(mar = c(4,4,1,0.5), fig = c(0,1,0,1))
       raster::plot(ras_pred, main = paste0(paramCol, " ", year), zlim = plotZLims, las = 1)
-      raster::plot(BISCmap, add = TRUE)
+      raster::plot(mapLayer, add = TRUE)
       raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
       if (exportPlot) {
         grDevices::dev.off()

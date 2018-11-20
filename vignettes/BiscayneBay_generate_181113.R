@@ -43,7 +43,7 @@ for (j in 3:(length(names(sitesInBay)) - 1)) {
     # if (!rasterFileAddr %in% list.files(rasterFolder, full.names = TRUE)) {
           tryCatch({
       dat.l <- interp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "year", plotZLims = lims, 
-                          returnRas = TRUE, exportRaster = TRUE, fileName = rasterFileAddr, minDataPoints = minPoints, BISCmap = polygonLayer,
+                          returnRas = TRUE, exportRaster = TRUE, fileName = rasterFileAddr, minDataPoints = minPoints, mapLayer = polygonLayer,
                           interpMethod = interpMeth)
       write.csv(x = t(extract(dat.l , polygonLayer, fun = mean, na.rm = TRUE)), file = csvMeanFileAddr, row.names = FALSE)
       write.csv(x = t(extract(dat.l , polygonLayer, fun = sd, na.rm = TRUE)), file =  csvSDFileAddr, row.names = FALSE)
@@ -89,7 +89,7 @@ for (j in 4:(length(names(sitesInBay)))) {
     # if (!rasterFileAddr %in% list.files(paste0(rasterFolder, "seas/"),  full.names = TRUE)) { # if you don't want to re-process/overwrite files
           tryCatch({
       seas.l <- interp(inputData = targDat, paramCol = targParam, year = targYear, yearCol = "seas2", plotZLims = lims,
-                       returnRas = TRUE, exportRaster = TRUE, fileName = rasterFileAddr, minDataPoints = minPoints, BISCmap = polygonLayer,
+                       returnRas = TRUE, exportRaster = TRUE, fileName = rasterFileAddr, minDataPoints = minPoints, mapLayer = polygonLayer,
                        interpMethod = interpMeth)
       write.csv(x = t(extract( seas.l, polygonLayer, fun = mean, na.rm = TRUE)), file = csvMeanFileAddr, row.names = FALSE) # record results
       write.csv(x = t(extract( seas.l, polygonLayer, fun = sd, na.rm = TRUE)), file =  csvSDFileAddr, row.names = FALSE)

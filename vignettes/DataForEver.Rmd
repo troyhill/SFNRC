@@ -1,5 +1,5 @@
 ---
-title: 'Exploring DataForEver data'
+title: 'Exploring DataForEver data using the SFNRC R package'
 subtitle: ''
 output: 
   pdf_document: 
@@ -35,6 +35,9 @@ if(!require(ggplot2)){
 if(!require(scales)){
   install.packages("scales", repos='http://cran.us.r-project.org')
 }
+if(!require(gridExtra)){
+  install.packages("gridExtra", repos='http://cran.us.r-project.org')
+}
 
 # then load the package:
 library(knitr)
@@ -43,6 +46,7 @@ library(plyr)
 library(reshape2)
 library(ggplot2)
 library(scales)
+library(gridExtra)
 library(SFNRC)
 
 knitr::opts_chunk$set(echo = TRUE, comment=NA)
@@ -65,13 +69,17 @@ First and foremost, the `SFNRC` R package provides a simple, streamlined means o
 
 This vignette demonstrates some of the functionality of the `SFNRC` R package. 
 
-But before demonstrating the package's capabilities, it is important to highlight some critical limitations of the `SFNRC` R package. The DataForEver APIs can only be used on Linux machines connected to the SFNRC's internal network. When DataForEver's data are opened up to the general public, the capabilities in this R package will be adapted to provide broader access to these world-class databases. Another important aspect to draw attention to is the construction and use of BASH shell scripts by the DataForEver API functions. This dependence on BASH is the reason the APIs only work on Linux operating systems.
+
+Before demonstrating the package's capabilities, it is important to highlight some limitations of the `SFNRC` R package. The DataForEver APIs can only be used on Linux machines connected to the SFNRC's internal network. When DataForEver's data are opened up to the general public, the capabilities in this R package will be adapted to provide broader access to these world-class databases. Another important aspect to draw attention to is the construction and use of BASH shell scripts by the DataForEver API functions. This dependence on BASH is the reason the APIs only work on Linux operating systems.
+
+
+\vspace{12pt}
 
 
 \vspace{3mm}\hrule
 \vspace{12pt}
 
-**Keywords:** data
+
 
 \vspace{12pt}
 \vspace{12pt}
@@ -102,16 +110,21 @@ fig2Col   <- "gray55"
 
 Users can search for stations in the DataForEver databases:
 
+\vspace{12pt}
+
 ```{r stn_query, include=TRUE, echo=TRUE, eval=FALSE}
 getStn(query = "s33")
 ```
+
 \vspace{12pt}
 
 Users can also query the parameters available for each station in the DataForEver hydrology database, using parameter and/or station names as constraints:
 
+
+\vspace{12pt}
+
 ```{r stn_query2, include=TRUE, echo=TRUE, eval=FALSE}
 getDataTypes(parameter = "salinity")
-
 
 getDataTypes(stn = "S333")
 
@@ -130,35 +143,41 @@ getDataTypes(stn = "S333", fixed = TRUE)
 
 Using `SFNRC` to download DataForEver data is very straightforward. The water quality database is accessed using the function `getWQ()`:
 
+\vspace{12pt}
 
-```{r wq, include=TRUE, echo=FALSE, results = "hide"}
+
+```{r wq, include=TRUE, echo=TRUE, results = "hide"}
 # identify desired stations and water quality parameters
 stations   <- c("S333", "S12A")
 wqParams   <- c("PHOSPH|NITROGEN|AMMONI|SUSPENDED|TURBIDITY")
 
 ```
 
-```{r wq2, include=TRUE, echo=FALSE, results = "hide", eval=FALSE}
+```{r wq2, include=TRUE, echo=TRUE, results = "hide", eval=FALSE}
 dat <- getWQ(stns = stations, target_analytes = wqParams)
-
-
 head(dat)
+
 ```
 
 \vspace{12pt}
 
 The `SFNRC` R package can also be used to download data from the DataForEver hydrology database using a function called `getHydro()`. The `data_shape` argument reshapes data from long to wide form to facilitate a broad range of end-user analyses.
 
+\vspace{12pt}
 
-```{r hydro_get_data, include=TRUE, echo=FALSE}
+```{r hydro_get_data, include=TRUE, echo=TRUE}
 hydroParams <- c("flow", "head_water")
+
 ```
 
-```{r hydro_get_data, include=TRUE, echo=FALSE, eval=FALSE}
-### by default, data are in "long" format, with one row per value (a unique row for every date-station-parameter combination):
+```{r hydro_get_data21, include=TRUE, echo=TRUE, eval=FALSE}
+### by default, data are in "long" format, with one row 
+### for every date-station-parameter combination
 hyd.long  <- getHydro(stns = stations, parameter_list = hydroParams)
 
-### but data can also be retrieved in "wide" (one row per date-station) or "really_wide" (one row per date) forms, enabling more rapid comparison between stations and/or parameters
+### but data can also be retrieved in "wide" (one row per date-station) or 
+### "really_wide" (one row per date) forms, enabling more rapid 
+### comparison between stations and/or parameters
 hyd.wide  <- getHydro(stns = stations, parameter_list = hydroParams, data_shape = "wide")
 hyd.vwide <- getHydro(stns = stations, parameter_list = hydroParams, data_shape = "really_wide")
 
@@ -167,9 +186,7 @@ hyd.vwide <- getHydro(stns = stations, parameter_list = hydroParams, data_shape 
 
 ```{r hydro_show, include=TRUE, echo=TRUE, eval=FALSE}
 head(hyd.long) # one row for every date-station-parameter combination
-
 head(hyd.wide) # one row for every date-station combination
-
 head(hyd.vwide) # one row for every date
 
 ```
@@ -181,18 +198,76 @@ head(hyd.vwide) # one row for every date
 
 Merging water quality and hydrology data is a routine task that is automated by `SFNRC`. Instead of navigating the two databases and then figuring out how to merge the two datasets, water quality data can be downloaded at the same time as flow/hydrology data by setting `getWaterQuality = TRUE` in a call to `getHydro()`. To reduce the number of columns in the returned dataset, it is recommended that water quality parameters be specified manually in this workflow, because the returned dataset will have two columns per parameter (returning the MDL and the value).
 
+\vspace{12pt}
 
-```{r hydro_get_data2, include=TRUE}
+```{r hydro_get_data2, include=TRUE, message = FALSE, warning = FALSE, eval = FALSE}
+
 ### simultaneously download hydrology and water quality data:
-hyd.wq <- getHydro(stns = stations, parameter_list = hydroParams, 
+hyd.wq <- getHydro(stns = stations, 
+                   parameter_list = hydroParams, # hydrology database parameters
                    getWaterQuality = TRUE, 
-                   target_analytes = wqParams) # set water quality parameters here
+                   target_analytes = wqParams) # water quality database parameters
 
 ```
 
+```{r internalWorkaround, include=TRUE, message = FALSE, warning = FALSE, eval = TRUE, echo = FALSE}
+### simultaneously download hydrology and water quality data:
+wq.prep  <- wqDat[(wqDat$stn %in% stations) & grepl(x = wqDat$param, pattern = wqParams), ]
+wq.prep2 <- stats::reshape(wq.prep, idvar = c("stn", "date", "year", "mo", "day", "time", "datetime"), timevar = "param", direction = "wide")
+names(wq.prep2) <- gsub(x = names(wq.prep2), pattern = "value.| |,", replacement = "")
+wqDatForMerge <- wq.prep2[, c(grep(x = names(wq.prep2), pattern = "matrix", value = TRUE, invert = TRUE))] # exclude matrix columns
 
-```{r hydro_show_merged, include=TRUE, echo=TRUE}
-ggplot(data = hyd.wq, aes(y = PHOSPHOROUSTOTALASP, x = ))
+hyd.prep <- hydDat[(hydDat$stn %in% stations), ]
+
+
+hyd.wq <- plyr::join_all(list(hyd.prep, wqDatForMerge), by = c("stn", "date"))
+
+```
+
+\vspace{12pt}
+
+At this point the data can be plotted or analyzed. For example, simple time series plots:
+
+\vspace{12pt}
+```{r hydro_show_merged, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width = 3, fig.height = 3}
+ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = datetime, shape = stn)) + 
+  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth() + facet_grid(stn ~ .) + ylim(0, 0.1) + ylab("Total P (mg/L)") + xlab("")
+
+```
+
+\vspace{12pt}
+
+Relationships between hydrologic and water quality parameters can be explored: 
+
+\vspace{12pt}
+
+```{r plot_wqFlow, echo=FALSE, warning=FALSE, message=FALSE, fig.width = 3, fig.height = 4}
+invisible(CQ <- ggplot(data = data.frame(hyd.wq[(hyd.wq$flow > 0) & !is.na(hyd.wq$flow), ]), aes(y = log(PHOSPHATETOTALASP), x = log(flow), shape = stn)) + 
+  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth(method = "lm") + facet_grid(stn ~ .) + ylab("log(TP) (mg/L)") + xlab("log(discharge) (cfs)"))
+
+invisible(C_HW <- ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = head_water, shape = stn)) + 
+  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth() + facet_grid(stn ~ .) + ylim(0, 0.1) + ylab("log(TP) (mg/L)") + xlab("Head water stage (feet NGVD29)"))
+
+invisible(grid.arrange(CQ, C_HW, nrow = 2))
+
+```
+
+\vspace{12pt}
+\vspace{12pt}
+
+
+And relationships between water quality parameters can be evaluated:
+
+\vspace{12pt}
+
+```{r plot_wq_bivariate, echo=FALSE, warning=FALSE, message=FALSE, fig.width = 6, fig.height = 4}
+TP.NTU <- ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = TURBIDITY, shape = stn)) + 
+  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth(method = "lm") + facet_grid(stn ~ .) + ylab("TP (mg/L)") + xlab("Turbidity (NTU)") + ylim(0, 0.1)
+
+TN.TP <- ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = TOTALNITROGEN, shape = stn))  + theme(legend.position="none") + 
+  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth(method = "lm") + facet_grid(stn ~ .) + ylab("TP (mg/L)") + xlab("TN (mg/L)") + ylim(0, 0.1) + xlim(0, 3)
+
+grid.arrange(TP.NTU, TN.TP, ncol = 2)
 
 ```
 
@@ -203,24 +278,64 @@ ggplot(data = hyd.wq, aes(y = PHOSPHOROUSTOTALASP, x = ))
 \vspace{12pt}
 
 
-```{r hydro_show2, include=TRUE, echo=TRUE}
+**4. Spatial interpolation wrapper**
 
-# 
-# # find stations and parameters
-# bsc.stns <- dfe.data.types(stn = "BISC|BB")
-# unique(bsc.stns$parameter)
-# stns <- as.character(unique(bsc.stns[bsc.stns$parameter %in% "salinity", "stn"]))
-# 
-# # get data
-# paramsToGet <- c("salinity", "surface_temperature", "bottom_temperature", "oxygen_solubility")
-# bsc      <- dfe.hydro(stns = stns, parameter_list = paramsToGet)
-# bsc.wide <- dfe.hydro(stns = stns, parameter_list = paramsToGet, data_shape = "wide")
+\vspace{12pt}
+
+Spatial interpolation of data is streamlined by the `interp()` function. The function takes a user-specified SpatialPolygonDataframe and interpolates point data. The interpolation method applied to the data can be `ordinary kriging` or `nearest neighbor`. Ordinary kriging estimates data using a variogram model of similarity as a function of distance. By default, a broad range of models are attempted and the best-fitting model is used to produce the output. If `ordinary kriging` is selected but the variogram does not converge (typically indicative of substantial variation over small distances), the `nearest neighbor` approach will instead be used. 
+
+Nearest neighbor interpolation generates Voronoi polygons for the sampling locations and applies the value from each sampling point uniformly within its respective polygon.
+
+\vspace{12pt}
+
+An example of a complete workflow is below. Stations in Biscayne Bay are selected programatically, data undergo some initial processing and an interpolated map of salinity is produced.
+
+\vspace{12pt}
+
+
+```{r interp_prep1, include=TRUE, echo=TRUE, eval=FALSE}
+# find stations in Biscayne Bay
+bsc.stns <- getDataTypes(stn = "BISC|BB")
+stns     <- as.character(unique(bsc.stns[bsc.stns$parameter %in% "salinity", "stn"]))
+
+# get data
+paramsToGet <- c("salinity")
+bsc         <- getHydro(stns = stns, parameter_list = paramsToGet)
 
 ```
 
 
-```{r Figure 1 (Data In Brief), fig.width = 6, fig.height = 4, message = FALSE, include=FALSE, echo=FALSE}
+```{r interp_prep2, fig.width = 6, fig.height = 4, message = FALSE, include=FALSE, echo=FALSE}
+bsc <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param, fun.aggregate = mean) 
 
+```
+
+
+```{r interp_prep3, message = FALSE, include=TRUE, echo=TRUE, warning = FALSE, fig.width = 4, fig.height = 5}
+
+### assign wet/dry seasons
+bsc <- seas(bsc, wetSeas = c("May", "Sep"), waterYearBegin = "Oct", timeCol = "date")
+bsc$seas2  <- paste0(bsc$waterYr,"-", bsc$seas)
+
+### calculate annual geometric means
+agm <- plyr::ddply(bsc, plyr::.(stn, seas2), plyr::numcolwise(geoMean))
+
+### add coordinates to make point data spatial
+names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
+names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
+finDat.coords <- plyr::join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
+finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
+coordinates(finDat.coords) <- c("long", "lat")
+proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
+
+sitesInBay <- sp::over(finDat.coords, bnp)
+sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
+
+
+# interpolate! 
+interp(inputData = sitesInBay, mapLayer = bnpMod,
+       paramCol = "SALINITY", year = "2017-dry", yearCol = "seas2", 
+       interpMethod = "ordinary kriging")
 ```
 
 
