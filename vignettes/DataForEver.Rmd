@@ -1,10 +1,10 @@
 ---
 title: 'Exploring DataForEver data using the SFNRC R package'
 subtitle: ''
-output: "pdf_document"
+output: pdf_document
 vignette: >
   %\VignetteIndexEntry{DataForEver}
-  %\VignetteEngine{knitr::knitr}
+  %\VignetteEngine{knitr::rmarkdown}
   %\usepackage[UTF-8]{inputenc}
 mainfont: FreeMono
 header-includes:
@@ -336,7 +336,7 @@ sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
 
 # interpolate! 
 interp(inputData = sitesInBay, mapLayer = bnpMod,
-       paramCol = "SALINITY", year = "2017-dry", yearCol = "seas2", 
+       paramCol = "SALINITY", year = "2016-dry", yearCol = "seas2", 
        interpMethod = "ordinary kriging")
 ```
 
