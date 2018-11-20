@@ -4,14 +4,14 @@
 \alias{getDataTypes}
 \title{DataForEver hydrology database parameter query}
 \usage{
-getDataTypes(parameter = "all", stn = "all", fixed = FALSE)
+getDataTypes(parameter = "all", stn = "all", exactMatch = FALSE)
 }
 \arguments{
 \item{parameter}{a character string specifying the parameter(s) used to constrain the query.}
 
 \item{stn}{a character string specifying the station(s) used to constrain the query.}
 
-\item{fixed}{If \code{TRUE}, station name must be an exact match with the \code{stn} argument}
+\item{exactMatch}{If \code{TRUE}, station name must be an exact match with the \code{stn} argument}
 }
 \value{
 dataframe \code{getDataTypes} returns a vector of stations and parameters.
@@ -26,7 +26,7 @@ getDataTypes(parameter = "salinity")
 
 ### search by station:
 getDataTypes(stn = "S333")
-getDataTypes(stn = "S333", fixed = TRUE) # note that the function does not use exact matches
+getDataTypes(stn = "S333", exactMatch = TRUE) # note that the function does not use exact matches
      # unless requested to do so using \\code{fixed = TRUE}
 }
 

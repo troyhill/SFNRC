@@ -132,8 +132,8 @@ getDataTypes(parameter = "salinity")
 
 getDataTypes(stn = "S333")
 
-## to search for exact matches, set `fixed = TRUE`
-getDataTypes(stn = "S333", fixed = TRUE)
+## to search for exact matches, set `exactMatch = TRUE`
+getDataTypes(stn = "S333", exactMatch = TRUE)
 
 ```
 

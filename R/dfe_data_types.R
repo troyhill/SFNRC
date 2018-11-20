@@ -2,11 +2,11 @@
 #'
 #' @description Identifies parameters available from the DataForEver hydrology database
 #' 
-#' @usage getDataTypes(parameter = "all", stn = "all", fixed = FALSE)
+#' @usage getDataTypes(parameter = "all", stn = "all", exactMatch = FALSE)
 #' 
 #' @param parameter a character string specifying the parameter(s) used to constrain the query.
 #' @param stn a character string specifying the station(s) used to constrain the query.
-#' @param fixed If \code{TRUE}, station name must be an exact match with the \code{stn} argument
+#' @param exactMatch If \code{TRUE}, station name must be an exact match with the \code{stn} argument
 #'  
 #' @return dataframe \code{getDataTypes} returns a vector of stations and parameters.
 #' 
@@ -18,7 +18,7 @@
 #' 
 #' ### search by station:
 #' getDataTypes(stn = "S333")
-#' getDataTypes(stn = "S333", fixed = TRUE) # note that the function does not use exact matches
+#' getDataTypes(stn = "S333", exactMatch = TRUE) # note that the function does not use exact matches
 #'      # unless requested to do so using \code{fixed = TRUE}
 #' }
 #' 
@@ -30,10 +30,14 @@
 
 
 
-getDataTypes <- function(parameter = "all", stn = "all", fixed = FALSE) {
+getDataTypes <- function(parameter = "all", stn = "all", exactMatch = FALSE) {
   
   searchParam <- parameter
   searchStn   <- toupper(stn)
+  
+  if(exactMatch) {
+    searchStn <- paste0("^", searchStn, "$")
+  }
   
   list.loc     <- file.path(tempdir(), "stn_temp.lst")
   bash.script.loc  <- file.path(tempdir(), "bash_stnLike.sh")
@@ -97,7 +101,7 @@ getDataTypes <- function(parameter = "all", stn = "all", fixed = FALSE) {
   stnDatFinal$parameter <- as.character(stnDatFinal$parameter)
   
   if (!searchStn %in% "ALL") {
-    stnDatFinal <- stnDatFinal[grep(x = stnDatFinal$stn, pattern = searchStn, fixed = fixed), ]
+    stnDatFinal <- stnDatFinal[grep(x = stnDatFinal$stn, pattern = searchStn), ]
   }
   if (!searchParam %in% "all") {
     stnDatFinal <- stnDatFinal[stnDatFinal$parameter %in% searchParam, ]
