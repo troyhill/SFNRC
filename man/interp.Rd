@@ -10,7 +10,7 @@ interp(inputData, paramCol = "SALINITY", yearCol = "year",
   plotName = "NA.png", plotWidth = 4, plotHeight = 5,
   plotRes = 200, plotZLims = NA, minDataPoints = 2,
   interpMethod = "ordinary kriging", vgModelType = c("Exp", "Mat",
-  "Gau", "Sph", "Ste"))
+  "Gau", "Sph", "Ste"), excludeOutsidePts = TRUE)
 }
 \arguments{
 \item{inputData}{dataframe with water quality data. Function works best with output of \code{dfe.wq() or dfe.hydro()} using \code{wide = TRUE}.}
@@ -61,13 +61,10 @@ fin2 <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param,
 agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
 names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
-finDat.coords <- plyr::join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
-finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
-coordinates(finDat.coords) <- c("long", "lat")
-proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
-
-sitesInBay <- sp::over(finDat.coords, bnp)
-sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
+agmWithCoords <- plyr::join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
+sitesInBay <- agmWithCoords[!is.na(agmWithCoords$long), ]
+coordinates(sitesInBay) <- c("long", "lat")
+proj4string(sitesInBay) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
 interp(inputData = sitesInBay,
     paramCol = "SALINITY", year = "2016")
