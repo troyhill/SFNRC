@@ -2,9 +2,9 @@
  cache: packages
  warnings_are_errors: false
  sudo: required
- apt:
+ addons:
+  apt:
     packages:
-      - libgdal1-dev 
-      - libproj-dev 
-      - libgeos-dev
- 
+      - libgdal-dev
+      - libproj-dev
+      
