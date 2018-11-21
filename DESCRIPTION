@@ -17,7 +17,8 @@ Depends:
     gstat,
     raster,
     plyr,
-    methods
+    methods,
+    sp
 RoxygenNote: 6.1.0
 Suggests: knitr,
     rmarkdown,

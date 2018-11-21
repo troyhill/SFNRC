@@ -48,13 +48,17 @@
 #' 
 #' @importFrom gstat gstat
 #' @importFrom gstat variogram
-#' @importFrom gstat fit.variogram
+#' @importFrom gstat fit.variogram 
+#' @importFrom stats complete.cases
 #' @importFrom raster predict
 #' @importFrom raster raster
 #' @importFrom raster writeRaster
 #' @importFrom raster aggregate
-#' @importFrom raster intersect
+#' @importFrom raster extent
 #' @importFrom raster plot
+#' @importFrom sp proj4string
+#' @importFrom sp spTransform
+#' @importFrom sp over 
 #' @importFrom dismo voronoi 
 #' @importFrom methods as 
 #' @importFrom grDevices terrain.colors
@@ -79,13 +83,13 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
   pts <- inputData[!is.na(inputData@data[, paramCol]) & (inputData@data[, yearCol] %in% year), ]
   
   ### set spatial projections to be the same. added 20181121
-  prj      <- proj4string(mapLayer)
-  pts      <- spTransform(pts, prj)
+  prj      <- sp::proj4string(mapLayer)
+  pts      <- sp::spTransform(pts, prj)
   
   ### clip pts to include only overlapping data
   if (excludeOutsidePts) {
     int <- sp::over(pts, mapLayer)
-    pts <- pts[complete.cases(int), ]
+    pts <- pts[stats::complete.cases(int), ]
   }
   
   cat(length(unique(pts$stn)), "stations with", paramCol, "data in", year, "       ")
@@ -152,7 +156,7 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
         message(paste("\n no convergence in variogram; using nearest neighbor"))
         message(paste("Original warning message:", cond, "\n"))
         # run nearest neighbor method
-        vlocs         <- dismo::voronoi(pts, ext = extent(mapLayer) + 10)
+        vlocs         <- dismo::voronoi(pts, ext = raster::extent(mapLayer) + 10)
         # vlocs      <- spTransform(vlocs, prj)
         fl.ras        <- raster::raster(mapLayer, nrows = 1000, ncols = 1000)
         # bnp_intsct    <- raster::intersect(vlocs, fl.ras)
@@ -166,7 +170,7 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
      if (interpMethod %in% "nearest neighbor") {
         # ### Alternative: nearest neighbor.
         # ### Create nearest neighbor polygons
-        vlocs        <- dismo::voronoi(pts, ext = extent(mapLayer) + 10)
+        vlocs        <- dismo::voronoi(pts, ext = raster::extent(mapLayer) + 10)
         # vlocs      <- spTransform(vlocs, prj)
         fl.ras       <- raster::raster(mapLayer, nrows = 1000, ncols = 1000)
         # bnp_intsct   <- raster::intersect(vlocs, mapLayer)
