@@ -1,5 +1,7 @@
 # SFNRC
 
+[![Build Status](https://travis-ci.org/troyhill/SFNRC.svg?branch=master)](https://travis-ci.org/troyhill/SFNRC)
+
 
 ## Install the package
 
