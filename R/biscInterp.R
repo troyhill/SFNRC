@@ -31,13 +31,10 @@
 #' agm <- plyr::ddply(fin2[, -c(2)], plyr::.(year, stn), plyr::numcolwise(geoMean))
 #' names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
 #' names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
-#' finDat.coords <- plyr::join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
-#' finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
-#' coordinates(finDat.coords) <- c("long", "lat")
-#' proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
-#' 
-#' sitesInBay <- sp::over(finDat.coords, bnp)
-#' sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
+#' agmWithCoords <- plyr::join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
+#' sitesInBay <- agmWithCoords[!is.na(agmWithCoords$long), ]
+#' coordinates(sitesInBay) <- c("long", "lat")
+#' proj4string(sitesInBay) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 #' 
 #' interp(inputData = sitesInBay,
 #'     paramCol = "SALINITY", year = "2016")
@@ -74,22 +71,28 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
                        plotWidth    = 4,     plotHeight   = 5, plotRes = 200,
                        plotZLims    = NA, minDataPoints = 2,
                        interpMethod = "ordinary kriging",
-                       vgModelType  = c("Exp", "Mat", "Gau", "Sph", "Ste")
+                       vgModelType  = c("Exp", "Mat", "Gau", "Sph", "Ste"),
+                       excludeOutsidePts = TRUE
 ) {
-  ## make sure bnp and pts have same projections. Add bnp to package
   
   pts <- inputData[!is.na(inputData@data[, paramCol]) & (inputData@data[, yearCol] %in% year), ]
+  
+  ### set spatial projections to be the same. added 20181121
+  prj      <- proj4string(mapLayer)
+  pts      <- spTransform(pts, prj)
+  
+  ### clip pts to include only overlapping data
+  if (excludeOutsidePts) {
+    int <- sp::over(pts, mapLayer)
+    pts <- pts[complete.cases(int), ]
+  }
+  
   cat(length(unique(pts$stn)), "stations with", paramCol, "data in", year, "       ")
   if (nrow(pts) > minDataPoints) { # only interpolate if there's more than x data points.
     
     if (sum(!is.na(plotZLims) < 2)) { # set range
       plotZLims <- range(pts@data[, paramCol], na.rm = TRUE)
     }
-    
-    ### set spatial projections to be the same. added 20181121
-    prj      <- proj4string(mapLayer)
-    pts      <- spTransform(pts, prj)
-    mapLayer <- spTransform(mapLayer, prj)
     
       
       ### create color mapping for plot

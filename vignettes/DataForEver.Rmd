@@ -74,7 +74,7 @@ The `SFNRC` R package provides a simple, streamlined means of interacting with t
 This vignette demonstrates some of the functionality of the `SFNRC` R package. 
 
 
-Before demonstrating the package's capabilities, it is important to highlight some limitations of the `SFNRC` R package. The DataForEver APIs can only be used on Linux machines connected to the SFNRC's internal network. When DataForEver's data are opened up to the general public, the capabilities in this R package will be adapted to provide broader access to these world-class databases. Another important aspect to draw attention to is the construction and use of BASH shell scripts by the DataForEver API functions. This dependence on BASH is the reason the APIs only work on Linux operating systems.
+Before demonstrating the package's capabilities, it is important to highlight some limitations of the `SFNRC` R package. The DataForEver APIs can only be used on Linux machines connected to the SFNRC's internal network. When DataForEver's data are opened up to the general public, the capabilities in this R package will be adapted to provide broader access to these world-class databases. Another important aspect to draw attention to is the construction and use of BASH scripts by the DataForEver API functions. This dependence on BASH is the reason the APIs only work on Linux operating systems.
 
 
 \vspace{12pt}
@@ -303,8 +303,8 @@ bsc.stns <- getDataTypes(stn = "BISC|BB")
 stns     <- as.character(unique(bsc.stns[bsc.stns$parameter %in% "salinity", "stn"]))
 
 # get data
-paramsToGet <- c("salinity")
-bsc         <- getHydro(stns = stns, parameter_list = paramsToGet)
+paramsToGet   <- c("salinity")
+bsc           <- getHydro(stns = stns, parameter_list = paramsToGet)
 names(bsc)[4] <- "SALINITY"
 ```
 
@@ -325,15 +325,12 @@ bsc$seas2  <- paste0(bsc$waterYr,"-", bsc$seas)
 agm        <- ddply(bsc, plyr::.(stn, seas2), plyr::numcolwise(geoMean))
 
 ### add coordinates to make point data spatial
-names(agm) <- gsub(x = names(agm), pattern = " |,", replacement = "")
-names(agm) <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
-finDat.coords <- join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
-finDat.coords <- finDat.coords[!is.na(finDat.coords$long), ]
-coordinates(finDat.coords) <- c("long", "lat")
-proj4string(finDat.coords) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
-
-sitesInBay <- over(finDat.coords, bnpMod)
-sitesInBay <- finDat.coords[complete.cases(sitesInBay), ]
+names(agm)    <- gsub(x = names(agm), pattern = " |,", replacement = "")
+names(agm)    <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
+agmWithCoords <- join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
+sitesInBay    <- agmWithCoords[!is.na(agmWithCoords$long), ]
+coordinates(sitesInBay) <- c("long", "lat")
+proj4string(sitesInBay) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
 
 
 # interpolate! 
