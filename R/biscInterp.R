@@ -20,6 +20,7 @@
 #' @param plotZLims range for colors plotted in figure. This is useful for standardizing when multiple plots are being produced
 #' @param interpMethod interpolation method - can be "ordinary kriging" or "nearest neighbor"
 #' @param vgModelType model type passed to \code{fit.variogram()} to interpolate data. See \code{?fit.variogram} for more details
+#' @param excludeOutsidePts TRUE/FALSE value indicating whether data points falling outside \code{mapLayer} be excluded. Default is TRUE.
 #'
 #' @return plot, raster layer, and/or raster data
 #' @export

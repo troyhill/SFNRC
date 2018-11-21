@@ -46,6 +46,8 @@ interp(inputData, paramCol = "SALINITY", yearCol = "year",
 \item{interpMethod}{interpolation method - can be "ordinary kriging" or "nearest neighbor"}
 
 \item{vgModelType}{model type passed to \code{fit.variogram()} to interpolate data. See \code{?fit.variogram} for more details}
+
+\item{excludeOutsidePts}{TRUE/FALSE value indicating whether data points falling outside \code{mapLayer} be excluded. Default is TRUE.}
 }
 \value{
 plot, raster layer, and/or raster data
