@@ -21,7 +21,6 @@ Depends:
     sp
 RoxygenNote: 6.1.0
 Suggests: knitr,
-    rgdal,
     rmarkdown,
     reshape2,
     ggplot2,
