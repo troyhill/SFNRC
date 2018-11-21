@@ -1,4 +1,10 @@
  language: R
  cache: packages
  warnings_are_errors: false
+ sudo: required
+ apt:
+    packages:
+      - libgdal1-dev 
+      - libproj-dev 
+      - libgeos-dev
  
