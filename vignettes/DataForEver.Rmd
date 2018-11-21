@@ -41,10 +41,14 @@ if(!require(gridExtra)){
 if(!require(sp)){
   install.packages("sp", repos='http://cran.us.r-project.org')
 }
+if(!require(rgdal)){
+  install.packages("rgdal", repos='http://cran.us.r-project.org')
+}
 
 # then load the package:
 library(knitr)
 library(rmarkdown)
+library(rgdal)
 library(sp)
 library(plyr)
 library(reshape2)
