@@ -44,12 +44,16 @@ if(!require(sp)){
 if(!require(rgdal)){
   install.packages("rgdal", repos='http://cran.us.r-project.org')
 }
+if(!require(deldir)){
+  install.packages("deldir", repos='http://cran.us.r-project.org')
+}
 
 # then load the package:
 library(knitr)
 library(rmarkdown)
 library(rgdal)
 library(sp)
+library(deldir)
 library(plyr)
 library(reshape2)
 library(ggplot2)
@@ -113,7 +117,7 @@ fig2Col   <- "gray55"
 \vspace{12pt}
 
 
-##2. Automated access to DataForEver
+## 2. Automated access to DataForEver
 \vspace{12pt}
 
 Users can search for stations in the DataForEver databases:
@@ -146,7 +150,7 @@ getDataTypes(stn = "S333", exactMatch = TRUE)
 \vspace{12pt}
 \vspace{12pt}
 
-##3. Downloading DataForEver data
+## 3. Downloading DataForEver data
 \vspace{12pt}
 
 Using `SFNRC` to download DataForEver data is very straightforward. The water quality database is accessed using the function `getWQ()`:
@@ -286,7 +290,7 @@ grid.arrange(TP.NTU, TN.TP, ncol = 2)
 \vspace{12pt}
 
 
-##4. Spatial interpolation wrapper
+## 4. Spatial interpolation wrapper
 
 \vspace{12pt}
 
