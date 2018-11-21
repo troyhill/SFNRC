@@ -305,7 +305,7 @@ stns     <- as.character(unique(bsc.stns[bsc.stns$parameter %in% "salinity", "st
 # get data
 paramsToGet <- c("salinity")
 bsc         <- getHydro(stns = stns, parameter_list = paramsToGet)
-
+names(bsc)[4] <- "SALINITY"
 ```
 
 

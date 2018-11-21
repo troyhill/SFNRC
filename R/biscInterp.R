@@ -86,7 +86,12 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
       plotZLims <- range(pts@data[, paramCol], na.rm = TRUE)
     }
     
-        
+    ### set spatial projections to be the same. added 20181121
+    prj      <- proj4string(mapLayer)
+    pts      <- spTransform(pts, prj)
+    mapLayer <- spTransform(mapLayer, prj)
+    
+      
       ### create color mapping for plot
       #Create a function to generate a continuous color palette
       numberOfLevels <- 10
@@ -94,16 +99,8 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
       rbPal      <- grDevices::colorRampPalette(c(earthTones[numberOfLevels], earthTones[1]))
       #This adds a column of color values
       # based on the y values
-      
-      # brks <- seq(plotZLims[1], plotZLims[2], by = 0.1) # this gets v complex given different scales of different params
-      # nb <- length(brks)-1 
-      # cols <- rev(terrain.colors(nb))
-      
       pts$Col    <- rbPal(numberOfLevels)[as.numeric(cut(as.data.frame(pts[, paramCol])[, paramCol], breaks = numberOfLevels))] # not on the same scale as the plot...
-      # pts$Col    <- round(as.data.frame(pts[, paramCol])[, paramCol], 1)
-      ###
-      
-      # pts@data
+
      
       ### kriging using the variogram
       template.ras <- raster::raster(mapLayer, res = c(0.001, 0.001))
@@ -151,10 +148,12 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
         message(paste("\n no convergence in variogram; using nearest neighbor"))
         message(paste("Original warning message:", cond, "\n"))
         # run nearest neighbor method
-        vlocs         <- dismo::voronoi(pts)
-        bnp_intsct    <- raster::intersect(vlocs, mapLayer)
-        fl.ras       <- raster::raster(mapLayer, nrows = 1000, ncols = 1000)
-        ras_pred     <<- raster::rasterize(bnp_intsct, fl.ras, paramCol)
+        vlocs         <- dismo::voronoi(pts, ext = extent(mapLayer) + 10)
+        # vlocs      <- spTransform(vlocs, prj)
+        fl.ras        <- raster::raster(mapLayer, nrows = 1000, ncols = 1000)
+        # bnp_intsct    <- raster::intersect(vlocs, fl.ras)
+        ras_pred      <- raster::rasterize(vlocs, fl.ras, paramCol)
+        ras_pred      <<- raster::mask(ras_pred, mapLayer)
         # return(ras_pred)
       })
       }
@@ -163,13 +162,12 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
      if (interpMethod %in% "nearest neighbor") {
         # ### Alternative: nearest neighbor.
         # ### Create nearest neighbor polygons
-        vlocs         <- dismo::voronoi(pts)
-        # plot(vlocs)
-        bnp_intsct    <- raster::intersect(vlocs, mapLayer)
-        # spplot(bnp_intsct, paramCol, col.regions = rev(get_col_regions()))
-        ### rasterize
+        vlocs        <- dismo::voronoi(pts, ext = extent(mapLayer) + 10)
+        # vlocs      <- spTransform(vlocs, prj)
         fl.ras       <- raster::raster(mapLayer, nrows = 1000, ncols = 1000)
-        ras_pred     <- raster::rasterize(bnp_intsct, fl.ras, paramCol)
+        # bnp_intsct   <- raster::intersect(vlocs, mapLayer)
+        ras_pred     <- raster::rasterize(vlocs, fl.ras, paramCol)
+        ras_pred     <- raster::mask(ras_pred, mapLayer)
         # raster::plot(pts, bg = pts$Col, add = TRUE, pch = 21, cex = 0.5, zlim = plotZLims)
       }
       
