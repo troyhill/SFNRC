@@ -330,7 +330,7 @@ bsc        <- seas(bsc, wetSeas = c("May", "Sep"), waterYearBegin = "Oct", timeC
 bsc$seas2  <- paste0(bsc$waterYr,"-", bsc$seas)
 
 ### calculate annual geometric means
-agm        <- ddply(bsc, plyr::.(stn, seas2), plyr::numcolwise(geoMean))
+agm        <- ddply(bsc, .(stn, seas2), numcolwise(geoMean))
 
 ### add coordinates to make point data spatial
 names(agm)    <- gsub(x = names(agm), pattern = " |,", replacement = "")
@@ -349,3 +349,6 @@ interp(inputData = sitesInBay, mapLayer = bnpMod,
 
 
 
+\vspace{12pt}
+
+In the case above, ordinary kriging was unsuccessful because of a lack of convergence in the variogram, so the function used a nearest-neighbor approach to spatial interpolation.
