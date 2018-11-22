@@ -323,7 +323,7 @@ bsc <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param, fun.aggreg
 ```
 
 
-```{r interp_prep3, message = FALSE, include=TRUE, echo=TRUE, warning = FALSE, fig.width = 4, fig.height = 5}
+```{r interp_prep3, message = FALSE, include=TRUE, echo=TRUE, warning = FALSE, fig.width = 3.5, fig.height = 3.5}
 
 ### assign wet/dry seasons
 bsc        <- seas(bsc, wetSeas = c("May", "Sep"), waterYearBegin = "Oct", timeCol = "date")
