@@ -12,7 +12,8 @@ test_that("geoMean gives correct output", {
   expect_equal(geoMean(10), 10)
   expect_equal(geoMean(c(15, 15, 15, NA)), 15)
   expect_error(geoMean(c(15, 15, 15, NA), nas = FALSE)) 
-  expect_equal(geoMean(c(15, 15, 15, NA), nas = TRUE, zero.propagate = TRUE), 15)
+  expect_equal(geoMean(c(15, 15, 15, NA), nas = TRUE, zero.propagate = TRUE), 15) 
+  expect_equal(geoMean(c(15, 15, 15, 0), nas = TRUE, zero.propagate = TRUE), 0)
 })
 
 
