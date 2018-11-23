@@ -21,6 +21,7 @@
 #' @param interpMethod interpolation method - can be "ordinary kriging" or "nearest neighbor"
 #' @param vgModelType model type passed to \code{fit.variogram()} to interpolate data. See \code{?fit.variogram} for more details
 #' @param excludeOutsidePts TRUE/FALSE value indicating whether data points falling outside \code{mapLayer} be excluded. Default is TRUE.
+#' @param ... additional arguments used in vgm(); see \code{?vgm} for details. 
 #'
 #' @return plot, raster layer, and/or raster data
 #' @export
@@ -77,7 +78,8 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
                        plotZLims    = NA, minDataPoints = 2,
                        interpMethod = "ordinary kriging",
                        vgModelType  = c("Exp", "Mat", "Gau", "Sph", "Ste"),
-                       excludeOutsidePts = TRUE
+                       excludeOutsidePts = TRUE,
+                       ...
 ) {
   
   pts <- inputData[!is.na(inputData@data[, paramCol]) & (inputData@data[, yearCol] %in% year), ]
@@ -124,7 +126,7 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
           v   <- gstat::variogram(gs) # generate variogram
           # fve <- gstat::fit.variogram(v, gstat::vgm(psill = max(v$gamma)*0.9, model = vgModelType, range = max(v$dist) / 2, nugget = 0))
           
-          fve <- gstat::fit.variogram(v, gstat::vgm(vgModelType), fit.kappa = TRUE) # https://www.r-spatial.org/r/2016/02/14/gstat-variogram-fitting.html
+          fve <- gstat::fit.variogram(v, gstat::vgm(model = vgModelType, ...), fit.kappa = TRUE) # https://www.r-spatial.org/r/2016/02/14/gstat-variogram-fitting.html
           ### look into automap::autoKrige. coordinate system issues are obstacle. See also more generally: https://gis.stackexchange.com/questions/147660/strange-spatial-interpolation-results-from-ordinary-kriging
           ### TODO: report specs on interpolation
           ### function doesn't handle convergence errors well

@@ -10,7 +10,7 @@ interp(inputData, paramCol = "SALINITY", yearCol = "year",
   plotName = "NA.png", plotWidth = 4, plotHeight = 5,
   plotRes = 200, plotZLims = NA, minDataPoints = 2,
   interpMethod = "ordinary kriging", vgModelType = c("Exp", "Mat",
-  "Gau", "Sph", "Ste"), excludeOutsidePts = TRUE)
+  "Gau", "Sph", "Ste"), excludeOutsidePts = TRUE, ...)
 }
 \arguments{
 \item{inputData}{dataframe with water quality data. Function works best with output of \code{dfe.wq() or dfe.hydro()} using \code{wide = TRUE}.}
@@ -48,6 +48,8 @@ interp(inputData, paramCol = "SALINITY", yearCol = "year",
 \item{vgModelType}{model type passed to \code{fit.variogram()} to interpolate data. See \code{?fit.variogram} for more details}
 
 \item{excludeOutsidePts}{TRUE/FALSE value indicating whether data points falling outside \code{mapLayer} be excluded. Default is TRUE.}
+
+\item{...}{additional arguments used in vgm(); see \code{?vgm} for details.}
 }
 \value{
 plot, raster layer, and/or raster data
