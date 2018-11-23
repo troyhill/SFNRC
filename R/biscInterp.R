@@ -77,7 +77,9 @@ interp <- function(inputData, # inputData = finDat.coords[(finDat.coords@data$st
                        plotWidth    = 4,     plotHeight   = 5, plotRes = 200,
                        plotZLims    = NA, minDataPoints = 2,
                        interpMethod = "ordinary kriging",
-                       vgModelType  = c("Exp", "Mat", "Gau", "Sph", "Ste"),
+                       vgModelType  = c("Nug", "Exp", "Sph", "Gau", "Exc", "Mat", 
+                                        "Ste", "Cir", "Lin", "Bes", "Pen", "Per",
+                                        "Wav", "Hol", "Log", "Pow", "Spl"),
                        excludeOutsidePts = TRUE,
                        ...
 ) {

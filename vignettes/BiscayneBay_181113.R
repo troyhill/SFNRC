@@ -79,6 +79,7 @@ fig2Col   <- "gray55"
 minPoints <- 8 # minimum number of sampling points required for interpolation
 polygonLayer <- bnpMod # shapefile to be used for subsetting data, interpolation, etc.
 interpMeth <- "ordinary kriging" # uses OK where variogram converges, otherwise uses nearest neighbor
+wetSeason_range <- c("Jun", "Sept")
 
 compareParams <- c("AMMONIA-N", "NITRATE+NITRITE-N", "TEMP",
                    "SALINITY", "PH, FIELD", "CHLOROPHYLL-A", "TURBIDITY", "DISSOLVED OXYGEN", 
