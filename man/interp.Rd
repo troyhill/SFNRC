@@ -9,8 +9,9 @@ interp(inputData, paramCol = "SALINITY", yearCol = "year",
   fileName = "NA.tif", mapLayer = SFNRC::bnp, exportPlot = FALSE,
   plotName = "NA.png", plotWidth = 4, plotHeight = 5,
   plotRes = 200, plotZLims = NA, minDataPoints = 2,
-  interpMethod = "ordinary kriging", vgModelType = c("Exp", "Mat",
-  "Gau", "Sph", "Ste"), excludeOutsidePts = TRUE, ...)
+  interpMethod = "ordinary kriging", vgModelType = c("Nug", "Exp",
+  "Sph", "Gau", "Exc", "Mat", "Ste", "Cir", "Lin", "Bes", "Pen", "Per",
+  "Wav", "Hol", "Log", "Pow", "Spl"), excludeOutsidePts = TRUE, ...)
 }
 \arguments{
 \item{inputData}{dataframe with water quality data. Function works best with output of \code{dfe.wq() or dfe.hydro()} using \code{wide = TRUE}.}
