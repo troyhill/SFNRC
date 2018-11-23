@@ -16,7 +16,9 @@ dataframe \code{getStn} returns a vector of stations
 Identifies DataForEver stations matching query
 }
 \examples{
+\dontrun{
 a <- getStn(query = "S33")
 a <- getStn(query = "s333")
+}
 
 }
