@@ -10,8 +10,10 @@
 #' 
 #' 
 #' @examples
+#' \dontrun{
 #' a <- getStn(query = "S33")
 #' a <- getStn(query = "s333")
+#' }
 #' 
 #' @importFrom utils read.delim
 #' 
