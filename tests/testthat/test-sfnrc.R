@@ -4,7 +4,6 @@ library(SFNRC)
 
 
 test_that("se gives correct output", {
-  expect_equal(se(10), NA)
   expect_equal(se(c(5, 5, 5, NA)), 0)
 })
 
