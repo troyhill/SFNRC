@@ -8,3 +8,6 @@
       - libgdal-dev
       - libproj-dev
       
+ after_success:
+      - R -e 'covr::codecov()'
+      - R -e 'covr::coveralls()'
