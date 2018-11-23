@@ -1,6 +1,6 @@
 # SFNRC
 
-[![Build Status](https://travis-ci.org/troyhill/SFNRC.svg?branch=master)](https://travis-ci.org/troyhill/SFNRC) [![codecov.io](https://codecov.io/github/r-lib/SFNRC/coverage.svg?branch=master)](https://codecov.io/github/r-lib/SFNRC?branch=master)
+[![Build Status](https://travis-ci.org/troyhill/SFNRC.svg?branch=master)](https://travis-ci.org/troyhill/SFNRC) [![codecov.io](https://codecov.io/github/r-lib/SFNRC/coverage.svg?branch=master)](https://codecov.io/github/r-lib/SFNRC?branch=master) [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/SFNRC)](https://cran.r-project.org/package=SFNRC) 
 
 The `SFNRC` R package supports integration and analysis of water quality and hydrology data in south Florida. The package is optimized for use on linux operating systems connected to the South Florida Natural Resources Center's intranet, conditions that provides command-line access to internal databases.
 
