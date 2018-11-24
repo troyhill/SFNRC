@@ -17,6 +17,12 @@ test_that("interp runs", {
                             paramCol = "value", year = "2016")) == "S4")
 })
 
+
+test_that("getStn breaks", { 
+  expect_error(getStn())
+})
+
+
 test_that("se gives correct output", { 
   expect_equal(se(c(5, 5, 5, NA)), 0)
 })
