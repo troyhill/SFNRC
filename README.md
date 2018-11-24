@@ -1,6 +1,6 @@
 # SFNRC
 
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/troyhill/coreCT?branch=master&svg=true)] [![Build Status](https://travis-ci.org/troyhill/SFNRC.svg?branch=master)](https://travis-ci.org/troyhill/SFNRC) [![codecov.io](https://codecov.io/github/troyhill/SFNRC/coverage.svg?branch=master)](https://codecov.io/github/troyhill/SFNRC?branch=master)
+[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/troyhill/SFNRC?branch=master&svg=true)] [![Build Status](https://travis-ci.org/troyhill/SFNRC.svg?branch=master)](https://travis-ci.org/troyhill/SFNRC) [![codecov.io](https://codecov.io/github/troyhill/SFNRC/coverage.svg?branch=master)](https://codecov.io/github/troyhill/SFNRC?branch=master)
 
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/SFNRC)](https://cran.r-project.org/package=SFNRC) 
 
