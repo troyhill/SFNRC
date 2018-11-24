@@ -8,7 +8,7 @@
       - libgdal-dev
       - libproj-dev
 
-r_packages:
+r_packages: 
   - covr
 
 after_success:
