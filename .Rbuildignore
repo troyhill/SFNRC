@@ -1,0 +1,9 @@
+^codecov\.yml$
+^appveyor\.yml$
+^\.travis\.yml$
+^\.Rproj\.user$
+^LICENSE$
+^CRAN-RELEASE$
+^docs$
+^appveyor\\.yml$
+^.*\.Rproj$
