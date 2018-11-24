@@ -9,6 +9,7 @@
     packages:
       - libgdal-dev
       - libproj-dev
+      - texinfo
 
 r_packages: 
   - covr

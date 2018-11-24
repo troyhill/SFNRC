@@ -48,3 +48,16 @@ environment:
   R_CHECK_ARGS: --resave-data
   R_BUILD_ARGS: --resave-data
   
+#---------------------------------#
+#         notifications           #
+#---------------------------------#
+
+notifications:
+
+  # Email
+  - provider: Email
+    to:
+      - hill.troy@gmail.com
+    subject: 'Build {{status}}'                  # optional
+    message: "Appveyor: {{message}}, {{commitId}}, ..."    # optional
+    on_build_status_changed: true
