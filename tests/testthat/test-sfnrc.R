@@ -35,10 +35,10 @@ test_that("geoMean gives correct output", {
   expect_equal(geoMean(c(15, 15, 15, 0), nas = TRUE, zero.propagate = TRUE), 0)
 })
 
-# 
-# test_that("getHydro can error out", {
-#   expect_error(getHydro(stns = "string")) 
-# })
+
+test_that("getHydro can error out", {
+  expect_error(getHydro(stns = "string"))
+})
 
 
 test_that("getDataTypes can error out", {
