@@ -45,9 +45,11 @@ artifacts:
     name: Bits
 
 environment:
-  R_CHECK_ARGS: --resave-data
-  R_BUILD_ARGS: --resave-data
-  
+  R_CHECK_ARGS: --resave-data 
+  R_BUILD_ARGS: --resave-data 
+  global:
+    WARNINGS_ARE_ERRORS: 0
+    
 #---------------------------------#
 #         notifications           #
 #---------------------------------#
