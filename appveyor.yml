@@ -43,3 +43,8 @@ artifacts:
 
   - path: '\*_*.zip'
     name: Bits
+
+environment:
+  R_CHECK_ARGS: --resave-data
+  R_BUILD_ARGS: --resave-data
+  
