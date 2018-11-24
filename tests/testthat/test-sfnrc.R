@@ -18,10 +18,9 @@ test_that("interp runs", {
 })
 
 
-# test_that("getStn breaks", { 
-#   a <- getStn()
-#   expect_error()
-# })
+test_that("getWQ breaks", {
+  expect_error(getWQ())
+})
 
 
 test_that("se gives correct output", { 
