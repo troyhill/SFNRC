@@ -3,6 +3,7 @@
  warnings_are_errors: false
  sudo: required
  r_build_args: --resave-data
+ r_check_args: --resave-data
  addons:
   apt:
     packages:
