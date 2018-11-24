@@ -10,7 +10,6 @@ library(SFNRC)
 
 test_that("se gives correct output", {
   expect_equal(se(c(5, 5, 5, NA)), 0)
-  expect_error(se("string")) 
 })
 
 test_that("geoMean gives correct output", {
