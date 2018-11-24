@@ -13,4 +13,4 @@ r_packages:
   - covr
 
 after_success:
-  - Rscript -e 'library(covr); codecov()'
+  - Rscript -e 'library(covr); codecov(token = "613d7607-72fb-44dd-87e7-1a13551ccb3c")'
