@@ -25,3 +25,8 @@ test_that("geoMean gives correct output", {
 test_that("getHydro can error out", {
   expect_error(getHydro(stns = "string")) 
 })
+
+
+test_that("getDataTypes can error out", {
+  expect_error(getDataTypes(parameter = "salinity")) 
+})
