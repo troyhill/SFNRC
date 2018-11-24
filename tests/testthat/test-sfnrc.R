@@ -1,7 +1,12 @@
 context("test-sfnrc")
 library(SFNRC)
 
-
+# test_that("interp runs", {
+#   expect_that(a <- plyr::join_all(list(finDat, as.data.frame(masterCoords)));
+#               coordinates(a) <- c("long", "lat");
+#     interp(inputData = a, by = "stn", 
+#               paramCol = "param", year = "2016") )
+# })
 
 test_that("se gives correct output", {
   expect_equal(se(c(5, 5, 5, NA)), 0)
@@ -17,10 +22,6 @@ test_that("geoMean gives correct output", {
 })
 
 
-# test_that("fld.frq gives correct output", {
-#   expect_equal(fld.frq(2, 1:10, units = "percent"), 0.8)
-#   expect_equal(fld.frq(2, 1:10, units = "tides"), 9)
-#   expect_error(fld.frq("string", 1:10)) 
-#   expect_error(fld.frq(2, "string"))
-#   expect_error(fld.frq(2, 1:10, units = "furlongs")) 
-# })
+test_that("getHydro can error out", {
+  expect_error(getHydro(stns = "string")) 
+})
