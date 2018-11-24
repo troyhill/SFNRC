@@ -8,7 +8,7 @@ library(SFNRC)
 #               paramCol = "param", year = "2016") )
 # })
 
-test_that("se gives correct output", {
+test_that("se gives correct output", { 
   expect_equal(se(c(5, 5, 5, NA)), 0)
 })
 
