@@ -46,7 +46,7 @@ artifacts:
 
 environment:
   R_BUILD_ARGS: --resave-data --no-manual 
-    
+  
 #---------------------------------#
 #         notifications           #
 #---------------------------------#
