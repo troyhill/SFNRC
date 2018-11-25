@@ -8,7 +8,7 @@ test_that("interp runs", {
   coordinates(a) <- c("long", "lat")
   proj4string(a) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
   
-  a.interp <- interp(inputData = a, by = "stn", returnRas = TRUE,
+  a.interp <- interp(inputData = a, by = "stn", returnRas = TRUE, plotZLims = c(0, 10),
                      paramCol = "value", year = "2016")
   
   expect_true(typeof(a.interp) == "S4")
@@ -18,9 +18,13 @@ test_that("interp runs", {
 })
 
 
-# test_that("getWQ breaks", {
-#   expect_error(getWQ())
-# })
+test_that("getWQ breaks", {
+  expect_error(getWQ(stns = "S333", target_analytes = c("string1", "string2")))
+  expect_error(getWQ(stns = "S333", matricesToExclude = c("string1", "string2")))
+  expect_error(getWQ(stns = "S333", output_colNames = c("string1", "string2")))
+  expect_error(getWQ(stns = "S333", output_colClasses = c("string1", "string2")))
+  expect_error(getWQ(stns = "S333", rFriendlyParamNames = "string1"))
+})
 
 
 test_that("se gives correct output", { 

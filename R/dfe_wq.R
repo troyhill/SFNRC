@@ -70,12 +70,30 @@ getWQ <- function(stns, target_analytes = "all",
   # requires permissions on the shell script, access to NPS processes etc. 
   # TODO: select date ranges, option for outputting wide data
   
+  ### error checking
+  if (!is.character(target_analytes) || !(length(target_analytes) == 1)) {
+    stop("'target_analytes' must be a single character single")
+  }
+  if (!is.character(matricesToExclude) || !(length(matricesToExclude) == 1)) {
+    stop("'matricesToExclude' must be a single character string")
+  }
+  if (!is.character(output_colNames) || !(length(output_colNames) == 8)) {
+    stop("'output_colNames' must be a character vector with eight elements (these are the names of columns in output)")
+  }
+  if (!is.character(output_colClasses) || !(length(output_colClasses) == 8)) {
+    stop("'output_colClasses' must be a character vector with eight elements (representing output data classes)")
+  }
+  if (!is.logical(rFriendlyParamNames)) {
+    stop("'rFriendlyParamNames' must be TRUE or FALSE")
+  }
+  
+  
   files.in.tmp     <- list.files(tempdir(), recursive = TRUE)
   stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
   folder_with_data <- file.path(tempdir(), "data")
   bash.script.loc  <- file.path(tempdir(), "bash_temp.sh")
   
-  utils::write.table(toupper(stns), file = stn.list.loc, col.names = FALSE, row.names = FALSE, sep = "", quote = FALSE)
+  utils::write.table(toupper(stns), file = stn.list.loc, col.names = FALSE, row.names = FALSE, sep = "", quote = FALSE) # nocov start
   
   
   ### create bash script to download water quality data
@@ -154,7 +172,7 @@ getWQ <- function(stns, target_analytes = "all",
   ### remove QC samples
   tempDat <- tempDat[!tempDat$matrix %in% c(matricesToExclude), ]
   
-  invisible(tempDat) 
+  invisible(tempDat)  # nocov end
   
 }
 
