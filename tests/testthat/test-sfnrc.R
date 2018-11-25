@@ -51,7 +51,9 @@ test_that("getHydro can error out", {
 
 
 test_that("getDataTypes can error out", {
-  expect_error(getDataTypes(parameter = "salinity"))
+  expect_error(getDataTypes(parameter = 20))
+  expect_error(getDataTypes(stn = 20))
+  expect_error(getDataTypes(exactMatch = "string"))
 })
 
 test_that("getStn can error out", {

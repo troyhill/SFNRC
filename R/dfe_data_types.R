@@ -32,9 +32,20 @@
 
 getDataTypes <- function(parameter = "all", stn = "all", exactMatch = FALSE) {
   
+  if (!is.character(parameter) || (length(parameter) == 1)) {
+    stop("Input error: 'parameter' must be a single-element character vector")
+  }
+  if (!is.character(stn) || (length(stn) == 1)) {
+    stop("Input error: 'stn' must be a single-element character vector")  }
+  if (!is.logical(exactMatch)) {
+    stop("Input error: 'exactMatch' must be TRUE/FALSE")
+  }
+  
   searchParam <- parameter
   searchStn   <- toupper(stn)
   
+  
+  # nocov start
   if(exactMatch) {
     searchStn <- paste0("^", searchStn, "$")
   }
@@ -114,4 +125,5 @@ getDataTypes <- function(parameter = "all", stn = "all", exactMatch = FALSE) {
   # newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
   # invisible(file.remove(newFiles))
   
+  # nocov end
 }
