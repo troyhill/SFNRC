@@ -4,11 +4,11 @@
 #' 
 #' 
 #' @param codes a character vector of DBHYDRO project names. 
-#' @param ... additional arguments supplied to \link{\code{dbhydro.proj}}
+#' @param ... additional arguments supplied to \code{\link{dbhydro.proj}}
 #' 
 #' @return dataframe \code{dbhydro.proj.batch} saves a csv of DBHYDRO water quality data to disk, with option to import data into global environment.
 #' 
-#' @seealso \code{dbhydro.proj}
+#' @seealso \code{\link{dbhydro.proj}}
 #' 
 #' @examples
 #' \dontrun{

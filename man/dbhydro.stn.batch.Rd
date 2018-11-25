@@ -4,22 +4,12 @@
 \alias{dbhydro.stn.batch}
 \title{A wrapper for \code{dbhydro.stn}}
 \usage{
-dbhydro.stn.batch(codes, 
-destfile = "stn_report_todaysDate.csv",
-rename_proj = TRUE,
-parameters = "all",
-report_type = "full", # full = long dataset - 1 line per sample; crosstab = wide dataset
-incl_qc_flags = TRUE,
-incl_flagged_data = FALSE,
-destination = "file_csv", 
-start_date = "01-JAN-1960", # note format
-end_date   = "today",
-import_data = FALSE)
+dbhydro.stn.batch(codes, ...)
 }
 \arguments{
 \item{codes}{a character vector of station names. If one station in the list returns no data, the entire url request fails.}
 
-\item{...}{additional arguments supplied to \link{\code{dbhydro.stn}}}
+\item{...}{additional arguments supplied to \code{\link{dbhydro.stn}}}
 }
 \value{
 dataframe \code{dbhydro.stn.batch} saves a csv of DBHYDRO water quality data to disk.
@@ -34,5 +24,5 @@ head(dbh.stn.batch(codes = c("S333", "S151"))
 
 }
 \seealso{
-\code{dbhydro.stn}
+\code{\link{dbhydro.stn}}
 }

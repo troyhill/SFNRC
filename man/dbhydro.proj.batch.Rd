@@ -9,7 +9,7 @@ dbhydro.proj.batch(codes, ...)
 \arguments{
 \item{codes}{a character vector of DBHYDRO project names.}
 
-\item{...}{additional arguments supplied to \link{\code{dbhydro.proj}}}
+\item{...}{additional arguments supplied to \code{\link{dbhydro.proj}}}
 }
 \value{
 dataframe \code{dbhydro.proj.batch} saves a csv of DBHYDRO water quality data to disk, with option to import data into global environment.
@@ -26,5 +26,5 @@ dbh.proj.batch(codes = STA1W_project_codes)
 
 }
 \seealso{
-\code{dbhydro.proj}
+\code{\link{dbhydro.proj}}
 }
