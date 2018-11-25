@@ -66,7 +66,7 @@ test_that("dbhydro.stn input checks", {
   expect_error(dbhydro.stn(incl_flagged_data = "string"))
   expect_error(dbhydro.stn(import_data = "string"))
   expect_error(dbhydro.stn(report_type = "string"))
-  # expect_error(dbhydro.stn(report_type = "crosstab"))
+  expect_error(dbhydro.stn(report_type = c("string1", "string2") ))
   # expect_error(dbhydro.stn(end_date = "today"))
 })
 
