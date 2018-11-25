@@ -62,10 +62,19 @@ test_that("getStn can error out", {
 
 test_that("dbhydro.stn input checks", {
   expect_error(dbhydro.stn(rename_proj = 20))
-  expect_error(dbhydro.stn(report_type = "crosstab"))
   expect_error(dbhydro.stn(incl_qc_flags = "string"))
   expect_error(dbhydro.stn(incl_flagged_data = "string"))
   expect_error(dbhydro.stn(import_data = "string"))
   expect_error(dbhydro.stn(report_type = "string"))
-  expect_error(dbhydro.stn(end_date = "today"))
+  # expect_error(dbhydro.stn(report_type = "crosstab"))
+  # expect_error(dbhydro.stn(end_date = "today"))
 })
+
+
+# test_that("seas tests", {
+#   a <- seas(wqDat, timeCol = "datetime")
+#   head(a)
+#   
+#   expect_error(seas())
+#   expect_error(seas())
+# })
