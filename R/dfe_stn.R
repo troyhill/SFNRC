@@ -28,6 +28,7 @@ getStn <- function(query = "S33") {
     stop("'query' must be a single, grep-style character vector specifying station search criteria")
   }
   
+  # nocov start
   stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
   bash.script.loc  <- file.path(tempdir(), "bash_stnLike.sh")
   
@@ -104,4 +105,5 @@ getStn <- function(query = "S33") {
   # newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
   # invisible(file.remove(newFiles))
   
+  # nocov end
 }
