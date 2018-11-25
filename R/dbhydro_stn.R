@@ -55,15 +55,37 @@ dbhydro.stn <- function(destfile = "stn_report_todaysDate.csv",
                          end_date   = "today",
                          import_data = FALSE) {
   
+  ### input checks
+  if (!is.logical(rename_proj) || !(length(rename_proj) == 1)) {
+    stop("invalid input for 'rename_proj': must be TRUE or FALSE")
+  }
+  if (!is.logical(incl_qc_flags) || !(length(incl_qc_flags) == 1)) {
+    stop("invalid input for 'incl_qc_flags': must be TRUE or FALSE")
+  }
+  if (!is.logical(incl_flagged_data) || !(length(incl_flagged_data) == 1)) {
+    stop("invalid input for 'incl_flagged_data': must be TRUE or FALSE")
+  }
+  if (!is.logical(import_data) || !(length(import_data) == 1)) {
+    stop("invalid input for 'import_data': must be TRUE or FALSE")
+  }
+  if (!is.character(report_type) || !(length(report_type) == 1)) {
+    stop("invalid input for 'report_type': must be a single character vector")
+  }
+  if (!report_type %in% c("full", "crosstab")) {
+    stop("invalid input for 'report_type': must either be 'full' or 'crosstab' ")
+  }
+  
+  
   if (rename_proj == TRUE) {
     destfile <- gsub(pattern = "stn", replacement = gsub(pattern = "'", replacement = "", x = stations), x = destfile)
   }
+  
+  
   if (report_type == "full") {
     report_type_text <- paste0("&v_report=ctr_1_true")
   } else if (report_type == "crosstab") {
     report_type_text <- paste0("&v_report=ctr_w")
-  } else stop("invalid input for 'report_type': must be 'either 'full' or 'crosstab'")
-  
+  }
   if (incl_qc_flags == TRUE) {
     qc_flags_text <- paste0("&v_exc_qc=N")
   } else if (incl_qc_flags == FALSE) {
@@ -95,15 +117,18 @@ dbhydro.stn <- function(destfile = "stn_report_todaysDate.csv",
     stationRef <- "'%20and%20station_id%20in%20('"
   }
   
+  # nocov start
   url.init <- paste0("http://my.sfwmd.gov/dbhydroplsql/water_quality_data.report_full?v_where_clause=where%20date_collected%20%3e%20'", 
                      start_date, 
                      stationRef, stations, "')",
                      "&v_target_code=", destination
   )
+  
   httr::GET(url.init, httr::write_disk(destfile, overwrite = TRUE), httr::timeout(99999))
   if (import_data == TRUE) {
     output <- utils::read.csv(destfile)
   }
+  # nocov end
 }
 
 

@@ -23,6 +23,11 @@
 
 
 getStn <- function(query = "S33") {
+  ### input checks
+  if (!is.character(query) || !(length(query) == 1)) {
+    stop("'query' must be a single, grep-style character vector specifying station search criteria")
+  }
+  
   stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
   bash.script.loc  <- file.path(tempdir(), "bash_stnLike.sh")
   

@@ -53,3 +53,19 @@ test_that("getHydro can error out", {
 test_that("getDataTypes can error out", {
   expect_error(getDataTypes(parameter = "salinity"))
 })
+
+test_that("getStn can error out", {
+  expect_error(getStn(query = 20))
+  expect_error(getStn(query = c("string1", "string2")))
+})
+
+
+test_that("dbhydro.stn input checks", {
+  expect_error(dbhydro.stn(rename_proj = 20))
+  expect_error(dbhydro.stn(report_type = "crosstab"))
+  expect_error(dbhydro.stn(incl_qc_flags = "string"))
+  expect_error(dbhydro.stn(incl_flagged_data = "string"))
+  expect_error(dbhydro.stn(import_data = "string"))
+  expect_error(dbhydro.stn(report_type = "string"))
+  expect_error(dbhydro.stn(end_date = "today"))
+})
