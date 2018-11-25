@@ -35,7 +35,11 @@ dbhydro.proj.batch <- function(codes,
                                destination = "file_csv",
                                rename_proj = TRUE, # should destination file be re-named to replace "proj" with project name
                                import_data = FALSE) {
-    for (i in 1:length(codes)) {
+  if (!is.character(codes)) {
+    stop("'codes' must be a character vector")
+  }
+  
+  for (i in 1:length(codes)) {
       tryCatch({
         print(codes[i])
         dbhydro.proj(project_codes = codes[i], 

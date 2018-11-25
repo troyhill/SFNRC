@@ -87,6 +87,14 @@ test_that("dbhydro.stn.batch test", {
   
 })
 
+
+test_that("dbhydro.proj.batch test", {
+  expect_error(dbhydro.proj.batch(codes = 20))
+  expect_error(dbhydro.proj.batch(rename_proj = "string"))
+  
+})
+
+
 # test_that("seas tests", {
 #   a <- seas(wqDat, timeCol = "datetime")
 #   head(a)
