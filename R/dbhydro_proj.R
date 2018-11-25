@@ -88,9 +88,9 @@ dbhydro.proj <- function(destfile = "proj_report_todaysDate.csv",
   )
   #download.file(url = url.init, destfile)  # timeout problems even after setting options(timeout=24000000000000000000000000000000000000000)
   #RCurl::getURL(url = url.init) # crashed RStudio
-  httr::GET(url.init, httr::write_disk(paste0(tempDir(), destfile), overwrite = TRUE), httr::timeout(99999))
+  httr::GET(url.init, httr::write_disk(paste0(tempdir(), destfile), overwrite = TRUE), httr::timeout(99999))
   if (import_data == TRUE) {
-    output <- utils::read.csv(paste0(tempDir(), destfile))
+    output <- utils::read.csv(paste0(tempdir(), destfile))
   }
   
   # nocov end
