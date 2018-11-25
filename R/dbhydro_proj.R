@@ -43,6 +43,29 @@ dbhydro.proj <- function(destfile = "proj_report_todaysDate.csv",
                           rename_proj = TRUE, 
                           import_data = FALSE
 ) {
+  
+  ### input checks
+  if (!is.character(destfile) || !(length(destfile) == 1)) {
+    stop("invalid input for 'destfile': must be a single character string")
+  }
+  if (!is.character(project_codes) || !(length(project_codes) == 1)) {
+    stop("invalid input for 'project_codes': must be a character vector of length 1")
+  }
+  if (!is.character(start_date) || !(length(start_date) == 1)) {
+    stop("invalid input for 'start_date': must be a character vector of length 1 (e.g., '01-JAN-1960')")
+  }
+  if (!is.character(destination) || !(length(destination) == 1)) {
+    stop("invalid input for 'destination': must be a character vector of length 1")
+  }
+  if (!is.logical(rename_proj) || !(length(rename_proj) == 1)) {
+    stop("invalid input for 'rename_proj': must be TRUE or FALSE")
+  }
+  if (!is.logical(import_data) || !(length(import_data) == 1)) {
+    stop("invalid input for 'import_data': must be TRUE or FALSE")
+  }
+  
+  
+  
   if (grepl("todaysDate", destfile)) {
     destfile <- gsub(pattern = "todaysDate", replacement = format(Sys.Date(), "%Y%m%d"), x = destfile)
   }
@@ -56,6 +79,8 @@ dbhydro.proj <- function(destfile = "proj_report_todaysDate.csv",
     projectRef <- "project_code='"
   }
   
+  
+  # nocov start
   url.init <- paste0("http://my.sfwmd.gov/dbhydroplsql/water_quality_data.report_full?v_where_clause=where%20", 
                      #"date_collected%20%3e%20='"start_date, 
                      projectRef, project_codes, "'",
@@ -63,8 +88,10 @@ dbhydro.proj <- function(destfile = "proj_report_todaysDate.csv",
   )
   #download.file(url = url.init, destfile)  # timeout problems even after setting options(timeout=24000000000000000000000000000000000000000)
   #RCurl::getURL(url = url.init) # crashed RStudio
-  httr::GET(url.init, httr::write_disk(destfile, overwrite = TRUE), httr::timeout(99999))
+  httr::GET(url.init, httr::write_disk(paste0(tempDir(), destfile), overwrite = TRUE), httr::timeout(99999))
   if (import_data == TRUE) {
-    output <- utils::read.csv(destfile)
+    output <- utils::read.csv(paste0(tempDir(), destfile))
   }
+  
+  # nocov end
 }

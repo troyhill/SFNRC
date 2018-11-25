@@ -71,6 +71,18 @@ test_that("dbhydro.stn input checks", {
 })
 
 
+test_that("dbhydro.proj input checks", {
+  expect_error(dbhydro.proj(destfile = 20))
+  expect_error(dbhydro.proj(project_codes = 20))
+  expect_error(dbhydro.proj(start_date = 20))
+  expect_error(dbhydro.proj(import_data = "string"))
+  expect_error(dbhydro.proj(rename_proj = "string"))
+  expect_error(dbhydro.proj(destination = 20))
+})
+
+
+
+
 # test_that("seas tests", {
 #   a <- seas(wqDat, timeCol = "datetime")
 #   head(a)
