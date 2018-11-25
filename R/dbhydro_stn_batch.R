@@ -15,16 +15,7 @@
 #' import_data = FALSE)
 #' 
 #' @param codes a character vector of station names. If one station in the list returns no data, the entire url request fails.
-#' @param destfile a character vector file address for output, saved as a comma-delimited text file.
-#' @param rename_proj lorem ipsum
-#' @param parameters lorem ipsum
-#' @param report_type lorem ipsum
-#' @param incl_qc_flags lorem ipsum
-#' @param incl_flagged_data lorem ipsum
-#' @param destination lorem ipsum
-#' @param start_date lorem ipsum
-#' @param end_date lorem ipsum
-#' @param import_data lorem ipsum
+#' @param ... additional arguments supplied to \link{\code{dbhydro.stn}}
 #' 
 #' @return dataframe \code{dbhydro.stn.batch} saves a csv of DBHYDRO water quality data to disk.
 #' 
@@ -32,22 +23,12 @@
 #' 
 #' @examples
 #' \dontrun{
-#' head(dbh.stn.batch())
+#' head(dbh.stn.batch(codes = c("S333", "S151"))
 #' }
 #' 
 #' @export
 
-dbhydro.stn.batch <- function(codes, 
-                              destfile = "stn_report_todaysDate.csv",
-                              rename_proj = TRUE,
-                              parameters = "all",
-                              report_type = "full", # full = long dataset - 1 line per sample; crosstab = wide dataset
-                              incl_qc_flags = TRUE,
-                              incl_flagged_data = FALSE,
-                              destination = "file_csv", 
-                              start_date = "01-JAN-1960", # note format
-                              end_date   = "today",
-                              import_data = FALSE) {
+dbhydro.stn.batch <- function(codes, ...) {
   
   if (!is.character(codes)) {
     stop("'codes' must be a character vector")
@@ -56,16 +37,7 @@ dbhydro.stn.batch <- function(codes,
   for (i in 1:length(codes)) {
     tryCatch({
       print(codes[i])
-      dbhydro.stn(stations = codes[i], destfile = destfile,
-              rename_proj = rename_proj,
-              parameters = parameters,
-              report_type = report_type, # full = long dataset - 1 line per sample; crosstab = wide dataset
-              incl_qc_flags = incl_qc_flags,
-              incl_flagged_data = incl_flagged_data,
-              destination = destination, 
-              start_date = start_date, # note format
-              end_date   = end_date,
-              import_data = import_data)
+      dbhydro.stn(stations = codes[i], ...)
     }, error = function(e) {print("Error in project ", codes[i], ": ", conditionMessage(e), "\n", quote = FALSE)})
   }
 }

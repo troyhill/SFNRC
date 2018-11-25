@@ -4,25 +4,12 @@
 \alias{dbhydro.proj.batch}
 \title{A wrapper for \code{dbhydro.proj}}
 \usage{
-dbhydro.proj.batch(codes,
-destfile = "proj_report_todaysDate.csv",
-start_date = "01-JAN-1960", # note format
-destination = "file_csv", 
-rename_proj = TRUE,
-import_data = FALSE)
+dbhydro.proj.batch(codes, ...)
 }
 \arguments{
 \item{codes}{a character vector of DBHYDRO project names.}
 
-\item{destfile}{a character vector file address for output, saved as a comma-delimited text file.}
-
-\item{start_date}{lorem ipsum}
-
-\item{destination}{lorem ipsum}
-
-\item{rename_proj}{indicates whether destination file be re-named to replace "proj" with project name}
-
-\item{import_data}{lorem ipsum}
+\item{...}{additional arguments supplied to \link{\code{dbhydro.proj}}}
 }
 \value{
 dataframe \code{dbhydro.proj.batch} saves a csv of DBHYDRO water quality data to disk, with option to import data into global environment.

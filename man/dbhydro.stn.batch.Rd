@@ -19,25 +19,7 @@ import_data = FALSE)
 \arguments{
 \item{codes}{a character vector of station names. If one station in the list returns no data, the entire url request fails.}
 
-\item{destfile}{a character vector file address for output, saved as a comma-delimited text file.}
-
-\item{rename_proj}{lorem ipsum}
-
-\item{parameters}{lorem ipsum}
-
-\item{report_type}{lorem ipsum}
-
-\item{incl_qc_flags}{lorem ipsum}
-
-\item{incl_flagged_data}{lorem ipsum}
-
-\item{destination}{lorem ipsum}
-
-\item{start_date}{lorem ipsum}
-
-\item{end_date}{lorem ipsum}
-
-\item{import_data}{lorem ipsum}
+\item{...}{additional arguments supplied to \link{\code{dbhydro.stn}}}
 }
 \value{
 dataframe \code{dbhydro.stn.batch} saves a csv of DBHYDRO water quality data to disk.
@@ -47,7 +29,7 @@ Downloads DBHYDRO water quality data for specified stations. Avoids the problem 
 }
 \examples{
 \dontrun{
-head(dbh.stn.batch())
+head(dbh.stn.batch(codes = c("S333", "S151"))
 }
 
 }

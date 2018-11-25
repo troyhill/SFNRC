@@ -2,19 +2,9 @@
 #'
 #' @description Downloads DBHYDRO water quality data for specified projects. Avoids the problem of complete failure if a single project is invalid.
 #' 
-#' @usage dbhydro.proj.batch(codes,
-#' destfile = "proj_report_todaysDate.csv",
-#' start_date = "01-JAN-1960", # note format
-#' destination = "file_csv", 
-#' rename_proj = TRUE,
-#' import_data = FALSE)
 #' 
 #' @param codes a character vector of DBHYDRO project names. 
-#' @param destfile a character vector file address for output, saved as a comma-delimited text file.
-#' @param start_date lorem ipsum
-#' @param destination lorem ipsum
-#' @param rename_proj indicates whether destination file be re-named to replace "proj" with project name
-#' @param import_data lorem ipsum
+#' @param ... additional arguments supplied to \link{\code{dbhydro.proj}}
 #' 
 #' @return dataframe \code{dbhydro.proj.batch} saves a csv of DBHYDRO water quality data to disk, with option to import data into global environment.
 #' 
@@ -29,12 +19,7 @@
 #' 
 #' @export
 
-dbhydro.proj.batch <- function(codes, 
-                               destfile = "proj_report_todaysDate.csv",
-                               start_date = "01-JAN-1960", # note format
-                               destination = "file_csv",
-                               rename_proj = TRUE, # should destination file be re-named to replace "proj" with project name
-                               import_data = FALSE) {
+dbhydro.proj.batch <- function(codes, ...) {
   if (!is.character(codes)) {
     stop("'codes' must be a character vector")
   }
@@ -42,12 +27,7 @@ dbhydro.proj.batch <- function(codes,
   for (i in 1:length(codes)) {
       tryCatch({
         print(codes[i])
-        dbhydro.proj(project_codes = codes[i], 
-                     destfile = destfile,
-                     start_date = start_date, # note format
-                     destination = destination,
-                     rename_proj = rename_proj, # should destination file be re-named to replace "proj" with project name
-                     import_data = import_data)
+        dbhydro.proj(project_codes = codes[i], ...)
       }, error = function(e) {print("Error in project ", codes[i], ": ", conditionMessage(e), "\n", quote = FALSE)})
     }
   }
