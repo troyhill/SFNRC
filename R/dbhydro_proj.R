@@ -65,6 +65,7 @@ dbhydro.proj <- function(destfile = "proj_report_todaysDate.csv",
   }
   
   
+  # nocov start
   
   if (grepl("todaysDate", destfile)) {
     destfile <- gsub(pattern = "todaysDate", replacement = format(Sys.Date(), "%Y%m%d"), x = destfile)
@@ -80,7 +81,6 @@ dbhydro.proj <- function(destfile = "proj_report_todaysDate.csv",
   }
   
   
-  # nocov start
   url.init <- paste0("http://my.sfwmd.gov/dbhydroplsql/water_quality_data.report_full?v_where_clause=where%20", 
                      #"date_collected%20%3e%20='"start_date, 
                      projectRef, project_codes, "'",

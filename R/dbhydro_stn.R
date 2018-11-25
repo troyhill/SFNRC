@@ -76,6 +76,7 @@ dbhydro.stn <- function(destfile = "stn_report_todaysDate.csv",
   }
   
   
+  # nocov start
   if (rename_proj == TRUE) {
     destfile <- gsub(pattern = "stn", replacement = gsub(pattern = "'", replacement = "", x = stations), x = destfile)
   }
@@ -117,7 +118,6 @@ dbhydro.stn <- function(destfile = "stn_report_todaysDate.csv",
     stationRef <- "'%20and%20station_id%20in%20('"
   }
   
-  # nocov start
   url.init <- paste0("http://my.sfwmd.gov/dbhydroplsql/water_quality_data.report_full?v_where_clause=where%20date_collected%20%3e%20'", 
                      start_date, 
                      stationRef, stations, "')",

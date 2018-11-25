@@ -48,6 +48,11 @@ dbhydro.stn.batch <- function(codes,
                               start_date = "01-JAN-1960", # note format
                               end_date   = "today",
                               import_data = FALSE) {
+  
+  if (!is.character(codes)) {
+    stop("'codes' must be a character vector")
+  }
+  
   for (i in 1:length(codes)) {
     tryCatch({
       print(codes[i])
