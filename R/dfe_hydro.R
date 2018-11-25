@@ -74,6 +74,25 @@ getHydro <- function(stns,
                       data_shape = "long", getWaterQuality = FALSE, ...) {
   ### TODO: write bash script using contents of parameter_list rather than post-dl filtering
   
+  ### input checks
+  if (!is.character(stns)) {
+    stop("'stns' must be a character vector. For viable stations, use `masterCoords` or `getStn()`")
+  }
+  if (!is.character(parameter_list)) {
+    stop("'parameter_list' must be a character vector. Use getDataTypes() to check which parameters are available for your stations.")
+  }
+  if (!is.character(data_shape) || !(length(data_shape) == 1)) {
+    stop("'data_shape' must be a character string")
+  }
+  if (!data_shape %in% c("long", "wide", "really_wide")) {
+    stop("'data_shape' must be either 'long', 'wide', or 'really_wide'")
+  }
+  if (!is.logical(getWaterQuality) || !(length(getWaterQuality) == 1)) {
+    stop("'getWaterQuality' must be TRUE or FALSE")
+  }
+  
+  # nocov start
+  
   ### temporary hack. will make function more robust
   if(getWaterQuality) {
     data_shape <- "wide"
@@ -275,5 +294,7 @@ getHydro <- function(stns,
   ########################
   # newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
   # invisible(file.remove(newFiles))
+  
+  # nocov end
   
 }

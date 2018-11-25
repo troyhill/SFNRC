@@ -24,6 +24,7 @@ test_that("getWQ breaks", {
   expect_error(getWQ(stns = "S333", output_colNames = c("string1", "string2")))
   expect_error(getWQ(stns = "S333", output_colClasses = c("string1", "string2")))
   expect_error(getWQ(stns = "S333", rFriendlyParamNames = "string1"))
+  expect_error(getWQ(stns = 20))
 })
 
 
@@ -41,7 +42,11 @@ test_that("geoMean gives correct output", {
 
 
 test_that("getHydro can error out", {
-  expect_error(getHydro(stns = "string"))
+  expect_error(getHydro(stns = 20))
+  expect_error(getHydro(stns = "S333", parameter_list = 20))
+  expect_error(getHydro(stns = "S333", data_shape = 20))
+  expect_error(getHydro(stns = "S333", data_shape = "sort_of_wide"))
+  expect_error(getHydro(stns = "S333", getWaterQuality = "string1"))
 })
 
 

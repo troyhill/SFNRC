@@ -71,8 +71,11 @@ getWQ <- function(stns, target_analytes = "all",
   # TODO: select date ranges, option for outputting wide data
   
   ### error checking
+  if (!is.character(stns)) {
+    stop("'stns' must be a character vector. For viable stations, use `masterCoords` or `getStn()`")
+  }
   if (!is.character(target_analytes) || !(length(target_analytes) == 1)) {
-    stop("'target_analytes' must be a single character single")
+    stop("'target_analytes' must be a single character string")
   }
   if (!is.character(matricesToExclude) || !(length(matricesToExclude) == 1)) {
     stop("'matricesToExclude' must be a single character string")
@@ -88,12 +91,12 @@ getWQ <- function(stns, target_analytes = "all",
   }
   
   
-  files.in.tmp     <- list.files(tempdir(), recursive = TRUE)
+  files.in.tmp     <- list.files(tempdir(), recursive = TRUE)  # nocov start
   stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
   folder_with_data <- file.path(tempdir(), "data")
   bash.script.loc  <- file.path(tempdir(), "bash_temp.sh")
   
-  utils::write.table(toupper(stns), file = stn.list.loc, col.names = FALSE, row.names = FALSE, sep = "", quote = FALSE) # nocov start
+  utils::write.table(toupper(stns), file = stn.list.loc, col.names = FALSE, row.names = FALSE, sep = "", quote = FALSE)
   
   
   ### create bash script to download water quality data

@@ -40,10 +40,11 @@ procDERM <- function(filename = "/opt/physical/troy/RDATA/biscayne/data/data_BBW
                                   "depth", "depth.code", "x", "y", "matrix", 
                                   "labComments", "project", "genComments",
                                   "lab", "year", "mo", "day", "datetime")) {
+  # nocov start
+  
   ### function loads and cleans water quality data from DERM, which are input as tab-delimited text file
   ### removes QC-flagged samples, processes to make it play well with DataForEver output
   ### this code could easily be made irrelevant and may be imperfect
-  
   bbTemp <- utils::read.delim(filename, stringsAsFactors = FALSE, encoding = "latin1")
   
   
@@ -120,5 +121,8 @@ procDERM <- function(filename = "/opt/physical/troy/RDATA/biscayne/data/data_BBW
   names(bbTemp) <- new_names
   
   invisible(bbTemp)
+  
+  # nocov end
+
 }
 
