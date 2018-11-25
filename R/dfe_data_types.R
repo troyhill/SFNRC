@@ -32,20 +32,20 @@
 
 getDataTypes <- function(parameter = "all", stn = "all", exactMatch = FALSE) {
   
-  if (!is.character(parameter) || (length(parameter) == 1)) {
+  if (!is.character(parameter) || !(length(parameter) == 1)) {
     stop("Input error: 'parameter' must be a single-element character vector")
   }
-  if (!is.character(stn) || (length(stn) == 1)) {
+  if (!is.character(stn) || !(length(stn) == 1)) {
     stop("Input error: 'stn' must be a single-element character vector")  }
-  if (!is.logical(exactMatch)) {
+  if (!is.logical(exactMatch) || !(length(exactMatch) == 1)) {
     stop("Input error: 'exactMatch' must be TRUE/FALSE")
   }
   
-  searchParam <- parameter
-  searchStn   <- toupper(stn)
-  
   
   # nocov start
+  searchParam <- parameter
+  searchStn   <- toupper(stn)
+
   if(exactMatch) {
     searchStn <- paste0("^", searchStn, "$")
   }
