@@ -1,7 +1,7 @@
 Package: SFNRC
 Type: Package
 Title: APIs and Tools for Processing Data from DataForEver, DBHYDRO, and Miami-Dade Department of Environmental Resources Management
-Version: 0.0.5
+Version: 0.0.6
 Date: 2018-10-13
 Author: Troy D. Hill <Hill.Troy@gmail.com>
 Maintainer: Troy D. Hill <Hill.Troy@gmail.com>
