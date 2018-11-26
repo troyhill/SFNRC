@@ -22,6 +22,9 @@
 #' 
 #' @examples
 #' 
+#' \dontrun{
+#' head(getWQ(stns = stations, target_analytes = c("PHOSPHATE|NITROGEN|AMMONI")))
+#' 
 #' # to convert data from long to wide:
 #' stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
 #' targParams    <- c("PHOSPHATE, TOTAL AS P", "TURBIDITY")
@@ -34,8 +37,7 @@
 #' 
 #' 
 #' 
-#' \dontrun{
-#' head(getWQ(stns = stations, target_analytes = c("PHOSPHATE|NITROGEN|AMMONI")))
+#' 
 #' 
 #' ### to generate the wqDat dataframe included in package:
 #' targetStns <- c("AC01", "BB02", "BB04", "BB05A", "BB06", "BB09", "BB10", "BB11", 
