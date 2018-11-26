@@ -32,9 +32,20 @@ dataframe \code{getWQ} returns a dataframe with water quality measurements from 
 Downloads and compiles DataForEver water quality data. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
 }
 \examples{
-\dontrun{
-stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
 
+# to convert data from long to wide:
+stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
+targParams    <- c("PHOSPHATE, TOTAL AS P", "TURBIDITY")
+
+wideDat  <- stats::reshape(wqDat[(wqDat$stn \%in\% stations) & (wqDat$param \%in\% targParams), ],
+     idvar = c("stn", "date", "year", "mo", "day", "time", "datetime"),
+     timevar = "param", direction = "wide")
+# clean up the names
+names(wideDat) <- gsub(x = names(wideDat), pattern = "value.| |,", replacement = "")
+
+
+
+\dontrun{
 head(getWQ(stns = stations, target_analytes = c("PHOSPHATE|NITROGEN|AMMONI")))
 
 ### to generate the wqDat dataframe included in package:
