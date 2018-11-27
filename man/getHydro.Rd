@@ -35,8 +35,8 @@ stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
   hydro.test3 <- getHydro(stns = stations, data_shape = "really_wide")
   
   # simultaneously grab water quality data:
-  hydro.test4 <- getHydro(stns = stations, data_shape = "wide", getWaterQuality = TRUE, 
-       parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P")
+  hydro.test4 <- getHydro(stns = stations, getWaterQuality = TRUE, 
+       parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P|TURBIDITY")
        
  plot(PHOSPHATETOTALASP ~ flow, data = hydro.test4[hydro.test4$flow > 0, ], pch = 19, las = 1)
  plot(PHOSPHATETOTALASP ~ head_water, data = hydro.test4[hydro.test4$flow > 0, ], pch = 19, las = 1)

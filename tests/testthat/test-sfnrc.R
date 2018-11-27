@@ -97,10 +97,16 @@ test_that("dbhydro.proj.batch test", {
 })
 
 
-# test_that("seas tests", {
-#   a <- seas(wqDat, timeCol = "datetime")
-#   head(a)
-#   
-#   expect_error(seas())
-#   expect_error(seas())
-# })
+test_that("seas tests", {
+  a <- seas(wqDat[1:100, ], timeCol = "datetime")
+  head(a)
+
+  expect_equal(length(seas(wqDat[1:100, ], timeCol = "datetime")$seas), 100)
+  expect_error(seas(wqDat[1:100, ], timeCol = 20))
+  expect_error(seas(wqDat[1:100, ], timeCol = "not a column name"))
+  expect_error(seas(wqDat[1:100, ], timeCol = "year")) # column exists in dataset but isn't POSIXct
+  
+  expect_error(seas(wqDat[1:100, ], waterYearBegin = 20))
+  expect_error(seas(wqDat[1:100, ], waterYearBegin = "string"))
+  expect_error(seas(wqDat[1:100, ], wetSeas = 20))
+})
