@@ -30,7 +30,7 @@ seas <- function(inputData, timeCol = "datetime",
   if (!(timeCol) %in% names(inputData)) {
     stop("'timeCol' is not the name of a column in your dataset, 'inputData'")
   }
-  if (!is.POSIXct(inputData[, timeCol])) {
+  if (!inherits(inputData[, timeCol], "POSIXct") ) { # serves as 'is.POSIXct' per https://stackoverflow.com/a/26413765
     stop("'timeCol' is not a POSIXct data type. See ?as.POSIXct for more info.")
   }
   if (!is.character(wetSeas) || !(length(wetSeas) == 2)) {
