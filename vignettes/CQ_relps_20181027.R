@@ -31,19 +31,35 @@ library(quantmod)
 library(ggsn)
 
 
+lm.mod <- function(df, param){
+  m1<-lm(log(param) ~ log(flow), data = df)
+}
+
 
 todaysDate <- as.character(Sys.Date())
 stn.targets <- c("S333", paste0("S12", toupper(letters[1:4])))
+stn.filtered     <- c("COOPERTN", "FROGCITY", "G311", "GLADER", "L29C1", 
+                 "L29C4", "L30M0", "L31NM0", "L31NM1", "L31NM2", "L31NM3", "L31NM4", 
+                 "L31NM5", "S12A", "S12B", 
+                 "S12C", "S12D", "S14", "S150", "S151", 
+                 "S175", "S176", "S179", "S18C",
+                 "S319", "S332", "S333", "S334", "S335", "S335TW", 
+                 "S336", "S344", "S346", "S355A", 
+                 "S355ATW", "S355B", "S355BTW", "S356", "S356-334", "S356GW1", 
+                 "S356GW2", "S356GW3", "S356GW4", "S361", "S362", "S7", "S700")
 
 # station coordinate file
 
 # Load SFNRC water quality data ---------------------------------
-summary(wqDat[wqDat$param %in% "PHOSPHATE, TOTAL AS P", ])
+# summary(wqDat[wqDat$param %in% "PHOSPHATE, TOTAL AS P", ])
+analytes <- c("PHOSPHATE|NITROGEN|AMMONI|CALCIUM|SODIUM|CHLORIDE|TEMP|CONDUCTIVITY, FIELD|TURBIDITY|CHLOROPHYLL|SULFATE")
 target_analytes <- c("PHOSPHATE|NITROGEN|AMMONI|SUSPENDED|DISSOLVED OXYGEN|CALCIUM|POTASSIUM|HARDNESS|SODIUM|CHLORIDE|TEMP|CONDUCTIVITY, FIELD|SILICA|LEAD, TOTAL|MAGNESIUM|TURBIDITY|CHLOROPHYLL|MERCURY, TOTAL|SULFATE|ZINC, TOTAL|CHLORDANE|MALATHION|CARBOPHENOTHION|PH, FIELD")
 
 
+
+
 # https://stackoverflow.com/questions/11433432/importing-multiple-csv-files-into-r
-wq.df <- wqDat
+wq.df <- wqDat[wqDat$stn %in% stn.filtered, ]
 wq.df$bdl <- 0 # dummy variable indicating whether value estimated from MDL
 wq.df <- wq.df[c(!((wq.df$stn %in% "G377D") & (wq.df[, 'value'] %in% c(614.000, 236.190, 69.299)))), ] # values to exclude
 
@@ -51,12 +67,12 @@ wq.df <- wq.df[c(!((wq.df$stn %in% "G377D") & (wq.df[, 'value'] %in% c(614.000, 
 a <- ddply(wq.df, .(param, stn), summarise, nonZeros = sum(!is.na(value)))
 # write.csv(a, "/home/thill/RDATA/params_by_stn_180814.csv")
 
-### replace NAs with method detection limit, where MDL is stated
-head(wq.df[is.na(wq.df$value), ])
-summary(wq.df[is.na(wq.df$value), ])
-wq.df[(wq.df$mdl < 0) & !is.na(wq.df$mdl), ]
-wq.df[(wq.df$mdl > 20) & !is.na(wq.df$mdl), ]
-wq.df[(wq.df$mdl > 20) & !is.na(wq.df$mdl) & (is.na(wq.df$value)), ]
+# ### replace NAs with method detection limit, where MDL is stated
+# head(wq.df[is.na(wq.df$value), ])
+# summary(wq.df[is.na(wq.df$value), ])
+# wq.df[(wq.df$mdl < 0) & !is.na(wq.df$mdl), ]
+# wq.df[(wq.df$mdl > 20) & !is.na(wq.df$mdl), ]
+# wq.df[(wq.df$mdl > 20) & !is.na(wq.df$mdl) & (is.na(wq.df$value)), ]
 
 pb <- txtProgressBar(style = 3, min = 0, max = nrow(wq.df))
 for (i in 1:nrow(wq.df)) {
@@ -79,7 +95,7 @@ summary(wq.df[wq.df$bdl == 0, ])
 
 hydDat <- hydDat[c(!((hydDat$stn %in% "S356") & (hydDat$date < "2015-01-01"))), ] # remove 15-minute data from the S356 testing phase (summed to get those wildly high values)
 hydDat <- hydDat[c(!hydDat$stn %in% "S178"), ] # remove S178 - odd effects from backflow
-hydDat <- seas(hydDat, timeCol = "date", wetSeas = c("May", "Sept"), waterYearBegin = "Oct")
+hydDat <- hydDat[hydDat$stn %in% stn.filtered, ] # remove all stations without WQ data
 
 ############################## added 20181029
 hydDat$flow[is.na(hydDat$flow)] <- 0
@@ -95,18 +111,89 @@ sum(is.na(bdls$'0'))  # of which 6409 remain as NAs, suggesting only 8147 - 6409
 # set dates and merge wq and flow data
 wq2$naca          <- (wq2$SODIUM / 22.9898) / ((wq2$CALCIUM / 40.078)) # mol:mol; possibly indicative of water source, 0.94 mol/mol is EAA surface water ratio (Chen et al. 2006)
 wq2               <- join_all(list(hydDat, wq2), by = c("stn", "date"))
-wq2               <- seas(wq2, timeCol = "date")
+wq2               <- seas(wq2, timeCol = "date", wetSeas = c("May", "Sep"), waterYearBegin = "Oct")
 
 
-summary(wq2$`PHOSPHATE, DISSOLVED AS P`)
-sum(!is.na(wq2$`PHOSPHATE, DISSOLVED AS P`)) # 215 samples
-summary(wq2$`PHOSPHATE, TOTAL AS P`)
-sum(!is.na(wq2$'PHOSPHATE, TOTAL AS P')) # 6034
-sum(!is.na(wq2$'PHOSPHATE, TOTAL AS P'[wq2$flow > 0])) # 15561 with flows > 0
 
 
-wq.df[(wq.df$stn %in% "G377D") & (wq.df[, 'value'] %in% c(614.000, 236.190, 69.299)), ]
+# C-Q relationships - all data --------------------------------------------
 
+
+
+### convert data from wide to long
+wqlng <- melt(wq2, id.vars = c("stn", "date", "flow", "head_water", 
+                               "tail_water", "stage", "year", "mo", "day", "seas", "waterYr", "st.fac"))
+nrow(wqlng)
+CQmods <- dlply(wqlng[(wqlng$flow > 0) & !is.na(wqlng$flow) & !is.na(wqlng$value)  & (wqlng$value > 0), ], .(stn, variable), function(df) lm(log(value) ~ log(flow), data = df))
+
+ldply(CQmods, coef)
+Qmods <- ldply(CQmods, function(x) {
+            r.sq    <- round(summary(x)$r.squared, 4)
+            int     <- round(summary(x)$coefficients[1], 4)
+            int.se  <- round(summary(x)$coefficients[3] , 4)
+            beta    <- round(summary(x)$coefficients[2], 4)
+            beta.se <- round(summary(x)$coefficients[4], 4)
+            beta.p  <- round(summary(x)$coefficients[8], 4)
+            data.frame(r.sq, int, int.se, beta, beta.se, beta.p)})
+Qmods
+
+### group analytes
+Qmods$group[Qmods$variable %in% 
+                      c("CALCIUM", "CHLORIDE", "MAGNESIUM", "SILICA", "POTASSIUM",
+                        "SODIUM", "SULFATE", "CALCIUM CARBONATE")] <- "geogenic"
+Qmods$group[Qmods$variable %in% 
+              c("CHLOROPHYLL-A, CORRECTED", "AMMONIA-N", "DISSOLVED OXYGEN", "PH, FIELD", 
+                        "PHOSPHATE, TOTAL AS P", "TOTAL NITROGEN", "KJELDAHL NITROGEN, DIS", "KJELDAHL NITROGEN, TOTAL")] <- "nutrient"
+Qmods$group[Qmods$variable %in% 
+              c("TURBIDITY", "TOTAL SUSPENDED SOLIDS", "MERCURY, TOTAL", "naca", "TEMP", "SP CONDUCTIVITY, FIELD")] <- "other"
+
+
+
+
+# C-Stage relationships - all data ----------------------------------------
+CHWmods <- dlply(wqlng[!is.na(wqlng$head_water) & !is.na(wqlng$value)  & (wqlng$value > 0), ], .(stn, variable), 
+                 function(df) lm(log(value) ~ head_water, data = df))
+
+ldply(CHWmods, coef)
+HWmods <- ldply(CHWmods, function(x) {
+  r.sq    <- round(summary(x)$r.squared, 4)
+  int     <- round(summary(x)$coefficients[1], 4)
+  int.se  <- round(summary(x)$coefficients[3] , 4)
+  beta    <- round(summary(x)$coefficients[2], 4)
+  beta.se <- round(summary(x)$coefficients[4], 4)
+  beta.p  <- round(summary(x)$coefficients[8], 4)
+  data.frame(r.sq, int, int.se, beta, beta.se, beta.p)}) 
+HWmods
+
+
+### group analytes
+HWmods$group[HWmods$variable %in% 
+              c("CALCIUM", "CHLORIDE", "MAGNESIUM", "SILICA", "POTASSIUM",
+                "SODIUM", "SULFATE", "CALCIUM CARBONATE")] <- "geogenic"
+HWmods$group[HWmods$variable %in% 
+              c("CHLOROPHYLL-A, CORRECTED", "AMMONIA-N", "DISSOLVED OXYGEN", "PH, FIELD", 
+                "PHOSPHATE, TOTAL AS P", "TOTAL NITROGEN", "KJELDAHL NITROGEN, DIS", "KJELDAHL NITROGEN, TOTAL")] <- "nutrient"
+HWmods$group[HWmods$variable %in% 
+              c("TURBIDITY", "TOTAL SUSPENDED SOLIDS", "MERCURY, TOTAL", "naca", "TEMP", "SP CONDUCTIVITY, FIELD")] <- "other"
+names(HWmods)[3:8] <- paste0(names(HWmods)[3:8], ".hw")
+
+all.mods <- join_all(list(HWmods , Qmods), by = c("stn", "variable", "group"))
+head(all.mods)
+
+ggplot(all.mods, aes(y = r.sq.hw, x = r.sq, col = variable)) + geom_point() + theme_classic() + 
+  facet_grid(group ~.) + geom_abline(slope = 1, intercept = 0) + xlim(0, 1) + ylim(0, 1)
+
+
+
+
+# summary(wq2$`PHOSPHATE, DISSOLVED AS P`)
+# sum(!is.na(wq2$`PHOSPHATE, DISSOLVED AS P`)) # 215 samples
+# summary(wq2$`PHOSPHATE, TOTAL AS P`)
+# sum(!is.na(wq2$'PHOSPHATE, TOTAL AS P')) # 6034
+# sum(!is.na(wq2$'PHOSPHATE, TOTAL AS P'[wq2$flow > 0])) # 15561 with flows > 0
+
+
+# wq.df[(wq.df$stn %in% "G377D") & (wq.df[, 'value'] %in% c(614.000, 236.190, 69.299)), ]
 # 233175 G377D 2007-05-21     CARBON, TOTAL ORGANIC 614.000  mg/L 10.000
 # 233176 G377D 2007-05-21  KJELDAHL NITROGEN, TOTAL 236.190  mg/L  2.500
 # 233177 G377D 2007-05-21     PHOSPHATE, TOTAL AS P  69.299  mg/L  0.400
@@ -117,7 +204,8 @@ wq.df[(wq.df$stn %in% "G377D") & (wq.df[, 'value'] %in% c(614.000, 236.190, 69.2
 # source("/home/thill/RDATA/script_TAMBR_proc_20180912.R")
 ###
 
-dd.wq  <- ddply(wq2, .(stn), numcolwise(function(x) length(x))) # total no. of samples
+dd.wq3 <- ddply(wq2, .(stn), numcolwise(function(x) sum(!is.na(x)))) # number of non-NAs per station-parameter
+dd.wq  <- ddply(wq2, .(stn), numcolwise(function(x) length(x))) # total no. of samples, including NAs
 dd.wq2 <- ddply(wq2, .(stn), numcolwise(function(x) sum(is.na(x)))) # no. of samples below MDL (those below appear as NAs)
 
 dd.wq2$NAratio <- dd.wq2$`PHOSPHATE, TOTAL AS P` / dd.wq$`PHOSPHATE, TOTAL AS P` 
@@ -377,7 +465,7 @@ plt <- arrangeGrob(TP.DP, flow.only, nrow = 2)
 # Simulation - modify flow regimes and simulate effect on P dynamics -------
 ### approach 1 - use TP data from each station, but binary flow/no-flow data from S12D (then redo with S333 flow regimes). Does this all assume that TP and flow are independent?
 
-dat2.sub <- dat2[dat2$stn %in% stn.targets, c(1:3, 44, 64)]
+dat2.sub <- dat2[dat2$stn %in% stn.targets, c("stn", "date", "flow", "PHOSPHATE..TOTAL.AS.P",  "group")]
 
 # dat2.sub.m <- dcast(dat2.sub, stn + date ~ numbers, value.var = PHOSPHATE..TOTAL.AS.P)
 
@@ -468,10 +556,6 @@ S333flows # if the S12s had S333's flow regime, how would that affect the differ
 #' 
 #' 
 ## ----flow-solute relationships - linear models, fig.cap = "\\label{fig:P-Q}Comparison of total P concentrations during flow and no-flow conditions at the S-333 and S-12 structures. For each station, significant differences between flow and no-flow concentrations are indicated by asterisks (all stations except S-333)."----
-
-lm.mod <- function(df, param){
-  m1<-lm(log(param) ~ log(flow), data = df)
-}
 
 ### "TOTAL.NITROGEN" "AMMONIA.N"    "SP.CONDUCTIVITY..FIELD" "PHOSPHATE..DISSOLVED.AS.P"   "PHOSPHATE..TOTAL.AS.P"   "TOTAL.SUSPENDED.SOLIDS"
 targParam <- "PHOSPHATE..TOTAL.AS.P" # "PHOSPHATE..TOTAL.AS.P"   "CALCIUM"    "SODIUM"   "POTASSIUM" "MAGNESIUM" "SILICA"  "CHLOROPHYLL.A..CORRECTED" "CHLOROPHYLL.A"
