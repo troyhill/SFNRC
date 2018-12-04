@@ -37,7 +37,7 @@ lm.mod <- function(df, param){
 
 
 todaysDate <- as.character(Sys.Date())
-stn.targets <- c("S333", paste0("S12", toupper(letters[1:4])))
+stn.targets <- c("S333", paste0("S12", toupper(letters[1:4])), "S151", "S344")
 stn.filtered     <- c("COOPERTN", "FROGCITY", "G311", "GLADER", "L29C1", 
                  "L29C4", "L30M0", "L31NM0", "L31NM1", "L31NM2", "L31NM3", "L31NM4", 
                  "L31NM5", "S12A", "S12B", 
@@ -180,8 +180,14 @@ names(HWmods)[3:8] <- paste0(names(HWmods)[3:8], ".hw")
 all.mods <- join_all(list(HWmods , Qmods), by = c("stn", "variable", "group"))
 head(all.mods)
 
-ggplot(all.mods, aes(y = r.sq.hw, x = r.sq, col = variable)) + geom_point() + theme_classic() + 
+ggplot(all.mods, aes(y = r.sq.hw, x = r.sq, col = variable)) + geom_point(show.legend = FALSE) + theme_classic() + 
   facet_grid(group ~.) + geom_abline(slope = 1, intercept = 0) + xlim(0, 1) + ylim(0, 1)
+
+acceptableR2 <- 0.25
+
+ggplot(all.mods, aes(y = r.sq.hw, x = r.sq, col = group)) + geom_point(show.legend = FALSE) + theme_classic() + 
+  facet_wrap( ~ variable) + geom_abline(slope = 1, intercept = 0) + xlim(0, 0.75) + ylim(0,  0.75) + 
+  geom_segment(x = acceptableR2, y = -0.1, xend =  acceptableR2, yend =  acceptableR2, colour = "black") + geom_segment(x = -0.1, y = acceptableR2, xend =  acceptableR2, yend =  acceptableR2, colour = "black")
 
 
 
@@ -301,9 +307,13 @@ ttests <- dlply(dat2[dat2$stn %in% stn.targets, ], "stn", function(df)
   t.test(log(df$`PHOSPHATE..TOTAL.AS.P`[df$group %in% "no flow"]), log(df$`PHOSPHATE..TOTAL.AS.P`[df$group %in% "flow"]))) # S-12s all sig at P < 0.001; no difference at S-333!
 
 ### some plots
-ann_textTP <- data.frame(stn = c("S333", paste0("S12", toupper(letters[1:4]))), 
+# ann_textTP <- data.frame(stn = c("S333", paste0("S12", toupper(letters[1:4]))), 
+#                          variable = rep(c("PHOSPHATE..TOTAL.AS.P"), times = 5),
+#                          lab = c("B", "A", "B", "B", "B"),
+#                          value = rep(0.50, times = 5))
+ann_textTP <- data.frame(stn = stn.targets, 
                          variable = rep(c("PHOSPHATE..TOTAL.AS.P"), times = 5),
-                         lab = c("B", "A", "B", "B", "B"),
+                         lab = c("B", "A", "B", "B", "B", "x", "y"),
                          value = rep(0.50, times = 5))
 
 FlowVsNoWpts <- ggplot(dat2[(dat2$stn %in% stn.targets) & (!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"])), ], 
@@ -403,6 +413,7 @@ TP.DP <- ggplot(wq.melt[!wq.melt$variable %in% "PHOSPHATE, ORTHO AS P", ], aes(x
   ylim(0.002, 0.12)
 
 TP.DP
+   
 
 
 ### differences in periods with flow
@@ -656,10 +667,6 @@ ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), 
 ### plot of CV/CQ
 
 ### pull out b from regression models
-lm.mod <- function(df){
-  lm(log(`PHOSPHATE..TOTAL.AS.P`) ~ log(flow), data = df)
-}
-
 mods <- dlply(dat2[!is.na(dat2[, "PHOSPHATE..TOTAL.AS.P"]) & (dat2$group %in% "flow"), ], "stn", function(df)
   lm(log(`PHOSPHATE..TOTAL.AS.P`) ~ log(flow), data = df))
 # test <- l_ply(mods, summary, .print = TRUE) # tough to print the summaries! slope for S-332 isn't significant
@@ -769,7 +776,7 @@ grid.arrange(flowSeasS12s, TPSeasS12s, chlSeasS12s, ncol = 3)
 # q.mo$seas <- "wet"
 # q.mo$seas[(q.mo$seas > 10) & (q.mo$seas < 5)] <- "dry"
 
-q.seas <- ddply(hydDat[hydDat$stn %in% stns.wo.NAs, ], .(stn), summarise,
+q.seas <- ddply(wq2[wq2$stn %in% stns.wo.NAs, ], .(stn), summarise,
                 Mm3.day.wet = mean(flow[seas %in% "wet"], na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
                 #Mm3.day.se = se(flow) * 0.0283168466 * 60 * 60 * 24 / 1e6,
                 Mm3.day.dry = mean(flow[seas %in% "dry"], na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
