@@ -139,7 +139,7 @@ Qmods
 
 ### group analytes
 Qmods$group[Qmods$variable %in% 
-                      c("CALCIUM", "CHLORIDE", "MAGNESIUM", "SILICA", "POTASSIUM",
+                      c("CALCIUM", "CHLORIDE", "MAGNESIUM", "SILICA", "POTASSIUM","HARDNESS AS CACO3",
                         "SODIUM", "SULFATE", "CALCIUM CARBONATE")] <- "geogenic"
 Qmods$group[Qmods$variable %in% 
               c("CHLOROPHYLL-A, CORRECTED", "AMMONIA-N", "DISSOLVED OXYGEN", "PH, FIELD", 
@@ -168,7 +168,7 @@ HWmods
 
 ### group analytes
 HWmods$group[HWmods$variable %in% 
-              c("CALCIUM", "CHLORIDE", "MAGNESIUM", "SILICA", "POTASSIUM",
+              c("CALCIUM", "CHLORIDE", "MAGNESIUM", "SILICA", "POTASSIUM", "HARDNESS AS CACO3",
                 "SODIUM", "SULFATE", "CALCIUM CARBONATE")] <- "geogenic"
 HWmods$group[HWmods$variable %in% 
               c("CHLOROPHYLL-A, CORRECTED", "AMMONIA-N", "DISSOLVED OXYGEN", "PH, FIELD", 
@@ -185,7 +185,7 @@ ggplot(all.mods, aes(y = r.sq.hw, x = r.sq, col = variable)) + geom_point(show.l
 
 acceptableR2 <- 0.25
 
-ggplot(all.mods, aes(y = r.sq.hw, x = r.sq, col = group)) + geom_point(show.legend = FALSE) + theme_classic() + 
+ggplot(all.mods[(all.mods$stn %in% stn.targets) & (all.mods$group %in% c("nutrient", "geogenic")), ], aes(y = r.sq.hw, x = r.sq, col = group)) + geom_point(show.legend = FALSE) + theme_classic() + 
   facet_wrap( ~ variable) + geom_abline(slope = 1, intercept = 0) + xlim(0, 0.75) + ylim(0,  0.75) + 
   geom_segment(x = acceptableR2, y = -0.1, xend =  acceptableR2, yend =  acceptableR2, colour = "black") + geom_segment(x = -0.1, y = acceptableR2, xend =  acceptableR2, yend =  acceptableR2, colour = "black")
 
@@ -358,6 +358,173 @@ ggplot(dat2[(dat2$stn %in% stn.targets) & (!is.na(dat2[, targParam])), ],
   theme(legend.position="top",axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + 
   # annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
   ylab(expression("(mg" %.%"L"^-1*")")) + xlab("") 
+
+
+
+
+
+# flow timing -------------------------------------------------------------
+
+q.mo <- ddply(wq2[wq2$stn %in% stn.targets, ], .(stn, mo), summarise,
+              headwtr    = mean(head_water, na.rm = TRUE),
+              headwtr.se = se(head_water),
+              Mm3.day    = mean(flow, na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
+              Mm3.day.se = se(flow) * 0.0283168466 * 60 * 60 * 24 / 1e6,
+              P          = mean(`PHOSPHATE, TOTAL AS P`, na.rm = TRUE),
+              P.se       = se(`PHOSPHATE, TOTAL AS P`),
+              NH4        = mean(`AMMONIA-N`, na.rm = TRUE),
+              NH4.se     = se(`AMMONIA-N`),
+              chl        = mean(`CHLOROPHYLL-A`, na.rm = TRUE),
+              chl.se     = se(`CHLOROPHYLL-A`),
+              Mg          = mean(`MAGNESIUM`, na.rm = TRUE),
+              Mg.se       = se(`MAGNESIUM`),
+              Na          = mean(`SODIUM`, na.rm = TRUE),
+              Na.se       = se(`SODIUM`),
+              SO4         = mean(`SULFATE`, na.rm = TRUE),
+              SO4.se      = se(`SULFATE`),
+              Ca          = mean(`HARDNESS AS CACO3`, na.rm = TRUE),
+              Ca.se       = se(`HARDNESS AS CACO3`),
+              
+              P.load      = P * (1000 * 1e6) / 1e6 * Mm3.day, # kg / day
+              P.load.se   = P.se * (1000 * 1e6) / 1e6 * Mm3.day.se,
+              
+              flow.binary= sum(flow > 0.001, na.rm = TRUE)
+) # m3/day
+
+
+ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Mm3.day)) + 
+  geom_point() + geom_errorbar(aes(ymin = Mm3.day - Mm3.day.se, ymax = Mm3.day + Mm3.day.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Mean daily flow (1e"^6~"m"^3%.%"day"^-1~")"))
+ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = headwtr)) + 
+  geom_point() + geom_errorbar(aes(ymin = headwtr - headwtr.se, ymax = headwtr + headwtr.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Mean headwater (ft NGVD29?)"))
+
+
+flowSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Mm3.day)) + 
+  geom_point() + geom_errorbar(aes(ymin = Mm3.day - Mm3.day.se, ymax = Mm3.day + Mm3.day.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Mean daily flow (1e"^6~"m"^3%.%"day"^-1~")"))
+flowSeasS12s
+# ggsave(paste0("/opt/physical/troy/RDATA/flowVsMo-", todaysDate, ".png"), height = 7, width = 7)
+TPSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = P)) + 
+  geom_point() + geom_errorbar(aes(ymin = P - P.se, ymax = P + P.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "fixed") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Total P (mg P"%.%"L"^-1*")"))
+TPSeasS12s 
+PSeasLoad <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = P.load)) + 
+  geom_point() + geom_errorbar(aes(ymin = P.load - P.load.se, ymax = P.load + P.load.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "fixed") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("P load (kg P"%.%"d"^-1*")"))
+PSeasLoad 
+NHSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = NH4)) + 
+  geom_point() + geom_errorbar(aes(ymin = NH4 - NH4.se, ymax = NH4 + NH4.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "fixed") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("NH4-N (mg"%.%"L"^-1*")"))
+NHSeasS12s
+chlSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = chl)) + 
+  geom_point() + geom_errorbar(aes(ymin = chl - chl.se, ymax = chl + chl.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Chlorophyll a (mg"%.%"L"^-1*")"))
+chlSeasS12s
+
+MgSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Mg)) + 
+  geom_point() + geom_errorbar(aes(ymin = Mg - Mg.se, ymax = Mg + Mg.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "fixed") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Mg (mg"%.%"L"^-1*")"))
+MgSeasS12s
+CaSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Ca)) + 
+  geom_point() + geom_errorbar(aes(ymin = Ca - Ca.se, ymax = Ca + Ca.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "fixed") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Hardness as CaCO3 (mg"%.%"L"^-1*")"))
+CaSeasS12s
+NaSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Na)) + 
+  geom_point() + geom_errorbar(aes(ymin = Na - Na.se, ymax = Na + Na.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "fixed") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("Na (mg"%.%"L"^-1*")"))
+NaSeasS12s
+SO4SeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = SO4)) + 
+  geom_point() + geom_errorbar(aes(ymin = SO4 - SO4.se, ymax = SO4 + SO4.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "fixed") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(expression("SO4 (mg"%.%"L"^-1*")"))
+SO4SeasS12s
+
+
+grid.arrange(flowSeasS12s, TPSeasS12s, NHSeasS12s, chlSeasS12s, ncol = 4)
+grid.arrange(MgSeasS12s, CaSeasS12s, NaSeasS12s, SO4SeasS12s, ncol = 4)
+
+grid.arrange(flowSeasS12s, TPSeasS12s, PSeasLoad, ncol = 3)
+
+
+
+### Seasonality - a more rigorous approach with GAMs https://stats.stackexchange.com/questions/244042/trend-in-irregular-time-series-data
+tsP <- ts(wq2[(wq2$stn %in% "S333"), "PHOSPHATE, TOTAL AS P"], start = as.numeric(c(wq2[(wq2$stn %in% "S333"), "year"][1], wq2[(wq2$stn %in% "S333"), "mo"][1])), frequency = 7)
+tsP2 <- ts(wq2[(wq2$stn %in% "S333") & !is.na(wq2[, "PHOSPHATE, TOTAL AS P"]), "PHOSPHATE, TOTAL AS P"])
+
+library(mgcv)
+library(nlme)
+mod <- mgcv::gamm("PHOSPHATE, TOTAL AS P" ~ mgcv::s(date, bs = "cc") + s(date), data = wq2,
+            correlation = nlme::corCAR1(form = ~ date))
+
+m <- decompose(ts(tsP))
+m$figure
+plot(m)
+
+
+stmd <- stl(tsP, na.action = "na.omit", s.window = 20) # non-robust
+stmd <- stl(wq2[(wq2$stn %in% "S333") & !is.na(wq2[, "flow"]), "flow"], s.window = "periodic") # non-robust
+
+summary(stmR <- stl(wq2[wq2$stn %in% stn.targets, "PHOSPHATE, TOTAL AS P"], s.window = "per", robust = TRUE))
+op <- par(mar = c(0, 4, 0, 3), oma = c(5, 0, 4, 0), mfcol = c(4, 2))
+plot(stmd, set.pars = NULL, labels  =  NULL,
+     main = "stl(mdeaths, s.w = \"per\",  robust = FALSE / TRUE )")
+plot(stmR, set.pars = NULL)
+# mark the 'outliers' :
+(iO <- which(stmR $ weights  < 1e-8)) # 10 were considered outliers
+sts <- stmR$time.series
+points(time(sts)[iO], 0.8* sts[,"remainder"][iO], pch = 4, col = "red")
+par(op)   # reset
+
+
+
+
+
+### ratio of flow during wet:dry season
+# q.mo$seas <- "wet"
+# q.mo$seas[(q.mo$seas > 10) & (q.mo$seas < 5)] <- "dry"
+
+q.seas <- ddply(wq2[wq2$stn %in% stns.wo.NAs, ], .(stn), summarise,
+                Mm3.day.wet = mean(flow[seas %in% "wet"], na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
+                #Mm3.day.se = se(flow) * 0.0283168466 * 60 * 60 * 24 / 1e6,
+                Mm3.day.dry = mean(flow[seas %in% "dry"], na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
+                wetDry  = Mm3.day.wet / Mm3.day.dry
+) # m3/day
+
+modResults <- join_all(list(modResults, q.seas), by = "stn")
+
+plot(modResults[, c(3, 7:11, 14)])
+plot(modResults[!modResults$stn %in% grep("S356|S344", modResults$stn, value = TRUE), c(3, 7:11, 14)])
+
+
+plot(ratio ~ wetDry, data = modResults, cex = 0.5, pch = 19)
+text(x = modResults$wetDry, y = modResults$ratio, labels = modResults$stn)
+
+plot(log(ratio) ~ log(wetDry), data = modResults, cex = 0.5, pch = 19)
+text(x = log(modResults$wetDry), y = log(modResults$ratio), labels = modResults$stn)
+
+
 
 
 
@@ -713,135 +880,6 @@ ggplot(modResults, aes(x = naca, y = `log(flow)`)) + theme_classic() + geom_poin
 
 
 
-
-# flow timing -------------------------------------------------------------
-
-q.mo <- ddply(wq2[wq2$stn %in% stns.wo.NAs, ], .(stn, mo), summarise,
-              headwtr    = mean(head_water, na.rm = TRUE),
-              headwtr.se = se(head_water),
-              Mm3.day = mean(flow, na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
-              Mm3.day.se = se(flow) * 0.0283168466 * 60 * 60 * 24 / 1e6,
-              P          = mean(`PHOSPHATE, TOTAL AS P`, na.rm = TRUE),
-              P.se       = se(`PHOSPHATE, TOTAL AS P`),
-              chl        = mean(`CHLOROPHYLL-A`, na.rm = TRUE),
-              chl.se     = se(`CHLOROPHYLL-A`),
-              flow.binary= sum(flow > 0.001, na.rm = TRUE)
-) # m3/day
-
-
-ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Mm3.day)) + 
-  geom_point() + geom_errorbar(aes(ymin = Mm3.day - Mm3.day.se, ymax = Mm3.day + Mm3.day.se), width = 0) +
-  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
-  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
-  ylab(expression("Mean daily flow (1e"^6~"m"^3%.%"day"^-1~")"))
-ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = headwtr)) + 
-  geom_point() + geom_errorbar(aes(ymin = headwtr - headwtr.se, ymax = headwtr + headwtr.se), width = 0) +
-  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
-  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
-  ylab(expression("Mean headwater (ft NGVD29?)"))
-
-
-flowSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Mm3.day)) + 
-  geom_point() + geom_errorbar(aes(ymin = Mm3.day - Mm3.day.se, ymax = Mm3.day + Mm3.day.se), width = 0) +
-  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
-  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
-  ylab(expression("Mean daily flow (1e"^6~"m"^3%.%"day"^-1~")"))
-flowSeasS12s
-# ggsave(paste0("/opt/physical/troy/RDATA/flowVsMo-", todaysDate, ".png"), height = 7, width = 7)
-TPSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = P)) + 
-  geom_point() + geom_errorbar(aes(ymin = P - P.se, ymax = P + P.se), width = 0) +
-  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
-  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
-  ylab(expression("Total P (mg P"%.%"L"^-1*")"))
-TPSeasS12s 
-
-chlSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = chl)) + 
-  geom_point() + geom_errorbar(aes(ymin = chl - chl.se, ymax = chl + chl.se), width = 0) +
-  theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
-  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
-  ylab(expression("Chlorophyll a (mg"%.%"L"^-1*")"))
-chlSeasS12s
-
-grid.arrange(flowSeasS12s, TPSeasS12s, chlSeasS12s, ncol = 3)
-
-
-
-
-
-### 
-
-
-
-
-### ratio of flow during wet:dry season
-# q.mo$seas <- "wet"
-# q.mo$seas[(q.mo$seas > 10) & (q.mo$seas < 5)] <- "dry"
-
-q.seas <- ddply(wq2[wq2$stn %in% stns.wo.NAs, ], .(stn), summarise,
-                Mm3.day.wet = mean(flow[seas %in% "wet"], na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
-                #Mm3.day.se = se(flow) * 0.0283168466 * 60 * 60 * 24 / 1e6,
-                Mm3.day.dry = mean(flow[seas %in% "dry"], na.rm = TRUE) * 0.0283168466 * 60 * 60 * 24 / 1e6,
-                wetDry  = Mm3.day.wet / Mm3.day.dry
-) # m3/day
-
-modResults <- join_all(list(modResults, q.seas), by = "stn")
-
-plot(modResults[, c(3, 7:11, 14)])
-plot(modResults[!modResults$stn %in% grep("S356|S344", modResults$stn, value = TRUE), c(3, 7:11, 14)])
-
-
-plot(ratio ~ wetDry, data = modResults, cex = 0.5, pch = 19)
-text(x = modResults$wetDry, y = modResults$ratio, labels = modResults$stn)
-
-plot(log(ratio) ~ log(wetDry), data = modResults, cex = 0.5, pch = 19)
-text(x = log(modResults$wetDry), y = log(modResults$ratio), labels = modResults$stn)
-
-
-#' 
-#' 
-#' 
-#' 
-#' 
-#' 
-#' \pagebreak
-#' 
-#' ## Explanations for P behavior at S-333
-#' 
-#' 
-#' A number of mechanisms could produce the anomalous, chemostatic behavior of P at S-333. Several of these hypotheses can be coarsely evaluated with existing water quality data. The hypotheses explored here propose that the distinct P behavior at S-333 is due to: 
-#' 
-#' 1. Biological processes
-#' 
-#'     + Chlorophyll
-#' 
-#'     + Vertebrate activity (not testable with present dataset)
-#' 
-#' 
-#' 2. Sorption dynamics
-#' 
-#'     + pH
-#' 
-#'     + Calcium
-#' 
-#' 
-#' 3. Different source contributions
-#' 
-#'     + groundwater/EAA tracers (Na:Ca ratios, specific conductivity)
-#' 
-#'     + agricultural tracers (carbophenothion, endosulfan sulfate, malathion, chlordane - limited and inconclusive; data not show)
-#' 
-#'     + sediment availability (proximity of S-333 to the L-67N)
-#' 
-#' 
-#' 
-#' 
-#' ### Biological processes
-#' 
-#' Biological activity could be an explanation for higher P at S-333. Chlorophyll a data are the sole biological activity indicator used in this assessment, ignoring vertebrate activity that also merits attention. 
-#' 
-#' Chlorophyll a concentrations were significantly higher at S-333 than at the three westernmost S-12 structures (S-12B-D) and show a strong relationship with TP concentrations (*R^2^* = 0.55, *P* < 0.001; Fig. \ref{fig:bioProc}). Chlorophyll a is difficult to interpret as an indicator of the source of P because abundant phytoplankton are likely to be both a cause and an effect of elevated total P. The strong relationship between TP and chlorophyll a is thus interesting but inconclusive; the increased chlorophyll a at S-333 may be contributing to elevated P at that station, or elevated TP may be contributing to phytoplankton abundance.
-#' 
-#' 
 ## ----bioProc, echo = FALSE, warning = FALSE, fig.height = 2, fig.width = 5, fig.cap = "\\label{fig:bioProc}Left panel: Chlorophyll A at each station during sampling events with positive flow. Right side: Relationship between chlorophyll A and  TP (all data). In the left panel, different letters indicate significant differences at P < 0.05 (Tukey post-hoc test). Data ln-transformed for normality."----
 
 ### idea - look at S151 to get upstream
