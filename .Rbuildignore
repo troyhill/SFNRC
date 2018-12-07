@@ -6,5 +6,5 @@
 ^docs$
 ^appveyor\\.yml$
 ^.*\.Rproj$
-^a\.RData$
+^data\\a\.RData$
 ^R\\modelEstimation\.R$
