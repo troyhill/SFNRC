@@ -280,7 +280,7 @@ getHydro <- function(stns,
   if (getWaterQuality == TRUE) {
     wq <- getWQ(stns = stns, ...) # target_analytes = toupper(target_analytes)
 
-    wq.temp <- stats::reshape(wq, idvar = c("stn", "date", "year", "mo", "day", "time", "datetime"), timevar = "param", direction = "wide")
+    wq.temp <- stats::reshape(wq[, !names(wq) %in% c("datetime", "time", "year", "mo", "day")], idvar = c("stn", "date"), timevar = "param", direction = "wide")
     names(wq.temp) <- gsub(x = names(wq.temp), pattern = "value.| |,", replacement = "")
     
     wqDatForMerge <- wq.temp[, c(grep(x = names(wq.temp), pattern = "matrix", value = TRUE, invert = TRUE))] # exclude matrix columns
