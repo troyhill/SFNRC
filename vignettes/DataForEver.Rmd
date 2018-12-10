@@ -344,11 +344,12 @@ proj4string(sitesInBay) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84
 # interpolate! 
 interp(inputData = sitesInBay, mapLayer = bnpMod,
        paramCol = "SALINITY", year = "2016-dry", yearCol = "seas2", 
-       interpMethod = "ordinary kriging")
+       interpMethod = "nearest neighbor")
 ```
 
 
 
 \vspace{12pt}
 
-In the case above, ordinary kriging was unsuccessful because of a lack of convergence in the variogram, so the function used a nearest-neighbor approach to spatial interpolation.
+
+
