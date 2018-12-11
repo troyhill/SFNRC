@@ -27,10 +27,12 @@
 #'   
 #'   # simultaneously grab water quality data:
 #'   hydro.test4 <- getHydro(stns = stations, getWaterQuality = TRUE, 
-#'        parameter_list = c("flow", "head_water"), target_analytes = "PHOSPHATE, TOTAL AS P|TURBIDITY")
+#'        parameter_list = c("flow", "head_water"), 
+#'        target_analytes = "PHOSPHATE, TOTAL AS P|TURBIDITY")
 #'        
 #'  plot(PHOSPHATETOTALASP ~ flow, data = hydro.test4[hydro.test4$flow > 0, ], pch = 19, las = 1)
-#'  plot(PHOSPHATETOTALASP ~ head_water, data = hydro.test4[hydro.test4$flow > 0, ], pch = 19, las = 1)
+#'  plot(PHOSPHATETOTALASP ~ head_water, data = hydro.test4[hydro.test4$flow > 0, ], 
+#'  pch = 19, las = 1)
 #'   
 #'   
 #'   ### to generate the hydDat dataframe included in package:
