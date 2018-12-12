@@ -342,9 +342,9 @@ proj4string(sitesInBay) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84
 
 
 # interpolate! 
-interp(inputData = sitesInBay, mapLayer = bnpMod,
-       paramCol = "SALINITY", year = "2016-dry", yearCol = "seas2", 
-       interpMethod = "nearest neighbor")
+# interp(inputData = sitesInBay, mapLayer = bnpMod,
+#        paramCol = "SALINITY", year = "2016-dry", yearCol = "seas2", 
+#        interpMethod = "nearest neighbor")
 ```
 
 
