@@ -40,7 +40,7 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
     wq_data     <- getWQ(stns = stn, target_analytes = target_analyte, rFriendlyParamNames = TRUE)
   }
   if (is.null(flow_data)) {
-    flow_data   <- getHydro(stn = stn, parameter_list = "flow", data_shape = "wide")
+    flow_data   <- getHydro(stns = stn, parameter_list = "flow", data_shape = "wide")
   }
   wq_data$param <- gsub(x = wq_data$param, pattern = " |,", replacement = "")
   wq_data$param <- gsub(x = wq_data$param, pattern = "-|[+]", replacement = ".")
