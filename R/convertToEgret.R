@@ -1,4 +1,4 @@
-#' Convert DataForEver output to EGRET-approved input
+#' Convert DataForEver output to EGRET-compatible input
 #'
 #' @param stn target station. Not case-sensitive.
 #' @param target_analyte Water quality parameter of interest. Internally converted to R-friendly form (no commas, hyphens, spaces).
@@ -8,6 +8,7 @@
 #' @param paStart Starting month of period of analysis. Defaults to 10. Used in most EGRET functions
 #' @param paLong Length in number of months of period of analysis. Defaults to 12. Used in most EGRET functions
 #' @param watershedKm Watershed area in km2, used to calculate runoff. Defaults to 1
+#' @param removeNegativeFlow logical, defaults to TRUE. Indicates whether negative flow data should be removed during pre-processing. EGRET tools do not accommodate negative flows.
 #' 
 #' @return a list as created by \code{\link[EGRET]{mergeReport}}
 #' @export
@@ -20,14 +21,15 @@
 #' targStn <- "S333"
 #' targAnalyte <- "PHOSPHATE, TOTAL AS P"
 #' 
-#' wq_dat <- wqDat[(wqDat$stn %in% targStn) & (wqDat$param %in% targAnalyte), ]
-#' flow_dat <- hydDat[hydDat$stn %in% targStn, ]
+#' ### subsetting occurs inside the function, so this prep is not necessary
+#' # wq_dat <- wqDat[(wqDat$stn %in% targStn) & (wqDat$param %in% targAnalyte), ]
+#' # flow_dat <- hydDat[hydDat$stn %in% targStn, ]
 #' 
 #' eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
-#'      wq_data = wq_dat, flow_data = flow_dat)
+#'      wq_data = wqDat, flow_data = hydDat)
 
 convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL, interact = FALSE,
-                           paStart = 10, paLong = 12, watershedKm = 1) {
+                           paStart = 10, paLong = 12, watershedKm = 1, removeNegativeFlow = TRUE) {
   ### function converts DataForEver data to EGRET format for WRTDS analysis
   
   stn <- toupper(stn)
@@ -46,6 +48,15 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   wq_data$param <- gsub(x = wq_data$param, pattern = "-|[+]", replacement = ".")
   wq_data       <- wq_data[(wq_data$stn %in% stn) & (wq_data$param %in% target_analyte), ]
   flow_data     <- flow_data[flow_data$stn %in% stn, ]
+  
+  ### EGRET doesn't support negative flow days - remove them here and announce to user
+  ### a more bespoke user-defined approach is preferred
+  if (removeNegativeFlow) {
+    if (nrow(flow_data[c(flow_data$flow  < 0), ]) > 0 ) {
+      cat(nrow(flow_data[c(flow_data$flow  < 0), ]), " negative discharge measurements were removed from the dataset in pre-processing")
+      flow_data     <- flow_data[-c(flow_data$flow  < 0), ]
+    }
+  }
   
   ### prep daily dataframe (flow data)
   flow_data$code     <- ""

@@ -2,10 +2,11 @@
 % Please edit documentation in R/convertToEgret.R
 \name{convertToEgret}
 \alias{convertToEgret}
-\title{Convert DataForEver output to EGRET-approved input}
+\title{Convert DataForEver output to EGRET-compatible input}
 \usage{
 convertToEgret(stn, target_analyte, wq_data = NULL, flow_data = NULL,
-  interact = FALSE, paStart = 10, paLong = 12, watershedKm = 1)
+  interact = FALSE, paStart = 10, paLong = 12, watershedKm = 1,
+  removeNegativeFlow = TRUE)
 }
 \arguments{
 \item{stn}{target station. Not case-sensitive.}
@@ -23,20 +24,23 @@ convertToEgret(stn, target_analyte, wq_data = NULL, flow_data = NULL,
 \item{paLong}{Length in number of months of period of analysis. Defaults to 12. Used in most EGRET functions}
 
 \item{watershedKm}{Watershed area in km2, used to calculate runoff. Defaults to 1}
+
+\item{removeNegativeFlow}{logical, defaults to TRUE. Indicates whether negative flow data should be removed during pre-processing. EGRET tools do not accommodate negative flows.}
 }
 \value{
 a list as created by \code{\link[EGRET]{mergeReport}}
 }
 \description{
-Convert DataForEver output to EGRET-approved input
+Convert DataForEver output to EGRET-compatible input
 }
 \examples{
 targStn <- "S333"
 targAnalyte <- "PHOSPHATE, TOTAL AS P"
 
-wq_dat <- wqDat[(wqDat$stn \%in\% targStn) & (wqDat$param \%in\% targAnalyte), ]
-flow_dat <- hydDat[hydDat$stn \%in\% targStn, ]
+### subsetting occurs inside the function, so this prep is not necessary
+# wq_dat <- wqDat[(wqDat$stn \%in\% targStn) & (wqDat$param \%in\% targAnalyte), ]
+# flow_dat <- hydDat[hydDat$stn \%in\% targStn, ]
 
 eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
-     wq_data = wq_dat, flow_data = flow_dat)
+     wq_data = wqDat, flow_data = hydDat)
 }

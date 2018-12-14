@@ -353,3 +353,24 @@ interp(inputData = sitesInBay, mapLayer = bnpMod,
 
 
 
+## 4. Integration with USGS-R/EGRET weighted regression tools
+
+The function `converToEgret` reformats DataForEver data to enable analysis with a suite of excellent trend analysis tools developed by USGS. The object created by running `converToEgret` can be used directly as an input to EGRET functions. 
+
+See https://github.com/USGS-R/EGRET for more information on EGRET.
+
+
+```{r convertToEgret, message = FALSE, eval=FALSE, echo=FALSE, warning = FALSE, fig.width = 3.5, fig.height = 3.5}
+
+### prep data for EGRET
+targStn <- "S333"
+targAnalyte <- "PHOSPHATE, TOTAL AS P"
+
+eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
+                        wq_data = wqDat, flow_data = hydDat)
+
+### run a model - this takes a couple minutes
+eList <- modelEstimation(eList)
+
+```
+
