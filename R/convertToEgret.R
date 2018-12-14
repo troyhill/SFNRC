@@ -63,7 +63,7 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   flow_data$dateTime <- as.Date(flow_data$date) # as.character(as.Date(flow_data$date)) ### dateTime column is critical
   names(flow_data)[names(flow_data) %in% c("flow")] <- c("value")
   flow.daily         <- EGRET::populateDaily(rawData = flow_data, qConvert = 1/0.0283168, 
-                                             interactive = interact) # convert cubic feet per second to cubic meters per second
+                                             verbose = interact) # convert cubic feet per second to cubic meters per second
   
   ### prep sample dataframe (water quality data)
   # ConcLow	 numeric	 Lower limit of concentration
@@ -80,6 +80,6 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   
   ### merge them
   eList_orig <- EGRET::mergeReport(INFO = INFO.data, Daily = flow.daily, Sample = Sample.data,
-                                   surfaces = NA, interactive = interact)
+                                   surfaces = NA, verbose = interact)
   eList_orig
 }
