@@ -54,10 +54,10 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   if (removeNegativeFlow) {
     if (nrow(flow_data[c(flow_data$flow  < 0), ]) > 0 ) {
       cat(nrow(flow_data[c(flow_data$flow  < 0), ]), " negative discharge measurements were removed from the dataset in pre-processing")
-      flow_data     <- flow_data[-c(flow_data$flow  < 0), ]
+      flow_data     <- flow_data[flow_data$flow  >= 0, ]
     }
   }
-  
+  # flow_dat[c(flow_data$flow  < 0), ]
   ### prep daily dataframe (flow data)
   flow_data$code     <- ""
   flow_data$dateTime <- as.Date(flow_data$date) # as.character(as.Date(flow_data$date)) ### dateTime column is critical
