@@ -39,24 +39,28 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   
   ### download data if either dataset is not provided by user
   if (is.null(wq_data)) {
-    wq_data     <- getWQ(stns = stn, target_analytes = target_analyte, rFriendlyParamNames = TRUE)
+    wq_data     <- data.frame(getWQ(stns = stn, target_analytes = target_analyte, rFriendlyParamNames = TRUE))
   }
   if (is.null(flow_data)) {
-    flow_data   <- getHydro(stns = stn, parameter_list = "flow", data_shape = "wide")
+    flow_data   <- data.frame(getHydro(stns = stn, parameter_list = "flow", data_shape = "wide"))
   }
   wq_data$param <- gsub(x = wq_data$param, pattern = " |,", replacement = "")
   wq_data$param <- gsub(x = wq_data$param, pattern = "-|[+]", replacement = ".")
-  wq_data       <- wq_data[(wq_data$stn %in% stn) & (wq_data$param %in% target_analyte), ]
-  flow_data     <- flow_data[flow_data$stn %in% stn, ]
+  wq_data       <- data.frame(wq_data[(wq_data$stn %in% stn) & (wq_data$param %in% target_analyte), ])
+  flow_data     <- data.frame(flow_data[flow_data$stn %in% stn, ])
   
   ### EGRET doesn't support negative flow days - remove them here and announce to user
   ### a more bespoke user-defined approach is preferred
   if (removeNegativeFlow) {
-    if (nrow(flow_data[c(flow_data$flow  < 0), ]) > 0 ) {
-      cat(nrow(flow_data[c(flow_data$flow  < 0), ]), " negative discharge measurements were removed from the dataset in pre-processing")
+    if (nrow(flow_data[which(flow_data$flow < 0), ]) > 0 ) {
+      cat(nrow(flow_data[which(flow_data$flow < 0), ]) , " negative discharge measurements were removed from the dataset in pre-processing \n")
       flow_data     <- flow_data[flow_data$flow  >= 0, ]
     }
   }
+  # nrow(flow_data)
+  # nrow(flow_data[!which(flow_data$flow < 0), ])
+  # nrow(df[which(df$number1 < df$number2), ])
+  # nrow(flow_data[c(as.numeric(flow_data$flow)  < 0), ])
   # flow_dat[c(flow_data$flow  < 0), ]
   ### prep daily dataframe (flow data)
   flow_data$code     <- ""
