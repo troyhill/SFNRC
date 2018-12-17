@@ -65,6 +65,9 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   ### prep daily dataframe (flow data)
   flow_data$code     <- ""
   flow_data$dateTime <- as.Date(flow_data$date) # as.character(as.Date(flow_data$date)) ### dateTime column is critical
+  
+  # remove rows with NAs for dates, or else suffer the wrath of a POSIXlt error in EGRET::populateDaily(populateDateColumns())
+  flow_data <- flow_data[!is.na(flow_data$dateTime), ]
   names(flow_data)[names(flow_data) %in% c("flow")] <- c("value")
   flow.daily         <- EGRET::populateDaily(rawData = flow_data, qConvert = 1/0.0283168, 
                                              verbose = interact) # convert cubic feet per second to cubic meters per second
