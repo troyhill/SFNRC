@@ -3,7 +3,11 @@ Type: Package
 Title: APIs and Tools for Processing Data from DataForEver, DBHYDRO, and Miami-Dade Department of Environmental Resources Management
 Version: 0.0.7
 Date: 2018-10-13
-Author: Troy D. Hill <Hill.Troy@gmail.com>
+Authors@R: c(
+    person("Troy", "Hill", role = c("aut", "cre"), email = "Hill.Troy@gmail.com", comment = c(ORCID = "0000-0003-2980-4099")),
+    person()
+    )
+BugReports: https://github.com/troyhill/SFNRC/issues
 Maintainer: Troy D. Hill <Hill.Troy@gmail.com>
 Description: An R interface for the South Florida  Natural Resources Center's water quality and flow databases, DBHYDRO, and tools used to upload, process, and analyze data from DataForEver and the Miami-Dade Department of Environmental Resources Management.
 License: file LICENSE
