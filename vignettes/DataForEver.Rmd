@@ -17,35 +17,13 @@ header-includes:
 ---
 
 ```{r setup, include=FALSE, echo=FALSE}
-if(!require(knitr)){
-  install.packages("knitr", repos='http://cran.us.r-project.org')
+pkgs.used <- c("devtools", "knitr", "rmarkdown", "rgdal", "sp", "deldir", "plyr", "reshape2", "ggplot2", "scales", "gridExtra")
+pkgs.to.install <- pkgs.used[!pkgs.used %in% installed.packages()]
+if (length(pkgs.to.install) > 0) {
+  install.packages(pkgs.to.install)
 }
-if(!require(rmarkdown)){
-  install.packages("rmarkdown", repos='http://cran.us.r-project.org')
-}
-if(!require(plyr)){
-  install.packages("plyr", repos='http://cran.us.r-project.org')
-}
-if(!require(reshape2)){
-  install.packages("reshape2", repos='http://cran.us.r-project.org')
-}
-if(!require(ggplot2)){
-  install.packages("ggplot2", repos='http://cran.us.r-project.org')
-}
-if(!require(scales)){
-  install.packages("scales", repos='http://cran.us.r-project.org')
-}
-if(!require(gridExtra)){
-  install.packages("gridExtra", repos='http://cran.us.r-project.org')
-}
-if(!require(sp)){
-  install.packages("sp", repos='http://cran.us.r-project.org')
-}
-if(!require(rgdal)){
-  install.packages("rgdal", repos='http://cran.us.r-project.org')
-}
-if(!require(deldir)){
-  install.packages("deldir", repos='http://cran.us.r-project.org')
+if (!"SFNRC" %in% installed.packages()) {
+  devtools::install_github("troyhill/SFNRC")
 }
 
 # then load the package:
