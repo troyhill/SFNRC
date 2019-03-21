@@ -8,3 +8,4 @@
 ^.*\.Rproj$
 ^data\\a\.RData$
 ^R\\modelEstimation\.R$
+^vignettes\\*\.R$
