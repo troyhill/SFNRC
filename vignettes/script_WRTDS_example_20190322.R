@@ -40,6 +40,29 @@ lapply(test, tableFlowChange)
 
 
 
+q1 <- 200
+q2 <- 400
+q3 <- 800
+centerDate <- "10-01"
+yearEnd <- 2000
+yearStart <- 1970
+
+### why does this look strange?
+test[[5]]$Sample[, c("Date", "Q", "ConcAve")] # Q values seem oddly low bc they're cubic meters per second
+
+
+q1 <- 2
+q2 <- 10
+q3 <- 20
+plotConcTimeSmooth(test[[1]], q1, q2, q3, centerDate, yearStart, yearEnd, legendTop = 0.01, legendLeft = 1980)
+
+### this looks great
+plotConcTimeSmooth(test[[5]], q1, q2, q3, centerDate, yearStart, yearEnd, legendTop = 0.006, legendLeft = 1990)
+
+
+
+
+
 # Discharge-time plots ----------------------------------------------------
 
 # Multi-line plots:
