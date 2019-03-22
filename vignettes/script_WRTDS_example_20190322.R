@@ -87,17 +87,26 @@ lapply(test[-2], plotDiffContours,
 # geogenic solute ---------------------------------------------------------
 
 
-targAnalyte <- "TURBIDITY"
 targAnalyte <- "HARDNESS AS CACO3"
-
-
 Ca <- lapply(targStns, function(stnSelect) 
   modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
                                  wq_data = wqDat, flow_data = hydDat)))
 
 level_Ca    <- seq(0, 0.15, 0.01)
-maxDiff_Ca  <- NA
+maxDiff_Ca  <- 150
 
 lapply(Ca, plotDiffContours, 
        year0 = yearStart1, year1 = yearEnd1, qBottom = qBottom, qTop =qTop, 
-       maxDiff = maxDiff, qUnit=1)
+       maxDiff = maxDiff_Ca, qUnit=1)
+
+
+targAnalyte <- "TURBIDITY"
+ntu <- lapply(targStns, function(stnSelect) 
+  modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
+                                 wq_data = wqDat, flow_data = hydDat)))
+
+maxDiff_ntu  <- 150
+
+lapply(ntu, plotDiffContours, 
+       year0 = yearStart1, year1 = yearEnd1, qBottom = qBottom, qTop =qTop, 
+       maxDiff = maxDiff_ntu, qUnit=1)
