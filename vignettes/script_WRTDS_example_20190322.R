@@ -43,7 +43,7 @@ lapply(test, tableFlowChange)
 q1 <- 200
 q2 <- 400
 q3 <- 800
-centerDate <- "10-01"
+centerDate <- "05-01" # "10-01", "01-01" looks awesome. 
 yearEnd <- 2000
 yearStart <- 1970
 
@@ -57,7 +57,7 @@ q3 <- 20
 plotConcTimeSmooth(test[[1]], q1, q2, q3, centerDate, yearStart, yearEnd, legendTop = 0.01, legendLeft = 1980)
 
 ### this looks great
-plotConcTimeSmooth(test[[5]], q1, q2, q3, centerDate, yearStart, yearEnd, legendTop = 0.006, legendLeft = 1990)
+plotConcTimeSmooth(test[[5]], q1, q2, q3, centerDate, yearStart, yearEnd, legendTop = 0.01, legendLeft = 1980)
 
 
 
