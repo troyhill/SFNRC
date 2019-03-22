@@ -56,6 +56,8 @@ q2 <- 10
 q3 <- 20
 plotConcTimeSmooth(test[[1]], q1, q2, q3, centerDate, yearStart, yearEnd, legendTop = 0.01, legendLeft = 1980)
 
+lapply(test, plotConcTimeSmooth, q1, q2, q3, centerDate, yearStart, yearEnd, legendTop = 0.01, legendLeft = 1980)
+
 ### this looks great
 plotConcTimeSmooth(test[[5]], q1, q2, q3, centerDate, yearStart, yearEnd, legendTop = 0.01, legendLeft = 1980)
 
@@ -72,7 +74,8 @@ q3 <- 1000
 centerDate <- "08-01"
 yearStart <- 1980
 yearEnd   <- 2017
-lapply(test, plotConcTimeSmooth, q1, q2, q3, centerDate = centerDate, yearStart = yearStart, yearEnd = yearEnd)
+lapply(test, plotConcTimeSmooth, q1, q2, q3, centerDate = centerDate, legendTop = 0.06, legendLeft = 1970,
+       yearStart = yearStart, yearEnd = yearEnd, concMax = 0.06, concMin = 0)
 
 # plotConcTimeSmooth(eList, q1, q2, q3, centerDate = centerDate, yearStart = yearStart, yearEnd = yearEnd)
 clevel    <- seq(0, 0.15, 0.01)
