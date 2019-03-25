@@ -1,0 +1,313 @@
+### Weighted regression using time, discharge, and season
+### Application of EGRET tools to DataForEver data
+
+# library(plyr)
+library(doParallel)
+library(SFNRC)
+
+QCdateColors <- c("gray85", "gray60", "black")
+
+nCores <- parallel::detectCores() - 1
+cl <- makePSOCKcluster(nCores)
+
+
+
+# TP -----------------------------------------------------------
+
+targStns    <- c("S333", "S12A", "S12B", "S12C", "S12D", "S151") #, "S343", "S332")
+targAnalyte <- "PHOSPHATE, TOTAL AS P"
+ 
+# remove 8ppm TP data point
+wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), ]
+wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), "value"] <- NA
+
+registerDoParallel(cl)
+tp <- lapply(targStns, function(stnSelect) 
+  modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
+                 wq_data = wqDat, flow_data = hydDat), run.parallel = TRUE))
+stopCluster(cl)
+
+### set water year (default is 10, 12)
+tp <- lapply(tp, setPA, paStart = 04, paLong = 12)
+
+# diagnostics
+lapply(tp, plotConcPred)
+lapply(tp, plotFluxPred)
+lapply(tp, plotResidPred)
+lapply(tp, plotResidQ)
+
+
+# figure 1
+lapply(tp, plotConcHist, concMax = 0.04, yearStart = 1980)
+lapply(tp, plotFluxHist, fluxMax = 0.016, yearStart = 1980)
+
+
+# Change in concentration at different discharge ------------------------
+
+
+yearEnd <- 2000
+yearStart <- 1970
+q1 <- 3  # 100 cfs
+q2 <- 14 # 500 cfs
+q3 <- 28 # 1000 cfs
+
+### this looks great
+lapply(tp, plotConcTimeSmooth, q1, q2, q3, centerDate = "01-01", yearStart, yearEnd, 
+       legendTop = 0.06, legendLeft = yearStart, concMax = 0.06)
+lapply(tp, plotConcTimeSmooth, q1, q2, q3, centerDate = "05-01", yearStart, yearEnd, 
+       legendTop = 0.16, legendLeft = yearStart, concMax = 0.06)
+lapply(tp, plotConcTimeSmooth, q1, q2, q3, centerDate = "07-01", yearStart, yearEnd, 
+       legendTop = 0.16, legendLeft = yearStart, concMax = 0.06)
+lapply(tp, plotConcTimeSmooth, q1, q2, q3, centerDate = "10-01", yearStart, yearEnd, 
+       legendTop = 0.16, legendLeft = yearStart, concMax = 0.06)
+
+
+
+# Contour plots -----------------------------------------------------------
+# mdiff     <- 0.04
+# yearStart <- 1985
+# yearEnd   <- 2015
+# 
+# lapply(tp, plotDiffContours, yearStart, yearEnd, 
+#        qBottom = 0.1, qTop = 2000, qUnit = 1, maxDiff = mdiff)
+
+# plotConcTimeSmooth(eList, q1, q2, q3, centerDate = centerDate, yearStart = yearStart, yearEnd = yearEnd)
+clevel    <- seq(0, 0.15, 0.01)
+clevel2    <- seq(0, 0.05, 0.005)
+maxDiff   <- 0.1
+yearStart1 <- 2009
+yearEnd1   <- 2019
+
+qBottom   <- 0.1
+qTop      <- 2500
+
+lapply(tp[-2], plotContours, 
+       yearStart = yearStart1, yearEnd = yearEnd1, qBottom = qBottom, qTop =qTop, 
+       contourLevels = clevel2, qUnit=1)
+yearStart2 <- 1979
+yearEnd2   <- 1989
+lapply(tp[-2], plotContours, 
+       yearStart = yearStart2, yearEnd = yearEnd2, qBottom = qBottom, qTop =qTop, 
+       contourLevels = clevel, qUnit=1)
+
+
+lapply(tp[-2], plotContours, 
+       yearStart = yearStart2, yearEnd = yearEnd2, qBottom = qBottom, qTop =qTop, 
+       contourLevels = clevel2, qUnit=1)
+lapply(tp[-2], plotContours, 
+       yearStart = yearStart1, yearEnd = yearEnd2, qBottom = qBottom, qTop =qTop, 
+       contourLevels = clevel2, qUnit=1)
+
+lapply(tp[-2], plotDiffContours, 
+       year0 = yearStart1, year1 = yearEnd1, qBottom = qBottom, qTop =qTop, 
+       maxDiff = maxDiff, qUnit=1)
+
+# plots difference between two years
+lapply(tp[-2], plotDiffContours, 
+       year0 = 1980, year1 = yearEnd1, qBottom = qBottom, qTop =qTop, 
+       maxDiff = maxDiff, qUnit=1)
+
+
+
+
+# lapply(tp, fluxBiasMulti)
+# lapply(tp, plotConcPred)
+# lapply(tp, plotFluxPred)
+# lapply(tp, boxResidMonth)
+# lapply(tp, multiPlotDataOverview)
+# lapply(tp, tableChange)
+
+annualSeries <- lapply(tp, makeAnnualSeries)
+monthlyResults <- lapply(tp, calculateMonthlyResults)
+
+
+plot15(tp[[4]], yearStart = yearStart, yearEnd = yearEnd)
+tableResults(tp[[1]])
+tableFlowChange(tp[[1]])
+# plotDiffContours(tp[[1]], yearStart, yearEnd, qBottom, qTop, qUnit = 1, maxDiff = mdiff)
+lapply(tp, tableFlowChange)
+
+
+# Discharge-concentration relationships -----------------------------------
+
+date1 <- "1985-09-01"
+date2 <- "2000-09-01"
+date3 <- "2015-09-01"
+qBottom <- 0.2
+qTop    <- 35
+lapply(tp, plotConcQSmooth, date1, date2, date3,  qLow = 1, qTop, 
+                concMax= 0.08,legendTop = 0.85, colors = QCdateColors)
+
+# Discharge-time plots ----------------------------------------------------
+
+# Multi-line plots:
+q1 <- 3
+q2 <- 14
+q3 <- 28
+centerDate <- "08-01"
+yearStart <- 1980
+yearEnd   <- 2017
+lapply(tp, plotConcTimeSmooth, q1, q2, q3, centerDate = centerDate, legendTop = 0.06, legendLeft = 1970,
+       yearStart = yearStart, yearEnd = yearEnd, concMax = 0.06, concMin = 0)
+
+lapply(tp, plotConcTimeDaily)
+lapply(tp, plotFluxTimeDaily)
+
+
+
+
+
+
+
+
+
+
+# nitrogen ------------------------------------------------------------------
+# grep(x = unique(wqDat$param), pattern = "NITROG|NITRATE|NITRITE|AMMONI", value = TRUE)
+targAnalyte <- "KJELDAHL NITROGEN, TOTAL" # "TOTAL NITROGEN" subset of sites have data
+registerDoParallel(cl)
+nitro <- lapply(targStns, function(stnSelect) 
+  modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
+                                 wq_data = wqDat, flow_data = hydDat)))
+stopCluster(cl)
+
+### set water year (default is 10, 12)
+nitro <- lapply(nitro, setPA, paStart = 04, paLong = 12)
+
+# diagnostics
+lapply(nitro, plotConcPred)
+lapply(nitro, plotFluxPred)
+lapply(nitro, plotResidPred)
+lapply(nitro, plotResidQ)
+
+# figure 1
+lapply(nitro, plotConcHist, concMax = 2.5, yearStart = 1980)
+lapply(nitro, plotFluxHist, fluxMax = 1.4, yearStart = 1980)
+
+
+lapply(nitro, plotDiffContours, year0 = 1988,
+                 year1 = 2018,
+                 qBottom=0.001,
+                 qTop=30,
+                 maxDiff=1)
+
+lapply(nitro, plotConcQSmooth, date1, date2, date3,  qLow = 1, qTop, 
+       concMax= NA,legendTop = 0.85, colors = QCdateColors)
+
+
+# geogenic solute ---------------------------------------------------------
+
+
+targAnalyte <- "HARDNESS AS CACO3"
+
+registerDoParallel(cl)
+Ca <- lapply(targStns, function(stnSelect) 
+  modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
+                                 wq_data = wqDat, flow_data = hydDat)))
+stopCluster(cl)
+
+### set water year (default is 10, 12)
+Ca <- lapply(Ca, setPA, paStart = 04, paLong = 12)
+
+# diagnostics
+lapply(Ca, plotConcPred)
+lapply(Ca, plotFluxPred)
+lapply(Ca, plotResidPred)
+lapply(Ca, plotResidQ)
+
+# figure 1
+lapply(Ca, plotConcHist, concMax = 300, yearStart = 1980)
+lapply(Ca, plotFluxHist, fluxMax = 200, yearStart = 1980)
+
+
+
+
+
+
+
+
+
+
+level_Ca    <- seq(0, 0.15, 0.01)
+maxDiff_Ca  <- 150
+
+lapply(Ca, plotDiffContours, 
+       year0 = yearStart1, year1 = yearEnd1, qBottom = qBottom, qTop =qTop, 
+       maxDiff = maxDiff_Ca, qUnit=1)
+
+
+
+lapply(Ca, plotDiffContours, year0 = 1988,
+       year1 = 2018,
+       qBottom=0.001,
+       qTop=30,
+       maxDiff=maxDiff_Ca)
+
+
+
+lapply(Ca, plotConcQSmooth, date1, date2, date3,  qLow = 1, qTop, 
+       concMax= NA,legendTop = 0.85, colors = QCdateColors)
+
+# Turbidity ---------------------------------------------------------------
+
+targAnalyte <- "TURBIDITY"
+registerDoParallel(cl)
+ntu <- lapply(targStns, function(stnSelect) 
+  modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
+                                 wq_data = wqDat, flow_data = hydDat)))
+stopCluster(cl)
+
+### set water year (default is 10, 12)
+ntu <- lapply(ntu, setPA, paStart = 04, paLong = 12)
+
+# diagnostics
+lapply(ntu, plotConcPred)
+lapply(ntu, plotResidPred)
+lapply(ntu, plotResidQ)
+
+# figure 1
+lapply(ntu, plotConcHist, concMax = NA, yearStart = 1980)
+
+
+
+
+lapply(ntu, plotDiffContours, year0 = 1988,
+       year1 = 2018,
+       qBottom=0.001,
+       qTop=30,
+       maxDiff = 10)
+
+
+# sodium ------------------------------------------------------------------
+
+targAnalyte <- "SODIUM, TOTAL" # "SODIUM"  or "SODIUM, TOTAL"
+
+registerDoParallel(cl)
+sodium <- lapply(targStns, function(stnSelect) 
+  modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
+                                 wq_data = wqDat, flow_data = hydDat)))
+stopCluster(cl)
+
+### set water year (default is 10, 12)
+sodium <- lapply(sodium, setPA, paStart = 04, paLong = 12)
+
+# diagnostics
+lapply(sodium, plotConcPred)
+lapply(sodium, plotFluxPred)
+lapply(sodium, plotResidPred)
+lapply(sodium, plotResidQ)
+
+# figure 1
+lapply(sodium, plotConcHist, concMax = 80, yearStart = 1980)
+lapply(sodium, plotFluxHist, fluxMax = 60, yearStart = 1980)
+
+
+lapply(sodium, plotDiffContours, year0 = 1988,
+       year1 = 2018,
+       qBottom=0.001,
+       qTop=30,
+       maxDiff = 60)
+
+
+lapply(sodium, plotConcQSmooth, date1, date2, date3, qLow = 1, qTop, 
+       concMax= 75,legendTop = 80, legendLeft = 1, colors = QCdateColors)

@@ -3,23 +3,31 @@
 library(plyr)
 library(SFNRC)
 
-# Meta-analysis -----------------------------------------------------------
+# TP -----------------------------------------------------------
 
 targStns    <- c("S333", "S12A", "S12B", "S12C", "S12D", "S151") #, "S343", "S332")
 targAnalyte <- "PHOSPHATE, TOTAL AS P"
-
+ 
+# remove 8ppm TP data point
+wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), ]
+wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), "value"] <- NA
 
 test <- lapply(targStns, function(stnSelect) 
   modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
                  wq_data = wqDat, flow_data = hydDat)))
 ### set water year (default is 10, 12)
 test <- lapply(test, setPA, paStart = 04, paLong = 12)
-plotConcHist(eList)
+
+# diagnostics
+lapply(test, plotConcPred)
+lapply(test, plotFluxPred)
+lapply(test, plotResidPred)
+lapply(test, plotResidQ)
+
 
 # figure 1
-lapply(test, plotConcHist, concMax = 0.04)
-lapply(test, plotFluxHist, fluxMax = 0.016)
-
+lapply(test, plotConcHist, concMax = 0.04, yearStart = 1980)
+lapply(test, plotFluxHist, fluxMax = 0.016, yearStart = 1980)
 
 
 # Change in concentration at different discharge ------------------------
@@ -30,9 +38,6 @@ yearStart <- 1970
 q1 <- 3  # 100 cfs
 q2 <- 14 # 500 cfs
 q3 <- 28 # 1000 cfs
-plotConcTimeSmooth(test[[1]], q1, q2, q3, centerDate, yearStart, yearEnd, legendTop = 0.01, legendLeft = 1980)
-
-lapply(test, plotConcTimeSmooth, q1, q2, q3, centerDate, yearStart, yearEnd, legendTop = 0.01, legendLeft = 1980)
 
 ### this looks great
 lapply(test, plotConcTimeSmooth, q1, q2, q3, centerDate = "01-01", yearStart, yearEnd, 
@@ -143,6 +148,27 @@ targAnalyte <- "HARDNESS AS CACO3"
 Ca <- lapply(targStns, function(stnSelect) 
   modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
                                  wq_data = wqDat, flow_data = hydDat)))
+### set water year (default is 10, 12)
+Ca <- lapply(Ca, setPA, paStart = 04, paLong = 12)
+
+# diagnostics
+lapply(Ca, plotConcPred)
+lapply(Ca, plotFluxPred)
+lapply(Ca, plotResidPred)
+lapply(Ca, plotResidQ)
+
+# figure 1
+lapply(Ca, plotConcHist, concMax = 300, yearStart = 1980)
+lapply(Ca, plotFluxHist, fluxMax = 200, yearStart = 1980)
+
+
+
+
+
+
+
+
+
 
 level_Ca    <- seq(0, 0.15, 0.01)
 maxDiff_Ca  <- 150
@@ -152,10 +178,26 @@ lapply(Ca, plotDiffContours,
        maxDiff = maxDiff_Ca, qUnit=1)
 
 
+
+
+
+
 targAnalyte <- "TURBIDITY"
 ntu <- lapply(targStns, function(stnSelect) 
   modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
                                  wq_data = wqDat, flow_data = hydDat)))
+### set water year (default is 10, 12)
+ntu <- lapply(ntu, setPA, paStart = 04, paLong = 12)
+
+# diagnostics
+lapply(ntu, plotConcPred)
+lapply(ntu, plotResidPred)
+lapply(ntu, plotResidQ)
+
+# figure 1
+lapply(ntu, plotConcHist, concMax = NA, yearStart = 1980)
+
+
 
 maxDiff_ntu  <- 150
 
