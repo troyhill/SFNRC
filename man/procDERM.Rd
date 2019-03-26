@@ -19,7 +19,7 @@ new_names = c("stn", "date", "time", "param", "method", "units",
 \item{new_names}{names of columns in output (changing this is not recommended)}
 }
 \value{
-dataframe \code{derm.wq} returns a dataframe with water quality measurements, with parameter names and units that match DataForEver data.
+dataframe \code{procDERM} returns a dataframe with water quality measurements, with parameter names and units that match DataForEver data.
 }
 \description{
 Processes DERM data to facilitate analysis and integration with DataForEver data. Adjusts parameter names and units to match DataForEver.

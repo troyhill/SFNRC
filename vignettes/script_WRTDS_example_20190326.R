@@ -8,7 +8,6 @@ library(SFNRC)
 QCdateColors <- c("gray85", "gray60", "black")
 
 nCores <- parallel::detectCores() - 1
-cl <- makePSOCKcluster(nCores)
 
 
 
@@ -18,9 +17,10 @@ targStns    <- c("S333", "S12A", "S12B", "S12C", "S12D", "S151") #, "S343", "S33
 targAnalyte <- "PHOSPHATE, TOTAL AS P"
  
 # remove 8ppm TP data point
-wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), ]
+# wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), ]
 wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), "value"] <- NA
 
+cl <- makePSOCKcluster(nCores)
 registerDoParallel(cl)
 tp <- lapply(targStns, function(stnSelect) 
   modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 

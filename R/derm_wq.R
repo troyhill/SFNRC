@@ -15,7 +15,7 @@
 #' @param remove_QC_codes Quality control codes to remove from the dataset.
 #' @param new_names names of columns in output (changing this is not recommended)
 #' 
-#' @return dataframe \code{derm.wq} returns a dataframe with water quality measurements, with parameter names and units that match DataForEver data.
+#' @return dataframe \code{procDERM} returns a dataframe with water quality measurements, with parameter names and units that match DataForEver data.
 #' 
 #' @seealso \code{none}
 #' 
