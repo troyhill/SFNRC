@@ -2,13 +2,14 @@
 ### Application of EGRET tools to DataForEver data
 
 # library(plyr)
+library(EGRETci)
 library(doParallel)
 library(SFNRC)
 
 QCdateColors <- c("gray85", "gray60", "black")
 
 nCores <- parallel::detectCores() - 1
-
+seed   <- 23
 
 
 # TP -----------------------------------------------------------
