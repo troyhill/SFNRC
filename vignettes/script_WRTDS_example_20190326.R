@@ -10,7 +10,13 @@ QCdateColors <- c("gray85", "gray60", "black")
 
 nCores <- parallel::detectCores() - 1
 seed   <- 23
-
+nBoot <- 100
+blockLength <- 200
+coreOut <- 1 #Number of cores to leave out of processing tasks
+widthCI <- 90
+ciLower <- (50-(widthCI/2))/100
+ciUpper <- (50+(widthCI/2))/100
+probs <- c(ciLower,ciUpper)
 
 # TP -----------------------------------------------------------
 
@@ -39,8 +45,58 @@ lapply(tp, plotResidQ)
 
 
 # figure 1
-lapply(tp, plotConcHist, concMax = 0.04, yearStart = 1980)
-lapply(tp, plotFluxHist, fluxMax = 0.016, yearStart = 1980)
+lapply(tp, plotConcHist, concMax = 0.04, yearStart = 1978)
+lapply(tp, plotFluxHist, fluxMax = 0.016, yearStart = 1978)
+
+caseSetUp <- lapply(tp, trendSetUp, year1 = 1978, year2 = 2014, 
+                        nBoot = 50, min = 100, blockLength = 200,
+                        bootBreak = 100)
+
+### an attempt to batch process confidence intervals for all stations
+# eBoot <- lapply(tp[[4]], wBT, caseSetUp[[4]]) # goal: get this to work for full list!
+fns <- list(wBT)
+arg1 <- tp
+arg2 <- caseSetUp
+eBoot <- Map(
+  function(fn, value1, value2)
+  {
+    fn(value1, value2)
+  },
+  fns,
+  arg1, 
+  arg2
+)
+
+eBoot <- wBT(tp[[1]], caseSetUp[[1]])
+eBoot2 <- wBT(tp[[2]], caseSetUp[[2]])
+eBoot3 <- wBT(tp[[3]], caseSetUp[[3]])
+eBoot4 <- wBT(tp[[4]], caseSetUp[[4]])
+
+eBoot5 <- wBT(tp[[5]], caseSetUp[[5]])
+
+#Concentration an initial run:
+plotHistogramTrend(tp[[4]], eBoot4, caseSetUp[[4]],  
+                   flux=FALSE)
+#Flux an initial run:
+plotHistogramTrend(tp[[4]], eBoot4, caseSetUp[[4]],
+                   flux=TRUE)
+CIAnnualResults <- ciCalculations(tp[[1]], nBoot = 100, blockLength = 200, widthCI = 90)
+
+plotConcHistBoot(tp[[1]], CIAnnualResults)
+plotFluxHistBoot(tp[[1]], CIAnnualResults)
+# 
+# registerDoParallel(cl)
+# repAnnual <- foreach(n = 1:nBoot, .packages=c('EGRETci')) %dopar% {
+#   annualResults <- lapply(tp, bootAnnual,
+#                               blockLength,
+#                               startSeed = seed)  
+# }
+# stopCluster(cl) 
+# 
+# CIAnnualResults <- ciBands(eList, repAnnual, probs)
+
+
+
 
 
 # Change in concentration at different discharge ------------------------
