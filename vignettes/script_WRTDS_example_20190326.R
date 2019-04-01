@@ -67,23 +67,26 @@ eBoot <- Map(
   arg2
 )
 
-# eBoot1 <- wBT(tp[[1]], caseSetUp[[1]])
-# eBoot2 <- wBT(tp[[2]], caseSetUp[[2]])
-# eBoot3 <- wBT(tp[[3]], caseSetUp[[3]])
-# eBoot4 <- wBT(tp[[4]], caseSetUp[[4]])
-# eBoot5 <- wBT(tp[[5]], caseSetUp[[5]])
+CIAnnualResults <- lapply(tp, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
+
+mapLists <- function(fns = plotConcHistBoot, list1 = tp, list2 = CIAnnualResults, ...) Map(
+  function(fn, value1, value2, ...)
+  {
+    fn(value1, value2, ...)
+  },
+  list(fns),
+  list1, 
+  list2, ...
+)
+mapLists()
+mapLists(plotConcHistBoot, tp, CIAnnualResults, yearStart = 1980, concMax = 0.08)
+mapLists(plotFluxHistBoot, tp, CIAnnualResults, yearStart = 1980)
 
 #Concentration an initial run:
-plotHistogramTrend(tp[[4]], eBoot4, caseSetUp[[4]],  
-                   flux=FALSE)
-#Flux an initial run:
-plotHistogramTrend(tp[[4]], eBoot4, caseSetUp[[4]],
-                   flux=TRUE)
-CIAnnualResults <- ciCalculations(tp[[1]], nBoot = 100, blockLength = 200, widthCI = 90)
+mapLists(plotHistogramTrend, tp, eBoot, caseSetUp, flux = TRUE)
+mapLists(plotHistogramTrend, tp, eBoot, caseSetUp, flux = FALSE)
 
-plotConcHistBoot(tp[[1]], CIAnnualResults)
-plotFluxHistBoot(tp[[1]], CIAnnualResults)
-# 
+
 # registerDoParallel(cl)
 # repAnnual <- foreach(n = 1:nBoot, .packages=c('EGRETci')) %dopar% {
 #   annualResults <- lapply(tp, bootAnnual,
@@ -251,6 +254,26 @@ lapply(nitro, plotConcQSmooth, date1, date2, date3,  qLow = 1, qTop,
        concMax= NA,legendTop = 0.85, colors = QCdateColors)
 
 
+
+caseSetUp.tkn <- lapply(nitro, trendSetUp, year1 = 1980, year2 = 2014, 
+                    nBoot = 50, min = 100, blockLength = 200,
+                    bootBreak = 100)
+eBoot.tkn <- mapLists(wBt, nitro, caseSetUp.tkn)
+CIAnnualResults.tkn <- lapply(nitro, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
+
+mapLists(plotConcHistBoot, nitro, CIAnnualResults.tkn, yearStart = 1980, concMax = 0.08)
+mapLists(plotFluxHistBoot, nitro, CIAnnualResults.tkn, yearStart = 1980)
+
+#Concentration an initial run:
+mapLists(plotHistogramTrend, nitro, eBoot.tkn, caseSetUp.tkn, flux = TRUE)
+mapLists(plotHistogramTrend, nitro, eBoot.tkn, caseSetUp.tkn, flux = FALSE)
+
+
+
+
+
+
+
 # geogenic solute ---------------------------------------------------------
 
 
@@ -274,6 +297,24 @@ lapply(Ca, plotResidQ)
 # figure 1
 lapply(Ca, plotConcHist, concMax = 300, yearStart = 1980)
 lapply(Ca, plotFluxHist, fluxMax = 200, yearStart = 1980)
+
+
+
+caseSetUp.ca <- lapply(Ca, trendSetUp, year1 = 1980, year2 = 2014, 
+                        nBoot = 50, min = 100, blockLength = 200,
+                        bootBreak = 100)
+eBoot.ca <- mapLists(wBt, Ca, caseSetUp.ca)
+CIAnnualResults.ca <- lapply(Ca, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
+
+mapLists(plotConcHistBoot, Ca, CIAnnualResults.ca, yearStart = 1980, concMax = 0.08)
+mapLists(plotFluxHistBoot, Ca, CIAnnualResults.ca, yearStart = 1980)
+
+#Concentration an initial run:
+mapLists(plotHistogramTrend, Ca, eBoot.ca, caseSetUp.ca, flux = TRUE)
+mapLists(plotHistogramTrend, Ca, eBoot.ca, caseSetUp.ca, flux = FALSE)
+
+
+
 
 
 
@@ -324,6 +365,18 @@ lapply(ntu, plotResidQ)
 # figure 1
 lapply(ntu, plotConcHist, concMax = NA, yearStart = 1980)
 
+caseSetUp.ntu <- lapply(ntu, trendSetUp, year1 = 1980, year2 = 2014, 
+                       nBoot = 50, min = 100, blockLength = 200,
+                       bootBreak = 100)
+eBoot.ntu <- mapLists(wBt, ntu, caseSetUp.ntu)
+CIAnnualResults.ntu <- lapply(ntu, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
+
+mapLists(plotConcHistBoot, ntu, CIAnnualResults.ntu, yearStart = 1980, concMax = 0.08)
+mapLists(plotFluxHistBoot, ntu, CIAnnualResults.ntu, yearStart = 1980)
+
+#Concentration an initial run:
+mapLists(plotHistogramTrend, ntu, eBoot.ntu, caseSetUp.ntu, flux = TRUE)
+mapLists(plotHistogramTrend, ntu, eBoot.ntu, caseSetUp.ntu, flux = FALSE)
 
 
 
@@ -367,3 +420,16 @@ lapply(sodium, plotDiffContours, year0 = 1988,
 
 lapply(sodium, plotConcQSmooth, date1, date2, date3, qLow = 1, qTop, 
        concMax= 75,legendTop = 80, legendLeft = 1, colors = QCdateColors)
+
+caseSetUp.na <- lapply(sodium, trendSetUp, year1 = 1980, year2 = 2014, 
+                        nBoot = 50, min = 100, blockLength = 200,
+                        bootBreak = 100)
+eBoot.na <- mapLists(wBt, sodium, caseSetUp.na)
+CIAnnualResults.na <- lapply(sodium, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
+
+mapLists(plotConcHistBoot, sodium, CIAnnualResults.na, yearStart = 1980, concMax = 0.08)
+mapLists(plotFluxHistBoot, sodium, CIAnnualResults.na, yearStart = 1980)
+
+#Concentration an initial run:
+mapLists(plotHistogramTrend, sodium, eBoot.na, caseSetUp.na, flux = TRUE)
+mapLists(plotHistogramTrend, sodium, eBoot.na, caseSetUp.na, flux = FALSE)

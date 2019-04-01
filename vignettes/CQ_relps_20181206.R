@@ -37,7 +37,7 @@ lm.mod <- function(df, param){
 
 
 todaysDate <- as.character(Sys.Date())
-stn.targets <- c("S333", paste0("S12", toupper(letters[1:4])), "S151", "S344")
+stn.targets <- c("S333", paste0("S12", toupper(letters[1:4])), "S151")
 stn.filtered     <- c("COOPERTN", "FROGCITY", "G311", "GLADER", "L29C1", 
                  "L29C4", "L30M0", "L31NM0", "L31NM1", "L31NM2", "L31NM3", "L31NM4", 
                  "L31NM5", "S12A", "S12B", 
@@ -794,22 +794,32 @@ dat3 <- dat2[dat2$stn %in% stn.targets, ] %>% arrange(stn, flow) %>%
     breaks=4, labels = FALSE,
     include.lowest=TRUE))
 
-ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), ], 
+ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow") & (dat3$stn %in% "S12D"), ], 
        aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P))) + 
   geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
   theme_classic() + facet_grid(stn ~ mo, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
   ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
+# ggsave(file = "/opt/physical/troy/RDATA/northernBoundary/CQ_monthly.png", width = 8, height = 3)
 
-
-ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), ], 
-       aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P), col = head_water)) + 
+ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow") & (dat3$stn %in% "S12D") & (dat3$year %in% 2010:2018), ], 
+       aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P))) + 
   geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
-  theme_classic() + facet_grid(stn ~ mo, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+  theme_classic() + facet_grid(stn ~ year, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
-  ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)") + scale_colour_distiller(palette = "Spectral")
+  ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
+# ggsave(file = "/opt/physical/troy/RDATA/northernBoundary/CQ_annual.png", width = 8, height = 3)
+
+
+# ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), ], 
+#        aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P), col = head_water)) + 
+#   geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
+#   theme_classic() + facet_grid(stn ~ mo, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+#   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
+#         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
+#   ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)") + scale_colour_distiller(palette = "Spectral")
 
 
 ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), ], 
