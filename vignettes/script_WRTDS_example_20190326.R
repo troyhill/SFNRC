@@ -255,13 +255,13 @@ lapply(nitro, plotConcQSmooth, date1, date2, date3,  qLow = 1, qTop,
 
 
 
-caseSetUp.tkn <- lapply(nitro, trendSetUp, year1 = 1980, year2 = 2014, 
+caseSetUp.tkn <- lapply(nitro, trendSetUp, year1 = 1980, year2 = 2007, # TODO: set all to 2018 except S151 (2007)
                     nBoot = 50, min = 100, blockLength = 200,
                     bootBreak = 100)
-eBoot.tkn <- mapLists(wBt, nitro, caseSetUp.tkn)
+eBoot.tkn <- mapLists(wBT, nitro, caseSetUp.tkn)
 CIAnnualResults.tkn <- lapply(nitro, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
 
-mapLists(plotConcHistBoot, nitro, CIAnnualResults.tkn, yearStart = 1980, concMax = 0.08)
+mapLists(plotConcHistBoot, nitro, CIAnnualResults.tkn, yearStart = 1980)
 mapLists(plotFluxHistBoot, nitro, CIAnnualResults.tkn, yearStart = 1980)
 
 #Concentration an initial run:
