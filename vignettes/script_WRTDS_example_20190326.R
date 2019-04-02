@@ -448,7 +448,7 @@ caseSetUp.na <- lapply(sodium, trendSetUp, year1 = 1980, year2 = 2007,
 eBoot.na <- mapLists(wBT, sodium, caseSetUp.na)
 CIAnnualResults.na <- lapply(sodium, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
 
-mapLists(plotConcHistBoot, sodium, CIAnnualResults.na, yearStart = 1980, concMax = 0.08)
+mapLists(plotConcHistBoot, sodium, CIAnnualResults.na, yearStart = 1980)
 mapLists(plotFluxHistBoot, sodium, CIAnnualResults.na, yearStart = 1980)
 
 #Concentration an initial run:
