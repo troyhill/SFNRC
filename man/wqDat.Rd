@@ -23,7 +23,7 @@ Data: DataForEver water quality data for northern boundary of Everglades Nationa
 }
 \examples{
 \dontrun{
-### build the object using dfe.wq():
+### build the object using getWQ():
 targetStations <- c("COOPERTN", "FROGCITY", "G311", "G342A", "G342B", "G342C", 
 "G342D", "G344A", "G344B", "G344C", "G344D", "G344E", "G344F", 
 "G344G", "G344H", "G344I", "G344J", "G344K", "G352A", "G352B", 
@@ -46,13 +46,15 @@ targetStations <- c("COOPERTN", "FROGCITY", "G311", "G342A", "G342B", "G342C",
 "S22", "S25", "S25A", "S25B", "S26", # central
 "S27", "S28", "S29", # from SWIM plan - north biscayne bay
 "G58", "S700", "G93", # new structures since SWIM plan?
-"S123",  "S21A", "S21", "S20", "S20F", "S20G", "S197"))
+"S123",  "S21A", "S21", "S20", "S20F", "S20G",
+"S333", "S12A", "S12B", "S12C", "S12D", "S151")
 
 testDat <- getWQ(stns = targetStations)
-
-
+ 
 ### export to .csv: 
 write.csv(testDat, file = file.path(tempdir(), "wqDat.csv"))
+# wqDat <- testDat
+# save(wqDat, file = "/home/thill/RDATA/git-repos/SFNRC/data/wqDat.RData")
 }
 head(wqDat)
 

@@ -29,7 +29,19 @@ This function is tailored specifically for DERM datasets.
 }
 \examples{
 \dontrun{
-head(procDERM())
+a <- procDERM()
+head(a)
+
+### merge two DERM datasets, keeping duplicates that appear in the more recent dataset
+b <- procDERM(filename = "/opt/physical/troy/RDATA/biscayne/data/data_DERM_20190401.txt")
+
+a$id <- paste(a$datetime, a$stn, a$param, sep = "-")
+b$id <- paste(b$datetime, b$stn, b$param, sep = "-")
+
+bbDat <- rbind(b, a[!a$id \%in\% b$id, ])
+
+# write.csv(bbDat, file = "/opt/physical/troy/RDATA/biscayne/data_for_Donatto_DERM.csv")
+
 }
 
 }

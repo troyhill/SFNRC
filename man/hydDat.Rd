@@ -44,11 +44,15 @@ targetStns <- c("AC01", "BB02", "BB04", "BB05A", "BB06", "BB09", "BB10", "BB11",
 "UPKEYS202", "UPKEYS203", "UPKEYS204", "UPKEYS205", "UPKEYS206", 
 "UPKEYS207", "UPKEYS208", "UPKEYS210", "S20", "S20F", "S20G", 
 "S21A", "S21", "S22", "S25", "S25A", "S25B", "S26", "S27", "S28", 
-"G58", "S700", "G93", "S123", "S197")
+"G58", "S700", "G93", "S123", "S197",
+"S333", "S12A", "S12B", "S12C", "S12D", "S151")
 
 hydDat <- getHydro(stns = targetStns, # c(as.character(dfrInBay$stn), structs), 
 parameter_list = c("flow", "head_water", "salinity", "temperature", "tail_water", 
 "stage", "rainfall", "precipitation", "ppt"), data_shape = "wide")
+
+# save(hydDat, file = "/home/thill/RDATA/git-repos/SFNRC/data/hydDat.RData")
+
 }
 
 head(hydDat)

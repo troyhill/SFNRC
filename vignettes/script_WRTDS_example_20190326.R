@@ -16,18 +16,33 @@ mapLists <- function(fns = plotConcHistBoot, list1 = tp, list2 = CIAnnualResults
   list2, ...
 )
 
+ciCalculations.parallel <- function(eList, probs = probs, clusterObject = cl, nBoot = 100, blockLength = 200, widthCI = 90, seed_var = 23, ...) {
+  registerDoParallel(clusterObject)
+  repAnnual <- foreach(n = 1:nBoot,.packages=c('EGRETci')) %dopar% {
+    annualResults <- bootAnnual(eList, 
+                                blockLength,
+                                startSeed = seed_var)  
+  }
+  stopCluster(clusterObject)   
+  
+  ciBands(eList, repAnnual, probs)
+  
+}
+
 
 QCdateColors <- c("gray85", "gray60", "black")
 
 nCores <- parallel::detectCores() - 1
-seed   <- 23
+seed_var <- seed   <- 23
 nBoot_var <- 100
-blockLength <- 200
+blockLength_var <- 200
+
 coreOut <- 1 #Number of cores to leave out of processing tasks
 widthCI <- 90
 ciLower <- (50-(widthCI/2))/100
 ciUpper <- (50+(widthCI/2))/100
 probs <- c(ciLower,ciUpper)
+WaterYearStart <- 10 # October
 
 # TP -----------------------------------------------------------
 
@@ -46,7 +61,7 @@ tp <- lapply(targStns, function(stnSelect)
 stopCluster(cl)
 
 ### set water year (default is 10, 12)
-tp <- lapply(tp, setPA, paStart = 04, paLong = 12)
+tp <- lapply(tp, setPA, paStart = WaterYearStart, paLong = 12)
 
 # diagnostics
 lapply(tp, plotConcPred)
@@ -60,11 +75,11 @@ lapply(tp, plotConcHist, concMax = 0.04, yearStart = 1978)
 lapply(tp, plotFluxHist, fluxMax = 0.016, yearStart = 1978)
 
 caseSetUp <- mapLists(trendSetUp, tp, year2 = list(2018, 2018, 2018, 2018, 2018, 2013), year1 = 1980, 
-         nBoot = nBoot_var, min = 100, blockLength = 200,
+         nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
          bootBreak = 100)
 
 # lapply(tp, trendSetUp, year1 = 1980, year2 = 2014, 
-#        nBoot = nBoot_var, min = 100, blockLength = 200,
+#        nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
 #        bootBreak = 100)
 
 ### an attempt to batch process confidence intervals for all stations
@@ -82,16 +97,19 @@ eBoot <- Map(
   arg2
 )
 
-CIAnnualResults <- lapply(tp, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
-
+CIAnnualResults <- lapply(tp, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90) # 1.66 hours for nBoot = 10
+# b <- Sys.time()
+# CIAnnualResults2 <- lapply(tp, ciCalculations.parallel, nBoot = 10)
+# c <- Sys.time()
 
 mapLists()
 mapLists(plotConcHistBoot, tp, CIAnnualResults, yearStart = 1980, concMax = 0.08)
 mapLists(plotFluxHistBoot, tp, CIAnnualResults, yearStart = 1980)
 
 #Concentration an initial run:
+# dashed line = ordinary WRTDS estimate of trend magnitude (approximates the median value for bootstrap replicates)
+mapLists(plotHistogramTrend, tp, eBoot, caseSetUp, flux = FALSE) #, xStep = 10, xMin = -100, xMax = 100)
 mapLists(plotHistogramTrend, tp, eBoot, caseSetUp, flux = TRUE)
-mapLists(plotHistogramTrend, tp, eBoot, caseSetUp, flux = FALSE)
 
 
 # registerDoParallel(cl)
@@ -238,7 +256,7 @@ nitro <- lapply(targStns, function(stnSelect)
 stopCluster(cl)
 
 ### set water year (default is 10, 12)
-nitro <- lapply(nitro, setPA, paStart = 04, paLong = 12)
+nitro <- lapply(nitro, setPA, paStart = WaterYearStart, paLong = 12)
 
 # diagnostics
 lapply(nitro, plotConcPred)
@@ -263,14 +281,14 @@ lapply(nitro, plotConcQSmooth, date1, date2, date3,  qLow = 1, qTop,
 
 
 caseSetUp.tkn <- mapLists(trendSetUp, nitro, year2 = list(2018, 2018, 2015, 2015, 2007, 2013), year1 = 1980, 
-         nBoot = nBoot_var, min = 100, blockLength = 200,
+         nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
          bootBreak = 100)
 # lapply(nitro, trendSetUp, year1 = 1980, year2 = 2007, # TODO: set all to 2018 except S151 (2007)
-#        nBoot = 50, min = 100, blockLength = 200,
+#        nBoot = 50, min = 100, blockLength = blockLength_var,
 #        bootBreak = 100)
 
 eBoot.tkn <- mapLists(wBT, nitro, caseSetUp.tkn)
-CIAnnualResults.tkn <- lapply(nitro, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
+CIAnnualResults.tkn <- lapply(nitro, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90)
 
 mapLists(plotConcHistBoot, nitro, CIAnnualResults.tkn, yearStart = 1980)
 mapLists(plotFluxHistBoot, nitro, CIAnnualResults.tkn, yearStart = 1980)
@@ -297,7 +315,7 @@ Ca <- lapply(targStns, function(stnSelect)
 stopCluster(cl)
 
 ### set water year (default is 10, 12)
-Ca <- lapply(Ca, setPA, paStart = 04, paLong = 12)
+Ca <- lapply(Ca, setPA, paStart = WaterYearStart, paLong = 12)
 
 # diagnostics
 lapply(Ca, plotConcPred)
@@ -312,15 +330,15 @@ lapply(Ca, plotFluxHist, fluxMax = 200, yearStart = 1980)
 
 
 # caseSetUp.ca <- lapply(Ca, trendSetUp, year1 = 1980, year2 = 2007, 
-#                         nBoot = 50, min = 100, blockLength = 200,
+#                         nBoot = 50, min = 100, blockLength = blockLength_var,
 #                         bootBreak = 100)
 
 caseSetUp.ca <- mapLists(trendSetUp, Ca, year2 = list(2018, 2018, 2018, 2018, 2007, 2013), year1 = 1980, 
-                       nBoot = nBoot_var, min = 100, blockLength = 200,
+                       nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
                        bootBreak = 100)
 
 eBoot.ca <- mapLists(wBT, Ca, caseSetUp.ca)
-CIAnnualResults.ca <- lapply(Ca, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
+CIAnnualResults.ca <- lapply(Ca, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90)
 
 mapLists(plotConcHistBoot, Ca, CIAnnualResults.ca, yearStart = 1980)
 mapLists(plotFluxHistBoot, Ca, CIAnnualResults.ca, yearStart = 1980)
@@ -371,7 +389,7 @@ ntu <- lapply(targStns, function(stnSelect)
 stopCluster(cl)
 
 ### set water year (default is 10, 12)
-ntu <- lapply(ntu, setPA, paStart = 04, paLong = 12)
+ntu <- lapply(ntu, setPA, paStart = WaterYearStart, paLong = 12)
 
 # diagnostics
 lapply(ntu, plotConcPred)
@@ -382,11 +400,11 @@ lapply(ntu, plotResidQ)
 lapply(ntu, plotConcHist, concMax = NA, yearStart = 1980)
 
 caseSetUp.ntu <- mapLists(trendSetUp, ntu, year2 = list(2018, 2018, 2007, 2007, 2007, 2013), year1 = 1980, 
-         nBoot = nBoot_var, min = 100, blockLength = 200,
+         nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
          bootBreak = 100)
 
 eBoot.ntu <- mapLists(wBT, ntu, caseSetUp.ntu)
-CIAnnualResults.ntu <- lapply(ntu, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
+CIAnnualResults.ntu <- lapply(ntu, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90)
 
 mapLists(plotConcHistBoot, ntu, CIAnnualResults.ntu, yearStart = 1980, concMax = 0.08)
 mapLists(plotFluxHistBoot, ntu, CIAnnualResults.ntu, yearStart = 1980)
@@ -415,7 +433,7 @@ sodium <- lapply(targStns, function(stnSelect)
 stopCluster(cl)
 
 ### set water year (default is 10, 12)
-sodium <- lapply(sodium, setPA, paStart = 04, paLong = 12)
+sodium <- lapply(sodium, setPA, paStart = WaterYearStart, paLong = 12)
 
 # diagnostics
 lapply(sodium, plotConcPred)
@@ -435,20 +453,20 @@ lapply(sodium, plotDiffContours, year0 = 1988,
        maxDiff = 60)
 
 
-lapply(sodium, plotConcQSmooth, date1, date2, date3, qLow = 1, qTop, 
-       concMax= 75,legendTop = 80, legendLeft = 1, colors = QCdateColors)
+# lapply(sodium, plotConcQSmooth, date1, date2, date3, qLow = 1, qTop, 
+#        concMax= 75,legendTop = 80, legendLeft = 1, colors = QCdateColors)
 
-caseSetUp.na <- lapply(sodium, trendSetUp, year1 = 1980, year2 = 2007, 
-                        nBoot = nBoot_var, min = 100, blockLength = 200,
-                        bootBreak = 100)
-# caseSetUp.na <- mapLists(trendSetUp, ntu, year2 = list(2018, 2018, 2018, 2007, 2007, 2013), year1 = 1980, 
-#          nBoot = 50, min = 100, blockLength = 200,
-#          bootBreak = 100)
+# caseSetUp.na <- lapply(sodium, trendSetUp, year1 = 1980, year2 = 2007, 
+#                         nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
+#                         bootBreak = 100)
+caseSetUp.na <- mapLists(trendSetUp, sodium, year2 = list(2018, 2018, 2018, 2018, 2007, 2013), year1 = 1980,
+         nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
+         bootBreak = 100)
 
 eBoot.na <- mapLists(wBT, sodium, caseSetUp.na)
-CIAnnualResults.na <- lapply(sodium, ciCalculations, nBoot = 10, blockLength = 200, widthCI = 90)
+CIAnnualResults.na <- lapply(sodium, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90)
 
-mapLists(plotConcHistBoot, sodium, CIAnnualResults.na, yearStart = 1980)
+mapLists(plotConcHistBoot, sodium, CIAnnualResults.na, yearStart = 1980, concMax = 80)
 mapLists(plotFluxHistBoot, sodium, CIAnnualResults.na, yearStart = 1980)
 
 #Concentration an initial run:
