@@ -26,10 +26,10 @@
 #' # flow_dat <- hydDat[hydDat$stn %in% targStn, ]
 #' 
 #' eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
-#'      wq_data = wqDat, flow_data = hydDat)
+#'      wq_data = wqDat, flow_data = hydDat, verbose = FALSE)
 
 convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL, interact = FALSE,
-                           paStart = 10, paLong = 12, watershedKm = 1, removeNegativeFlow = TRUE) {
+                           paStart = 10, paLong = 12, watershedKm = 1, removeNegativeFlow = TRUE, ...) {
   ### function converts DataForEver data to EGRET format for WRTDS analysis
   
   stn <- toupper(stn)
@@ -87,6 +87,6 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   
   ### merge them
   eList_orig <- EGRET::mergeReport(INFO = INFO.data, Daily = flow.daily, Sample = Sample.data,
-                                   surfaces = NA, verbose = interact)
+                                   surfaces = NA, verbose = interact, ...)
   eList_orig
 }
