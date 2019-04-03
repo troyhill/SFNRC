@@ -87,6 +87,6 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   
   ### merge them
   eList_orig <- EGRET::mergeReport(INFO = INFO.data, Daily = flow.daily, Sample = Sample.data,
-                                   surfaces = NA, verbose = interact, ...)
+                                   surfaces = NA, ...)
   eList_orig
 }
