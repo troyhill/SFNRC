@@ -9,3 +9,4 @@
 ^data\\a\.RData$
 ^R\\modelEstimation\.R$
 ^vignettes\\*\.R$
+^vignettes\\*\.Rmd$
