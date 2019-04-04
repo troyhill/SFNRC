@@ -1,3 +1,4 @@
+^temp\.txt$
 ^vignettes\DataForEver\.Rmd$
 ^vignettes/DataForEver\.Rmd$
 ^vignettes$
