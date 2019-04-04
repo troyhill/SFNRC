@@ -15,7 +15,7 @@ convertToEgret(stn, target_analyte, wq_data = NULL, flow_data = NULL,
 
 \item{wq_data}{water quality dataframe. Product of \code{\link{getWQ}}}
 
-\item{flow_data}{flow dataframe. Product of \code{\link{getHydro}}}
+\item{flow_data}{flow dataframe. Product of \code{\link{getHydro}}. If set to NA, a dataframe of flow = 1.1 m3/s is created and used for analysis. This workaround is designed to allow WRTDS on stations without discharge data (e.g., open-water stations) but may not be mathematically sound.}
 
 \item{interact}{logical Option for interactive mode. If true, there is user interaction for error handling and data checks. FALSE by default}
 
@@ -44,6 +44,17 @@ targAnalyte <- "PHOSPHATE, TOTAL AS P"
 # flow_dat <- hydDat[hydDat$stn \%in\% targStn, ]
 \dontrun{ # 20190404: this example causes Appveyor to fail
 eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
-     wq_data = wqDat, flow_data = hydDat, verbose = FALSE)
+     wq_data = wqDat, flow_data = hydDat)
+     
+eList_NA <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
+     wq_data = wqDat, flow_data = NA)
+
+est        <- modelEstimation(eList)
+est_woFlow <- modelEstimation(eList_NA)
+
+### not quite the same
+plotConcPred(est)
+plotConcPred(est_woFlow)
+     
      }
 }

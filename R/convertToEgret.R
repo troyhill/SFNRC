@@ -3,7 +3,7 @@
 #' @param stn target station. Not case-sensitive.
 #' @param target_analyte Water quality parameter of interest. Internally converted to R-friendly form (no commas, hyphens, spaces).
 #' @param wq_data water quality dataframe. Product of \code{\link{getWQ}}
-#' @param flow_data flow dataframe. Product of \code{\link{getHydro}}
+#' @param flow_data flow dataframe. Product of \code{\link{getHydro}}. If set to NA, a dataframe of flow = 1.1 m3/s is created and used for analysis. This workaround is designed to allow WRTDS on stations without discharge data (e.g., open-water stations) but may not be mathematically sound. 
 #' @param interact logical Option for interactive mode. If true, there is user interaction for error handling and data checks. FALSE by default
 #' @param paStart Starting month of period of analysis. Defaults to 10. Used in most EGRET functions
 #' @param paLong Length in number of months of period of analysis. Defaults to 12. Used in most EGRET functions
@@ -27,7 +27,18 @@
 #' # flow_dat <- hydDat[hydDat$stn %in% targStn, ]
 #' \dontrun{ # 20190404: this example causes Appveyor to fail
 #' eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
-#'      wq_data = wqDat, flow_data = hydDat, verbose = FALSE)
+#'      wq_data = wqDat, flow_data = hydDat)
+#'      
+#' eList_NA <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
+#'      wq_data = wqDat, flow_data = NA)
+#'
+#' est        <- modelEstimation(eList)
+#' est_woFlow <- modelEstimation(eList_NA)
+#' 
+#' ### not quite the same
+#' plotConcPred(est)
+#' plotConcPred(est_woFlow)
+#'      
 #'      }
 
 convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL, interact = FALSE,
@@ -43,12 +54,36 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   if (is.null(wq_data)) {
     wq_data     <- data.frame(getWQ(stns = stn, target_analytes = target_analyte, rFriendlyParamNames = TRUE))
   }
-  if (is.null(flow_data)) {
-    flow_data   <- data.frame(getHydro(stns = stn, parameter_list = "flow", data_shape = "wide"))
-  }
   wq_data$param <- gsub(x = wq_data$param, pattern = " |,", replacement = "")
   wq_data$param <- gsub(x = wq_data$param, pattern = "-|[+]", replacement = ".")
   wq_data       <- data.frame(wq_data[(wq_data$stn %in% stn) & (wq_data$param %in% target_analyte), ])
+  ### prep sample dataframe (water quality data)
+  # ConcLow	 numeric	 Lower limit of concentration
+  # ConcHigh	 numeric	 Upper limit of concentration
+  # Uncen	 integer	 Uncensored data (1=TRUE, 0=FALSE)
+  wq_data$dateTime <- as.Date(wq_data$date) # non-integers were produced when using as.character(as.Date(wq_data$date))
+  wq_data$ConcLow  <- wq_data$ConcHigh <- wq_data$ConcAve <- wq_data$value  # area for improvement
+  wq_data$Uncen    <- 1 # area for improvement
+  Sample.data      <- EGRET::populateSampleColumns(rawData = wq_data)
+  
+  
+  
+  if (is.null(flow_data)) {
+    flow_data   <- data.frame(getHydro(stns = stn, parameter_list = "flow", data_shape = "wide"))
+  }
+  if (length(flow_data) == 1 && is.na(flow_data)) { 
+    # for open-water stations with no discharge, create a series of flow = 1 for every day covering 
+    # time span of water quality data
+    dateVector_tmp <- unique(wq_data[(wq_data$stn %in% stn) & (wq_data$param %in% target_analyte), "date"])
+    dateVector <- seq(from = min(dateVector_tmp, na.rm = TRUE), to = max(dateVector_tmp, na.rm = TRUE), by = "day")
+    flow_data <- data.frame(stn = rep(stn, times = length(dateVector)),
+                            date = dateVector, 
+                            flow = rep(0.001, times = length(dateVector)), # negligible but positive flow
+                            year = substr(as.character(dateVector), 1, 4),
+                            mo   = substr(as.character(dateVector), 6, 7),
+                            day  = substr(as.character(dateVector), 9, 10)
+                            ) 
+  }
   flow_data     <- data.frame(flow_data[flow_data$stn %in% stn, ])
   
   ### EGRET doesn't support negative flow days - remove them here and announce to user
@@ -74,21 +109,12 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   flow.daily         <- EGRET::populateDaily(rawData = flow_data, qConvert = 1/0.0283168, 
                                              verbose = interact) # convert cubic feet per second to cubic meters per second
   
-  ### prep sample dataframe (water quality data)
-  # ConcLow	 numeric	 Lower limit of concentration
-  # ConcHigh	 numeric	 Upper limit of concentration
-  # Uncen	 integer	 Uncensored data (1=TRUE, 0=FALSE)
-  wq_data$dateTime <- as.Date(wq_data$date) # non-integers were produced when using as.character(as.Date(wq_data$date))
-  wq_data$ConcLow  <- wq_data$ConcHigh <- wq_data$ConcAve <- wq_data$value  # area for improvement
-  wq_data$Uncen    <- 1 # area for improvement
-  Sample.data      <- EGRET::populateSampleColumns(rawData = wq_data)
-  
   ### generate INFO metadata 
   INFO.data <- createInfo(wq_data = wq_data, paStart = paStart, # see output for ?EGRET::INFOdataframe. starting month for analysis
                           paLong = paLong, watershedKm = watershedKm)
   
   ### merge them
   eList_orig <- EGRET::mergeReport(INFO = INFO.data, Daily = flow.daily, Sample = Sample.data,
-                                   surfaces = NA, ...)
+                                   surfaces = NA, verbose = interact)
   eList_orig
 }
