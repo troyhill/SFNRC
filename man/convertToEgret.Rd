@@ -26,6 +26,8 @@ convertToEgret(stn, target_analyte, wq_data = NULL, flow_data = NULL,
 \item{watershedKm}{Watershed area in km2, used to calculate runoff. Defaults to 1}
 
 \item{removeNegativeFlow}{logical, defaults to TRUE. Indicates whether negative flow data should be removed during pre-processing. EGRET tools do not accommodate negative flows.}
+
+\item{...}{additional arguments sent to EGRET::mergeReport}
 }
 \value{
 a list as created by \code{\link[EGRET]{mergeReport}}

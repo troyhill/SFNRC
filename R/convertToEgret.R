@@ -9,6 +9,7 @@
 #' @param paLong Length in number of months of period of analysis. Defaults to 12. Used in most EGRET functions
 #' @param watershedKm Watershed area in km2, used to calculate runoff. Defaults to 1
 #' @param removeNegativeFlow logical, defaults to TRUE. Indicates whether negative flow data should be removed during pre-processing. EGRET tools do not accommodate negative flows.
+#' @param ... additional arguments sent to EGRET::mergeReport
 #' 
 #' @return a list as created by \code{\link[EGRET]{mergeReport}}
 #' @export

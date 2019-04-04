@@ -8,6 +8,6 @@
 ^.*\.Rproj$
 ^data\\a\.RData$
 ^R\\modelEstimation\.R$
-^vignettes\\R$
-^vignettes\\Rmd$
-^vignettes\\pdf$
+^vignettes\\.*\.R$
+^vignettes\\.*\.Rmd$
+^vignettes\\.*\.pdf$
