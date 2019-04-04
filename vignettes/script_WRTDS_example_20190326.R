@@ -472,3 +472,13 @@ mapLists(plotFluxHistBoot, sodium, CIAnnualResults.na, yearStart = 1980)
 #Concentration an initial run:
 mapLists(plotHistogramTrend, sodium, eBoot.na, caseSetUp.na, flux = TRUE)
 mapLists(plotHistogramTrend, sodium, eBoot.na, caseSetUp.na, flux = FALSE)
+
+
+
+
+# Open-water station  -----------------------------------------------------
+### sampling isn't frequent enough...
+# nrow(finDat[(finDat$stn %in% "BL02") & (finDat$param %in% "CHLOROPHYLL-A"), ])
+
+eList_BB <- modelEstimation(convertToEgret(stn = "TPBBSW-1B", target_analyte = "PHOSPHATE, ORTHO AS P",
+                           wq_data = finDat, flow_data = NA))
