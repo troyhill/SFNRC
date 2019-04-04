@@ -6,7 +6,7 @@
 \usage{
 convertToEgret(stn, target_analyte, wq_data = NULL, flow_data = NULL,
   interact = FALSE, paStart = 10, paLong = 12, watershedKm = 1,
-  removeNegativeFlow = TRUE)
+  removeNegativeFlow = TRUE, ...)
 }
 \arguments{
 \item{stn}{target station. Not case-sensitive.}
@@ -42,5 +42,5 @@ targAnalyte <- "PHOSPHATE, TOTAL AS P"
 # flow_dat <- hydDat[hydDat$stn \%in\% targStn, ]
 
 eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
-     wq_data = wqDat, flow_data = hydDat)
+     wq_data = wqDat, flow_data = hydDat, verbose = FALSE)
 }
