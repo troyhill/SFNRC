@@ -14,7 +14,7 @@ Install the SFNRC R package from GitHub using the following commands in the R co
 
 ```r
 install.packages("devtools")
-devtools::install_github("troyhill/SFNRC", build_vignettes = TRUE)
+devtools::install_github("troyhill/SFNRC")
 
 library(SFNRC)
 ```

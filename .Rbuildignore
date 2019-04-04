@@ -1,3 +1,6 @@
+^vignettes\DataForEver\.Rmd$
+^vignettes/DataForEver\.Rmd$
+^vignettes$
 ^codecov\.yml$
 ^appveyor\.yml$
 ^\.travis\.yml$
