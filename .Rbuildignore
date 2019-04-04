@@ -1,6 +1,7 @@
 ^vignettes\DataForEver\.Rmd$
 ^vignettes/DataForEver\.Rmd$
 ^vignettes$
+^.*\\.txt$
 ^codecov\.yml$
 ^appveyor\.yml$
 ^\.travis\.yml$

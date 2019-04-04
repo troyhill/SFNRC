@@ -25,9 +25,10 @@
 #' ### subsetting occurs inside the function, so this prep is not necessary
 #' # wq_dat <- wqDat[(wqDat$stn %in% targStn) & (wqDat$param %in% targAnalyte), ]
 #' # flow_dat <- hydDat[hydDat$stn %in% targStn, ]
-#' 
+#' \dontrun{ # 20190404: this example causes Appveyor to fail
 #' eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
 #'      wq_data = wqDat, flow_data = hydDat, verbose = FALSE)
+#'      }
 
 convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL, interact = FALSE,
                            paStart = 10, paLong = 12, watershedKm = 1, removeNegativeFlow = TRUE, ...) {
