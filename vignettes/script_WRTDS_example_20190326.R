@@ -55,6 +55,13 @@ targAnalyte <- "PHOSPHATE, TOTAL AS P"
 # wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), ]
 wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), "value"] <- NA
 
+a <- convertToEgret(stn = targStns[2], target_analyte = targAnalyte, 
+               wq_data = wqDat, flow_data = hydDat)
+
+tp <- lapply(targStns, function(stnSelect) convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
+                                 wq_data = wqDat, flow_data = hydDat))
+
+
 cl <- makePSOCKcluster(nCores)
 registerDoParallel(cl)
 tp <- lapply(targStns, function(stnSelect) 
@@ -347,7 +354,7 @@ caseSetUp.ca <- mapLists(trendSetUp, Ca, year2 = list(2018, 2018, 2018, 2018, 20
                        nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
                        bootBreak = 100)
 
-eBoot.ca <- mapLists(wBT, Ca, caseSetUp.ca)
+eBoot.ca <- mapLists(wBT, Ca, caseSetUp.ca) # S12C flux trend is NA wtf
 closeAllConnections()
 CIAnnualResults.ca <- lapply(Ca, ciCalculations, nBoot = nBoot_CI, blockLength = blockLength_var, widthCI = 90)
 closeAllConnections()
