@@ -2,9 +2,10 @@
 ### Application of EGRET tools to DataForEver data
 
 # library(plyr)
+library(SFNRC)
+library(EGRET)
 library(EGRETci)
 library(doParallel)
-library(SFNRC)
 
 mapLists <- function(fns = plotConcHistBoot, list1 = tp, list2 = CIAnnualResults, ...) Map(
   function(fn, value1, value2, ...)
@@ -35,6 +36,7 @@ QCdateColors <- c("gray85", "gray60", "black")
 nCores <- parallel::detectCores() - 1
 seed_var <- seed   <- 23
 nBoot_var <- 100
+nBoot_CI  <- 50
 blockLength_var <- 200
 
 coreOut <- 1 #Number of cores to leave out of processing tasks
@@ -100,7 +102,7 @@ eBoot <- Map(
 )
 
 closeAllConnections()
-CIAnnualResults <- lapply(tp, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90) # 1.66 hours for nBoot = 10
+CIAnnualResults <- lapply(tp, ciCalculations, nBoot = nBoot_CI, blockLength = blockLength_var, widthCI = 90) # 1.66 hours for nBoot = 10
 closeAllConnections()
 
 
@@ -293,9 +295,9 @@ caseSetUp.tkn <- mapLists(trendSetUp, nitro, year2 = list(2018, 2018, 2015, 2015
 #        nBoot = 50, min = 100, blockLength = blockLength_var,
 #        bootBreak = 100)
 
-eBoot.tkn <- mapLists(wBT, nitro, caseSetUp.tkn) # S333 deserves attention - odd behavior
+eBoot.tkn <- mapLists(wBT, nitro, caseSetUp.tkn) # S333 and S12C deserve attention - odd behavior - Flux value/post_p returns NA trends after 30 runs
 closeAllConnections()
-CIAnnualResults.tkn <- lapply(nitro, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90)
+CIAnnualResults.tkn <- lapply(nitro, ciCalculations, nBoot = nBoot_CI, blockLength = blockLength_var, widthCI = 90)
 closeAllConnections()
 
 mapLists(plotConcHistBoot, nitro, CIAnnualResults.tkn, yearStart = 1980)
@@ -347,7 +349,7 @@ caseSetUp.ca <- mapLists(trendSetUp, Ca, year2 = list(2018, 2018, 2018, 2018, 20
 
 eBoot.ca <- mapLists(wBT, Ca, caseSetUp.ca)
 closeAllConnections()
-CIAnnualResults.ca <- lapply(Ca, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90)
+CIAnnualResults.ca <- lapply(Ca, ciCalculations, nBoot = nBoot_CI, blockLength = blockLength_var, widthCI = 90)
 closeAllConnections()
 
 mapLists(plotConcHistBoot, Ca, CIAnnualResults.ca, yearStart = 1980)
@@ -415,7 +417,7 @@ caseSetUp.ntu <- mapLists(trendSetUp, ntu, year2 = list(2018, 2018, 2007, 2007, 
 
 eBoot.ntu <- mapLists(wBT, ntu, caseSetUp.ntu)
 closeAllConnections()
-CIAnnualResults.ntu <- lapply(ntu, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90)
+CIAnnualResults.ntu <- lapply(ntu, ciCalculations, nBoot = nBoot_CI, blockLength = blockLength_var, widthCI = 90)
 closeAllConnections()
 
 mapLists(plotConcHistBoot, ntu, CIAnnualResults.ntu, yearStart = 1980, concMax = 0.08)
@@ -476,6 +478,7 @@ caseSetUp.na <- mapLists(trendSetUp, sodium, year2 = list(2018, 2018, 2018, 2018
          bootBreak = 100)
 
 eBoot.na <- mapLists(wBT, sodium, caseSetUp.na)
+closeAllConnections()
 CIAnnualResults.na <- lapply(sodium, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90)
 closeAllConnections()
 
