@@ -55,13 +55,6 @@ targAnalyte <- "PHOSPHATE, TOTAL AS P"
 # wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), ]
 wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), "value"] <- NA
 
-a <- convertToEgret(stn = targStns[2], target_analyte = targAnalyte, 
-               wq_data = wqDat, flow_data = hydDat)
-
-tp <- lapply(targStns, function(stnSelect) convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
-                                 wq_data = wqDat, flow_data = hydDat))
-
-
 cl <- makePSOCKcluster(nCores)
 registerDoParallel(cl)
 tp <- lapply(targStns, function(stnSelect) 
