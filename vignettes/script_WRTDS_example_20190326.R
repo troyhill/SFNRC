@@ -559,3 +559,32 @@ for(i in 1:length(sodium)) {
 }
 
              
+
+# simulate S12 operations - TP concentrations -----------------------------
+daily <- lapply(tp, getDaily)
+
+for( i in seq_along(daily)){
+  daily[[i]]$stn <- targStns[i]
+}
+
+
+
+daily <- join_all(daily, by = c("Date"))
+head(daily)
+
+stn.nos <- grep(names(daily), pattern = "stn")
+for (i in 1:length(targStns)) {
+  if (i == 1) {
+    start.point <- 2
+    end.point <- stn.nos[i]
+  } else {
+    start.point <- stn.nos[i - 1] + 1
+    end.point <- stn.nos[i]
+  }
+  names(daily)[start.point:end.point] <- paste0(names(daily)[start.point:end.point], targStns[i])
+}
+
+# plot
+resh1 <- reshape2::melt(daily, id.vars = stn.nos, measure.vars = grep(names(daily), pattern = "ConcDay"))
+
+boxplot1 <- ggplot()
