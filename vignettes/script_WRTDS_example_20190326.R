@@ -585,6 +585,6 @@ for (i in 1:length(targStns)) {
 }
 
 # plot
-resh1 <- reshape2::melt(daily, id.vars = stn.nos, measure.vars = grep(names(daily), pattern = "ConcDay"))
+resh1 <- reshape2::melt(daily, id.vars = Date, measure.vars = grep(names(daily), pattern = "ConcDay"))
 
 boxplot1 <- ggplot()
