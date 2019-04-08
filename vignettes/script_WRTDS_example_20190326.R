@@ -549,11 +549,11 @@ for(i in 1:length(ntu)) {
 
 for(i in 1:length(sodium)) {
   par(mar = c(1, 1, 1, 0.5), fig = c(0,1,0,1))
-  png(filename = paste0("Ca_conc_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  png(filename = paste0("Na_conc_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
   plotConcHistBoot(sodium[[i]], CIAnnualResults.na[[i]], yearStart = 1980, concMax = 80, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
   dev.off()
   par(mar = c(2, 2, 2, 0.5), fig = c(0,1,0,1))
-  png(filename = paste0("Ca_flux_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  png(filename = paste0("Na_flux_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
   plotFluxHistBoot(sodium[[i]], CIAnnualResults.na[[i]], yearStart = 1980, fluxMax = 50, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
   dev.off()
 }
