@@ -129,6 +129,7 @@ mapLists()
 mapLists(plotConcHistBoot, tp, CIAnnualResults, yearStart = 1980, concMax = 0.08)
 mapLists(plotFluxHistBoot, tp, CIAnnualResults, yearStart = 1980)
 
+             
 #Concentration an initial run:
 # dashed line = ordinary WRTDS estimate of trend magnitude (approximates the median value for bootstrap replicates)
 mapLists(plotHistogramTrend, tp, eBoot, caseSetUp, flux = FALSE) #, xStep = 10, xMin = -100, xMax = 100)
@@ -514,3 +515,94 @@ t.tot <-  Sys.time() - t.start
 eList_BB <- modelEstimation(convertToEgret(stn = "TPBBSW-1B", target_analyte = "PHOSPHATE, ORTHO AS P",
                            wq_data = finDat, flow_data = NA))
 
+<<<<<<< HEAD
+=======
+                 
+# Figures  -----------------------------------------------------                 
+
+wid <- 4
+hgt <- 3.5
+
+for(i in 1:length(tp)) {
+  par(mar = c(1, 1, 1, 0.5), fig = c(0,1,0,1))
+  png(filename = paste0("TP_conc_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  plotConcHistBoot(tp[[i]], CIAnnualResults[[i]], yearStart = 1980, concMax = 0.04, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
+  dev.off()
+  par(mar = c(2, 2, 2, 0.5), fig = c(0,1,0,1))
+  png(filename = paste0("TP_flux_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  plotFluxHistBoot(tp[[i]], CIAnnualResults[[i]], yearStart = 1980, fluxMax = 0.016, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
+  dev.off()
+}
+
+for(i in 1:length(nitro)) {
+  par(mar = c(1, 1, 1, 0.5), fig = c(0,1,0,1))
+  png(filename = paste0("TKN_conc_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  plotConcHistBoot(nitro[[i]], CIAnnualResults.tkn[[i]], yearStart = 1980, concMax = 2.5, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
+  dev.off()
+  par(mar = c(2, 2, 2, 0.5), fig = c(0,1,0,1))
+  png(filename = paste0("TKN_flux_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  plotFluxHistBoot(nitro[[i]], CIAnnualResults.tkn[[i]], yearStart = 1980, fluxMax = 1.4, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
+  dev.off()
+}
+                 
+for(i in 1:length(Ca)) {
+  par(mar = c(1, 1, 1, 0.5), fig = c(0,1,0,1))
+  png(filename = paste0("Ca_conc_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  plotConcHistBoot(Ca[[i]], CIAnnualResults.ca[[i]], yearStart = 1980, concMax = 300, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
+  dev.off()
+  par(mar = c(2, 2, 2, 0.5), fig = c(0,1,0,1))
+  png(filename = paste0("Ca_flux_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  plotFluxHistBoot(Ca[[i]], CIAnnualResults.ca[[i]], yearStart = 1980, fluxMax = 180, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
+  dev.off()
+}
+
+for(i in 1:length(ntu)) {
+  par(mar = c(1, 1, 1, 0.5), fig = c(0,1,0,1))
+  png(filename = paste0("NTU_conc_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  plotConcHistBoot(ntu[[i]], CIAnnualResults.ntu[[i]], yearStart = 1980, concMax = 4, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
+  dev.off()
+}
+                 
+
+for(i in 1:length(sodium)) {
+  par(mar = c(1, 1, 1, 0.5), fig = c(0,1,0,1))
+  png(filename = paste0("Na_conc_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  plotConcHistBoot(sodium[[i]], CIAnnualResults.na[[i]], yearStart = 1980, concMax = 80, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
+  dev.off()
+  par(mar = c(2, 2, 2, 0.5), fig = c(0,1,0,1))
+  png(filename = paste0("Na_flux_", i, ".png"), width = wid, height = hgt, units = "in", res = 150)
+  plotFluxHistBoot(sodium[[i]], CIAnnualResults.na[[i]], yearStart = 1980, fluxMax = 50, col.pred = "cornflowerblue", cex.axis = 0.9, cex.main = 0.6)
+  dev.off()
+}
+
+             
+
+# simulate S12 operations - TP concentrations -----------------------------
+daily <- lapply(tp, getDaily)
+
+for( i in seq_along(daily)){
+  daily[[i]]$stn <- targStns[i]
+}
+
+
+
+daily <- join_all(daily, by = c("Date"))
+head(daily)
+
+stn.nos <- grep(names(daily), pattern = "stn")
+for (i in 1:length(targStns)) {
+  if (i == 1) {
+    start.point <- 2
+    end.point <- stn.nos[i]
+  } else {
+    start.point <- stn.nos[i - 1] + 1
+    end.point <- stn.nos[i]
+  }
+  names(daily)[start.point:end.point] <- paste0(names(daily)[start.point:end.point], targStns[i])
+}
+
+# plot
+resh1 <- reshape2::melt(daily, id.vars = Date, measure.vars = grep(names(daily), pattern = "ConcDay"))
+
+boxplot1 <- ggplot()
+>>>>>>> 7ab1229df555e33d59cfc4f92c2101e5fd733783
