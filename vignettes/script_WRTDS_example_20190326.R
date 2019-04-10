@@ -7,15 +7,29 @@ library(EGRET)
 library(EGRETci)
 library(doParallel)
 
-mapLists <- function(fns = plotConcHistBoot, list1 = tp, list2 = CIAnnualResults, ...) Map(
-  function(fn, value1, value2, ...)
-  {
-    fn(value1, value2, ...)
-  },
-  list(fns),
-  list1, 
-  list2, ...
-)
+mapLists <- function(fns = plotConcHistBoot, list1 = tp, list2 = CIAnnualResults, ...) {
+  if (!is.null(list2)) {
+    Map(
+    function(fn, value1, value2, ...)
+    {
+      fn(value1, value2, ...)
+    },
+    list(fns),
+    list1, 
+    list2, ...
+  )
+  } else if (is.null(list2)) {
+    Map(
+      function(fn, value1, ...)
+      {
+        fn(value1, ...)
+      },
+      list(fns),
+      list1, 
+      ...
+    )   
+  }
+}
 
 ciCalculations.parallel <- function(eList, probs = probs, clusterObject = cl, nBoot = 100, blockLength = 200, widthCI = 90, seed_var = 23, ...) {
   registerDoParallel(clusterObject)
@@ -30,7 +44,8 @@ ciCalculations.parallel <- function(eList, probs = probs, clusterObject = cl, nB
   
 }
 
-
+t.start <- Sys.time()
+startDate <- 1992 # year of consent decree
 QCdateColors <- c("gray85", "gray60", "black")
 
 nCores <- parallel::detectCores() - 1
@@ -76,7 +91,7 @@ lapply(tp, plotResidQ)
 lapply(tp, plotConcHist, concMax = 0.04, yearStart = 1978)
 lapply(tp, plotFluxHist, fluxMax = 0.016, yearStart = 1978)
 
-caseSetUp <- mapLists(trendSetUp, tp, year2 = list(2018, 2018, 2018, 2017, 2018, 2013), year1 = 1980, 
+caseSetUp <- mapLists(trendSetUp, tp, list2 = NULL, year2 = list(2018, 2018, 2018, 2017, 2018, 2013), year1 = 1980, 
          nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
          bootBreak = 100)
 
@@ -288,7 +303,7 @@ lapply(nitro, plotConcQSmooth, date1, date2, date3,  qLow = 1, qTop,
 
 
 
-caseSetUp.tkn <- mapLists(trendSetUp, nitro, year2 = list(2018, 2018, 2015, 2015, 2007, 2013), year1 = 1980, 
+caseSetUp.tkn <- mapLists(trendSetUp, nitro, list2 = NULL, year2 = list(2018, 2018, 2015, 2015, 2007, 2013), year1 = 1980, 
          nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
          bootBreak = 100)
 # lapply(nitro, trendSetUp, year1 = 1980, year2 = 2007, # TODO: set all to 2018 except S151 (2007)
@@ -343,7 +358,7 @@ lapply(Ca, plotFluxHist, fluxMax = 200, yearStart = 1980)
 #                         nBoot = 50, min = 100, blockLength = blockLength_var,
 #                         bootBreak = 100)
 
-caseSetUp.ca <- mapLists(trendSetUp, Ca, year2 = list(2018, 2018, 2018, 2018, 2007, 2013), year1 = 1980, 
+caseSetUp.ca <- mapLists(trendSetUp, Ca, list2 = NULL, year2 = list(2018, 2018, 2018, 2018, 2007, 2013), year1 = 1980, 
                        nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
                        bootBreak = 100)
 
@@ -411,7 +426,7 @@ lapply(ntu, plotResidQ)
 # figure 1
 lapply(ntu, plotConcHist, concMax = NA, yearStart = 1980)
 
-caseSetUp.ntu <- mapLists(trendSetUp, ntu, year2 = list(2018, 2018, 2007, 2007, 2007, 2013), year1 = 1980, 
+caseSetUp.ntu <- mapLists(trendSetUp, ntu, list2 = NULL, year2 = list(2018, 2018, 2007, 2007, 2007, 2013), year1 = 1980, 
          nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
          bootBreak = 100)
 
@@ -420,7 +435,7 @@ closeAllConnections()
 CIAnnualResults.ntu <- lapply(ntu, ciCalculations, nBoot = nBoot_CI, blockLength = blockLength_var, widthCI = 90)
 closeAllConnections()
 
-mapLists(plotConcHistBoot, ntu, CIAnnualResults.ntu, yearStart = 1980, concMax = 0.08)
+mapLists(plotConcHistBoot, ntu, CIAnnualResults.ntu, yearStart = 1980)
 mapLists(plotFluxHistBoot, ntu, CIAnnualResults.ntu, yearStart = 1980)
 
 #Concentration an initial run:
@@ -473,7 +488,7 @@ lapply(sodium, plotDiffContours, year0 = 1988,
 # caseSetUp.na <- lapply(sodium, trendSetUp, year1 = 1980, year2 = 2007, 
 #                         nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
 #                         bootBreak = 100)
-caseSetUp.na <- mapLists(trendSetUp, sodium, year2 = list(2018, 2018, 2018, 2018, 2007, 2013), year1 = 1980,
+caseSetUp.na <- mapLists(trendSetUp, sodium, list2 = NULL, year2 = list(2018, 2018, 2018, 2018, 2007, 2013), year1 = 1980,
          nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
          bootBreak = 100)
 
@@ -490,7 +505,7 @@ mapLists(plotHistogramTrend, sodium, eBoot.na, caseSetUp.na, flux = TRUE)
 mapLists(plotHistogramTrend, sodium, eBoot.na, caseSetUp.na, flux = FALSE)
 
 
-
+t.tot <-  Sys.time() - t.start
 
 # Open-water station  -----------------------------------------------------
 ### sampling isn't frequent enough...
@@ -498,3 +513,4 @@ mapLists(plotHistogramTrend, sodium, eBoot.na, caseSetUp.na, flux = FALSE)
 
 eList_BB <- modelEstimation(convertToEgret(stn = "TPBBSW-1B", target_analyte = "PHOSPHATE, ORTHO AS P",
                            wq_data = finDat, flow_data = NA))
+
