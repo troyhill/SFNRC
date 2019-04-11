@@ -587,6 +587,31 @@ for(i in 1:length(sodium)) {
   dev.off()
 }
 
+                 
+                 
+png(filename = "boxPlot_S12D.png", width = 5, height = 5.5, units = "in", res = 150)
+boxQTwice(tp[[5]], logScale = TRUE, pars = list(staplewex = 0), cex = 0.5)
+dev.off()
+
+png(filename = "wrtds_conc_S333.png", width = 9, height = 5, units = "in", res = 150)
+plotConcTimeDaily(tp[[1]], concMax = 0.25)
+dev.off()
+
+png(filename = "wrtds_flux_S333.png", width = 9, height = 5, units = "in", res = 150)
+plotFluxTimeDaily(tp[[1]])
+dev.off()
+
+png(filename = "wrtds_plotConcPred_S333.png", width = 5, height = 5.5, units = "in", res = 150)
+plotConcPred(tp[[1]])
+dev.off()
+
+png(filename = "wrtds_plotFluxPred_S333.png", width = 5, height = 5.5, units = "in", res = 150)
+plotFluxPred(tp[[1]])
+dev.off()
+
+png(filename = "wrtds_fluxBiasMulti_S333.png", width = 9, height = 10, units = "in", res = 150)
+fluxBiasMulti(tp[[1]])
+dev.off()
              
 
 # simulate S12 operations - TP concentrations -----------------------------
