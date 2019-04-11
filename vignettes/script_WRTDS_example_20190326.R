@@ -136,7 +136,7 @@ mapLists(plotHistogramTrend, tp, eBoot, caseSetUp, flux = FALSE) #, xStep = 10, 
 mapLists(plotHistogramTrend, tp, eBoot, caseSetUp, flux = TRUE)
 
 
-save(list("tp", "eBoot", "caseSetUp", "CIAnnualResults"), file = paste0("TP_data_", Sys.Date(), ".RData"))
+save("tp", "eBoot", "caseSetUp", "CIAnnualResults", file = paste0("TP_data_", Sys.Date(), ".RData"))
 
 # registerDoParallel(cl)
 # repAnnual <- foreach(n = 1:nBoot, .packages=c('EGRETci')) %dopar% {
@@ -327,7 +327,7 @@ mapLists(plotHistogramTrend, nitro, eBoot.tkn, caseSetUp.tkn, flux = FALSE)
 
 
 
-save(list("nitro", "eBoot.tkn", "caseSetUp.tkn", "CIAnnualResults.tkn"), file = paste0("TKN_data_", Sys.Date(), ".RData"))
+save("nitro", "eBoot.tkn", "caseSetUp.tkn", "CIAnnualResults.tkn", file = paste0("TKN_data_", Sys.Date(), ".RData"))
 
 
 
@@ -386,7 +386,7 @@ mapLists(plotHistogramTrend, Ca, eBoot.ca, caseSetUp.ca, flux = FALSE)
 
 
 
-save(list("Ca", "eBoot.ca", "caseSetUp.ca", "CIAnnualResults.ca"), file = paste0("Ca_data_", Sys.Date(), ".RData"))
+save("Ca", "eBoot.ca", "caseSetUp.ca", "CIAnnualResults.ca", file = paste0("Ca_data_", Sys.Date(), ".RData"))
 
 
 
@@ -458,7 +458,7 @@ lapply(ntu, plotDiffContours, year0 = 1988,
        qTop=30,
        maxDiff = 10)
 
-save(list("ntu", "eBoot.ntu", "caseSetUp.ntu", "CIAnnualResults.ntu"), file = paste0("ntu_data_", Sys.Date(), ".RData"))
+save("ntu", "eBoot.ntu", "caseSetUp.ntu", "CIAnnualResults.ntu", file = paste0("ntu_data_", Sys.Date(), ".RData"))
 
 
 # sodium ------------------------------------------------------------------
@@ -516,7 +516,7 @@ mapLists(plotFluxHistBoot, sodium, CIAnnualResults.na, yearStart = startDate)
 mapLists(plotHistogramTrend, sodium, eBoot.na, caseSetUp.na, flux = TRUE)
 mapLists(plotHistogramTrend, sodium, eBoot.na, caseSetUp.na, flux = FALSE)
 
-save(list("sodium", "eBoot.na", "caseSetUp.na", "CIAnnualResults.na"), file = paste0("Na_data_", Sys.Date(), ".RData"))
+save("sodium", "eBoot.na", "caseSetUp.na", "CIAnnualResults.na", file = paste0("Na_data_", Sys.Date(), ".RData"))
 
 
 
