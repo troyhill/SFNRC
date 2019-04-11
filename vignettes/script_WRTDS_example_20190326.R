@@ -591,15 +591,18 @@ for(i in 1:length(sodium)) {
 
 # simulate S12 operations - TP concentrations -----------------------------
 daily <- lapply(tp, getDaily)
-
 for( i in seq_along(daily)){
   daily[[i]]$stn <- targStns[i]
 }
 
 
 
+daily.long <- rbind.fill(daily)
 daily <- join_all(daily, by = c("Date"))
 head(daily)
+head(daily.long)
+
+ggplot(daily.long, aes(y = ConcDay, x = LogQ, col = stn)) + geom_point() + theme_classic() + xlim(c(1, 5)) + ylim(c(0, 0.09)) + facet_grid(stn ~ Month)
 
 stn.nos <- grep(names(daily), pattern = "stn")
 for (i in 1:length(targStns)) {
