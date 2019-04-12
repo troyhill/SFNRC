@@ -4,4 +4,4 @@
 .Ruserdata
 SFNRC.Rproj
 temp.txt
-./*png
+^.*\\.png$
