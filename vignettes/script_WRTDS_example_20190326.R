@@ -45,10 +45,51 @@ ciCalculations.parallel <- function(eList, probs = probs, clusterObject = cl, nB
 }
 
 
-eBootReport <- function(data = eBoot[[1]]$pConc[eBoot[[1]]$pConc < 100]) {
-  inputDat <- data
-  cat(paste0("Probability of a decreasing trend: ", round(ecdf(inputDat)(0), 2), "\n\n")) # odds of a decline in consituent X
-  summary(inputDat)
+
+eBootReport <- function(data = eBoot, eList = NULL,
+                        flux = FALSE, conc = TRUE, text = FALSE,
+                        summaryDF = NA) {
+  if (!is.null(eList)) {
+    stn   <- eList$INFO$staAbbrev
+    param <- eList$INFO$paramShortName
+  } else {
+    stn   <- NA
+    param <- NA
+  }
+  
+  xconcDat <- data$xConc[!is.na(data$xConc)]
+  xfluxDat <- data$xFlux[!is.na(data$xFlux)]
+  concDat <- data$pConc[!is.na(data$pConc)]
+  fluxDat <- data$pFlux[!is.na(data$pFlux)]
+
+  
+  if (flux) {
+    if (text) {
+      cat(paste0("Probability of a decreasing trend in flux: ", round(ecdf(fluxDat)(0), 2), "\n\n")) # odds of a decline in consituent X
+      cat(summary(fluxDat))
+      cat("\n")
+    }
+  } 
+  if (conc) { 
+    if (text) {
+      cat(paste0("Probability of a decreasing trend in concentration: ", round(ecdf(concDat)(0), 2), "\n\n")) # odds of a decline in consituent X
+      summary(concDat)
+    }
+  }
+  a <- data.frame(
+    stn          = stn,
+    param        = param,
+    xConcSubZero = ecdf(xconcDat)(0),
+    xConcMed     = median(xconcDat), 
+    xFluxSubZero = ecdf(xfluxDat)(0),
+    xFluxMed     = median(xfluxDat),
+    
+    pConcSubZero = ecdf(concDat)(0),
+    pConcMed     = median(concDat), 
+    pFluxSubZero = ecdf(fluxDat)(0),
+    pFluxMed     = median(fluxDat))
+  
+  a
 }
 
 
@@ -595,6 +636,14 @@ eList_BB <- modelEstimation(convertToEgret(stn = "TPBBSW-1B", target_analyte = "
                            wq_data = finDat, flow_data = NA))
 
 
+# Open-water station  -----------------------------------------------------
+eBootReport(data = eBoot[[1]], eList = tp[[1]])
+
+do.call("rbind", lapply(eBoot, eBootReport))
+
+do.call("rbind", mapLists(eBootReport, eBoot, tp))
+
+              
 # Figures  -----------------------------------------------------                 
 
 wid <- 4
