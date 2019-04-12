@@ -44,6 +44,15 @@ ciCalculations.parallel <- function(eList, probs = probs, clusterObject = cl, nB
   
 }
 
+
+eBootReport <- function(data = eBoot[[1]]$pConc[eBoot[[1]]$pConc < 100]) {
+  inputDat <- data
+  cat(paste0("Probability of a decreasing trend: ", round(ecdf(inputDat)(0), 2), "\n\n")) # odds of a decline in consituent X
+  summary(inputDat)
+}
+
+
+
 t.start <- Sys.time()
 startDate <- 1992 # year of consent decree
 QCdateColors <- c("gray85", "gray60", "black")
@@ -192,6 +201,7 @@ save("tp", "eBoot", "caseSetUp", "CIAnnualResults", file = paste0("TP_data_", Sy
 
 
 
+eBootReport(data = eBoot[[1]]$pConc)
 
 
 # Change in concentration at different discharge ------------------------
