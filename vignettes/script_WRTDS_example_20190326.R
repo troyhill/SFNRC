@@ -94,30 +94,10 @@ eBootReport <- function(data = eBoot, eList = NULL,
 
 
 
-t.start <- Sys.time()
-startDate <- 1992 # year of consent decree
-QCdateColors <- c("gray85", "gray60", "black")
-
-nCores <- parallel::detectCores() - 1
-seed_var <- seed   <- 23
-nBoot_var <- 100
-nBoot_CI  <- 50
-blockLength_var <- 200
-
-coreOut <- 1 #Number of cores to leave out of processing tasks
-widthCI <- 90
-ciLower <- (50-(widthCI/2))/100
-ciUpper <- (50+(widthCI/2))/100
-probs <- c(ciLower,ciUpper)
-WaterYearStart <- 05 # May
-
-
-
-# Adjust values below MDLs ------------------------------------------------
-
 replaceBDLs <- function(data, valueCol = "value", mdlCol = "mdl", 
                         replacement = "mdl" # can be "mdl" or a numeric multiplier of the mdl (e.g., 0.5 for replacing values with half of the mdl)
-                        ) {
+) {
+  # replaces values below MDLs
   data$bdl <- 0 
   pb <- txtProgressBar(style = 3, min = 0, max = nrow(data))
   for (i in 1:nrow(data)) {
@@ -139,6 +119,28 @@ replaceBDLs <- function(data, valueCol = "value", mdlCol = "mdl",
   
   invisible(data)
 }
+
+
+
+
+t.start <- Sys.time()
+startDate <- 1992 # year of consent decree
+QCdateColors <- c("gray85", "gray60", "black")
+
+nCores <- parallel::detectCores() - 1
+seed_var <- seed   <- 23
+nBoot_var <- 100
+nBoot_CI  <- 50
+blockLength_var <- 100
+
+coreOut <- 1 #Number of cores to leave out of processing tasks
+widthCI <- 90
+ciLower <- (50-(widthCI/2))/100
+ciUpper <- (50+(widthCI/2))/100
+probs <- c(ciLower,ciUpper)
+WaterYearStart <- 05 # May
+
+
 
 
 
@@ -180,13 +182,13 @@ caseSetUp <- mapLists(trendSetUp, tp, list2 = NULL, year2 = list(2017, 2017, 201
          nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
          bootBreak = 100)
 
-caseSetUp2 <- mapLists(trendSetUp, tp, list2 = NULL, year2 = list(2017, 2017, 2017, 2017, 2017, 2013), year1 = startDate, 
-                      nBoot = 20, min = 100, blockLength = 90,
-                      bootBreak = 100)
-eBoot2 <- mapLists(wBT, tp, caseSetUp2) # S333 and S12C deserve attention - odd behavior - Flux value/post_p returns NA trends after 30 runs
-closeAllConnections()
-CIAnnualResults2 <- lapply(tp, ciCalculations, nBoot = 20, blockLength = 90, widthCI = 90)
-closeAllConnections()
+# caseSetUp2 <- mapLists(trendSetUp, tp, list2 = NULL, year2 = list(2017, 2017, 2017, 2017, 2017, 2013), year1 = startDate, 
+#                       nBoot = 20, min = 100, blockLength = 90,
+#                       bootBreak = 100)
+# eBoot2 <- mapLists(wBT, tp, caseSetUp2) # S333 and S12C deserve attention - odd behavior - Flux value/post_p returns NA trends after 30 runs
+# closeAllConnections()
+# CIAnnualResults2 <- lapply(tp, ciCalculations, nBoot = 20, blockLength = 90, widthCI = 90)
+# closeAllConnections()
 
 # caseSetUp.S12C <- trendSetUp(tp[[5]], year1 = startDate, year2 = 2017, 
 #         nBoot = 10, min = 100, blockLength = 100,
