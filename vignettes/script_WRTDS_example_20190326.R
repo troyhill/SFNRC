@@ -642,6 +642,10 @@ eBootReport(data = eBoot[[1]], eList = tp[[1]])
 do.call("rbind", lapply(eBoot, eBootReport))
 
 do.call("rbind", mapLists(eBootReport, eBoot, tp))
+do.call("rbind", mapLists(eBootReport, eBoot.tkn, nitro))
+do.call("rbind", mapLists(eBootReport, eBoot.ca, Ca))
+do.call("rbind", mapLists(eBootReport, eBoot.na, sodium))
+
 
               
 # Figures  -----------------------------------------------------                 
