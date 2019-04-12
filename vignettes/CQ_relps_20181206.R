@@ -387,6 +387,8 @@ q.mo <- ddply(wq2[wq2$stn %in% stn.targets, ], .(stn, mo), summarise,
               
               P.load      = P * (1000 * 1e6) / 1e6 * Mm3.day, # kg / day
               P.load.se   = P.se * (1000 * 1e6) / 1e6 * Mm3.day.se,
+              Ca.load     = Ca * (1000 * 1e6) / 1e9 * Mm3.day, # Mg / day
+              Ca.load.se  = Ca.se * (1000 * 1e6) / 1e6 * Mm3.day.se,
               
               flow.binary= sum(flow > 0.001, na.rm = TRUE)
 ) # m3/day
@@ -408,7 +410,7 @@ flowSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Mm3.da
   geom_point() + geom_errorbar(aes(ymin = Mm3.day - Mm3.day.se, ymax = Mm3.day + Mm3.day.se), width = 0) +
   theme_classic() + facet_grid(stn ~ ., scales = "free_y") +
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
-  ylab(expression("Mean daily flow (1e"^6~"m"^3%.%"day"^-1~")"))
+  ylab(expression("Mean daily flow (1e"^6~"m"^3%.%"d"^-1~")"))
 flowSeasS12s
 # ggsave(paste0("/opt/physical/troy/RDATA/flowVsMo-", todaysDate, ".png"), height = 7, width = 7)
 TPSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = P)) + 
@@ -423,6 +425,14 @@ PSeasLoad <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = P.load)) 
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
   ylab(expression("P load (kg P"%.%"d"^-1*")"))
 PSeasLoad 
+CaSeasLoad <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = Ca.load)) + 
+  geom_point() + geom_errorbar(aes(ymin = Ca.load - Ca.load.se, ymax = Ca.load + Ca.load.se), width = 0) +
+  theme_classic() + facet_grid(stn ~ ., scales = "fixed") +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5), text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + xlab("Month") + 
+  ylab(
+    expression("Ca + Mg load (Mg CaCO"[3]%.%"d"^-1*")")
+    )
+CaSeasLoad 
 NHSeasS12s <- ggplot(q.mo[q.mo$stn %in% stn.targets, ], aes(x = mo, y = NH4)) + 
   geom_point() + geom_errorbar(aes(ymin = NH4 - NH4.se, ymax = NH4 + NH4.se), width = 0) +
   theme_classic() + facet_grid(stn ~ ., scales = "fixed") +
@@ -466,6 +476,12 @@ grid.arrange(flowSeasS12s, TPSeasS12s, NHSeasS12s, chlSeasS12s, ncol = 4)
 grid.arrange(MgSeasS12s, CaSeasS12s, NaSeasS12s, SO4SeasS12s, ncol = 4)
 
 grid.arrange(flowSeasS12s, TPSeasS12s, PSeasLoad, ncol = 3)
+
+grid.arrange(flowSeasS12s, PSeasLoad, CaSeasLoad, ncol = 3)
+plt <- arrangeGrob(flowSeasS12s, PSeasLoad, CaSeasLoad, ncol = 3)
+
+# ggsave(plt, file = "/opt/physical/troy/RDATA/output/monthlyFlowLoad.png", width = 9.5, height = 6, units = "in", dpi = 200)
+
 
 
 
@@ -801,7 +817,7 @@ ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow") &
   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
   ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
-# ggsave(file = "/opt/physical/troy/RDATA/northernBoundary/CQ_monthly.png", width = 8, height = 3)
+# ggsave(file = "/opt/physical/troy/RDATA/northernBoundary/CQ_monthly.png", width = 10, height = 3)
 
 ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow") & (dat3$stn %in% "S12D") & (dat3$year %in% 2010:2018), ], 
        aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P))) + 
@@ -810,7 +826,7 @@ ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow") &
   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
   ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
-# ggsave(file = "/opt/physical/troy/RDATA/northernBoundary/CQ_annual.png", width = 8, height = 3)
+# ggsave(file = "/opt/physical/troy/RDATA/northernBoundary/CQ_annual.png", width = 10, height = 3)
 
 
 # ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), ], 

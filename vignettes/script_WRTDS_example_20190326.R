@@ -61,20 +61,55 @@ ciUpper <- (50+(widthCI/2))/100
 probs <- c(ciLower,ciUpper)
 WaterYearStart <- 05 # May
 
+
+
+# Adjust values below MDLs ------------------------------------------------
+
+replaceBDLs <- function(data, valueCol = "value", mdlCol = "mdl", 
+                        replacement = "mdl" # can be "mdl" or a numeric multiplier of the mdl (e.g., 0.5 for replacing values with half of the mdl)
+                        ) {
+  data$bdl <- 0 
+  pb <- txtProgressBar(style = 3, min = 0, max = nrow(data))
+  for (i in 1:nrow(data)) {
+    if (is.na(data[, valueCol][i]) && !is.na(data[, mdlCol][i])) {
+      if ((data[, mdlCol][i] > 0) & (data[, mdlCol][i] < 50)) { # idk why, but there's a -5 and a 100 in the mdl data
+        data$bdl[i]   <- 1
+        if (replacement == "mdl") {
+          data[, valueCol][i] <- data[, mdlCol][i]
+        } else if (is.numeric(replacement)) {
+          data[, valueCol][i] <- data[, mdlCol][i] * replacement
+        }
+        
+      }
+    }
+    setTxtProgressBar(pb, i)
+  }
+  # cat(summary(data[data$bdl == 1, ]))
+  # cat(summary(data[data$bdl == 0, ]))
+  
+  invisible(data)
+}
+
+
+
+
+
 # TP -----------------------------------------------------------
 
 targStns    <- c("S333", "S12A", "S12B", "S12C", "S12D", "S151") #, "S343", "S332")
 targAnalyte <- "PHOSPHATE, TOTAL AS P"
- 
+
 # remove 8ppm TP data point
 # wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), ]
 wqDat[(wqDat$stn %in% "S12A") & (wqDat$param %in% "PHOSPHATE, TOTAL AS P") & (wqDat$value > 8) & complete.cases(wqDat), "value"] <- NA
+
+wqTemp <- replaceBDLs(data = wqDat[(wqDat$param %in% targAnalyte), ])
 
 cl <- makePSOCKcluster(nCores)
 registerDoParallel(cl)
 tp <- lapply(targStns, function(stnSelect) 
   modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
-                 wq_data = wqDat, flow_data = hydDat), run.parallel = TRUE))
+                 wq_data = wqTemp, flow_data = hydDat), run.parallel = TRUE))
 stopCluster(cl)
 
 ### set water year (default is 10, 12)
@@ -95,6 +130,13 @@ caseSetUp <- mapLists(trendSetUp, tp, list2 = NULL, year2 = list(2017, 2017, 201
          nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
          bootBreak = 100)
 
+caseSetUp2 <- mapLists(trendSetUp, tp, list2 = NULL, year2 = list(2017, 2017, 2017, 2017, 2017, 2013), year1 = startDate, 
+                      nBoot = 20, min = 100, blockLength = 90,
+                      bootBreak = 100)
+eBoot2 <- mapLists(wBT, tp, caseSetUp2) # S333 and S12C deserve attention - odd behavior - Flux value/post_p returns NA trends after 30 runs
+closeAllConnections()
+CIAnnualResults2 <- lapply(tp, ciCalculations, nBoot = 20, blockLength = 90, widthCI = 90)
+closeAllConnections()
 
 # caseSetUp.S12C <- trendSetUp(tp[[5]], year1 = startDate, year2 = 2017, 
 #         nBoot = 10, min = 100, blockLength = 100,
@@ -275,10 +317,13 @@ lapply(tp, plotFluxTimeDaily)
 # nitrogen ------------------------------------------------------------------
 # grep(x = unique(wqDat$param), pattern = "NITROG|NITRATE|NITRITE|AMMONI", value = TRUE)
 targAnalyte <- "KJELDAHL NITROGEN, TOTAL" # "TOTAL NITROGEN" subset of sites have data
+
+wqTemp <- replaceBDLs(data = wqDat[(wqDat$param %in% targAnalyte), ])
+
 registerDoParallel(cl)
 nitro <- lapply(targStns, function(stnSelect) 
   modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
-                                 wq_data = wqDat, flow_data = hydDat)))
+                                 wq_data = wqTemp, flow_data = hydDat)))
 stopCluster(cl)
 
 ### set water year (default is 10, 12)
@@ -340,10 +385,14 @@ hist(wqDat[(wqDat$stn %in% "S12C") & (wqDat$param %in% targAnalyte), "value"])
 summary(wqDat[(wqDat$stn %in% "S12C") & (wqDat$param %in% targAnalyte), "value"])
 hist(hydDat[(hydDat$stn %in% "S12C") , "flow"])
 
+
+wqTemp <- replaceBDLs(data = wqDat[(wqDat$param %in% targAnalyte), ])
+
+
 registerDoParallel(cl)
 Ca <- lapply(targStns, function(stnSelect) 
   modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
-                                 wq_data = wqDat, flow_data = hydDat)))
+                                 wq_data = wqTemp, flow_data = hydDat)))
 stopCluster(cl)
 
 test <- getDaily(Ca[[4]])
@@ -414,61 +463,17 @@ lapply(Ca, plotDiffContours, year0 = 1988,
 lapply(Ca, plotConcQSmooth, date1, date2, date3,  qLow = 1, qTop, 
        concMax= NA,legendTop = 0.85, colors = QCdateColors)
 
-# Turbidity ---------------------------------------------------------------
-
-targAnalyte <- "TURBIDITY"
-registerDoParallel(cl)
-ntu <- lapply(targStns, function(stnSelect) 
-  modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
-                                 wq_data = wqDat, flow_data = hydDat)))
-stopCluster(cl)
-
-### set water year (default is 10, 12)
-ntu <- lapply(ntu, setPA, paStart = WaterYearStart, paLong = 12)
-
-# diagnostics
-lapply(ntu, plotConcPred)
-lapply(ntu, plotResidPred)
-lapply(ntu, plotResidQ)
-
-# figure 1
-lapply(ntu, plotConcHist, concMax = NA, yearStart = startDate)
-
-caseSetUp.ntu <- mapLists(trendSetUp, ntu, list2 = NULL, year2 = list(2017, 2017, 2007, 2007, 2007, 2013), year1 = startDate, 
-         nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
-         bootBreak = 100)
-
-eBoot.ntu <- mapLists(wBT, ntu, caseSetUp.ntu)
-closeAllConnections()
-CIAnnualResults.ntu <- lapply(ntu, ciCalculations, nBoot = nBoot_CI, blockLength = blockLength_var, widthCI = 90)
-closeAllConnections()
-
-mapLists(plotConcHistBoot, ntu, CIAnnualResults.ntu, yearStart = startDate)
-mapLists(plotFluxHistBoot, ntu, CIAnnualResults.ntu, yearStart = startDate)
-
-#Concentration an initial run:
-mapLists(plotHistogramTrend, ntu, eBoot.ntu, caseSetUp.ntu, flux = TRUE)
-mapLists(plotHistogramTrend, ntu, eBoot.ntu, caseSetUp.ntu, flux = FALSE)
-
-
-
-lapply(ntu, plotDiffContours, year0 = 1988,
-       year1 = 2017,
-       qBottom=0.001,
-       qTop=30,
-       maxDiff = 10)
-
-save("ntu", "eBoot.ntu", "caseSetUp.ntu", "CIAnnualResults.ntu", file = paste0("ntu_data_", Sys.Date(), ".RData"))
-
 
 # sodium ------------------------------------------------------------------
 
 targAnalyte <- "SODIUM" # "SODIUM"  or "SODIUM, TOTAL"
 
+wqTemp <- replaceBDLs(data = wqDat[(wqDat$param %in% targAnalyte), ])
+
 registerDoParallel(cl)
 sodium <- lapply(targStns, function(stnSelect) 
   modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
-                                 wq_data = wqDat, flow_data = hydDat)))
+                                 wq_data = wqTemp, flow_data = hydDat)))
 stopCluster(cl)
 
 ### set water year (default is 10, 12)
@@ -506,7 +511,7 @@ eBoot.na <- mapLists(wBT, sodium, caseSetUp.na) # S333 flux breaks down but may 
 # wbt.s12c <- wBT(sodium[[4]], caseSetUp.na[[4]])
 
 closeAllConnections()
-CIAnnualResults.na <- lapply(sodium, ciCalculations, nBoot = 10, blockLength = blockLength_var, widthCI = 90)
+CIAnnualResults.na <- lapply(sodium, ciCalculations, nBoot = nBoot_CI, blockLength = blockLength_var, widthCI = 90)
 closeAllConnections()
 
 mapLists(plotConcHistBoot, sodium, CIAnnualResults.na, yearStart = startDate, concMax = 80)
@@ -521,6 +526,56 @@ save("sodium", "eBoot.na", "caseSetUp.na", "CIAnnualResults.na", file = paste0("
 
 
 t.tot <-  Sys.time() - t.start
+
+
+# Turbidity ---------------------------------------------------------------
+
+targAnalyte <- "TURBIDITY"
+wqTemp <- replaceBDLs(data = wqDat[(wqDat$param %in% targAnalyte), ])
+
+registerDoParallel(cl)
+ntu <- lapply(targStns, function(stnSelect) 
+  modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
+                                 wq_data = wqTemp, flow_data = hydDat)))
+stopCluster(cl)
+
+### set water year (default is 10, 12)
+ntu <- lapply(ntu, setPA, paStart = WaterYearStart, paLong = 12)
+
+# diagnostics
+lapply(ntu, plotConcPred)
+lapply(ntu, plotResidPred)
+lapply(ntu, plotResidQ)
+
+# figure 1
+lapply(ntu, plotConcHist, concMax = NA, yearStart = startDate)
+
+caseSetUp.ntu <- mapLists(trendSetUp, ntu, list2 = NULL, year2 = list(2017, 2017, 2007, 2007, 2007, 2013), year1 = startDate, 
+                          nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
+                          bootBreak = 100)
+
+eBoot.ntu <- mapLists(wBT, ntu, caseSetUp.ntu)
+closeAllConnections()
+CIAnnualResults.ntu <- lapply(ntu, ciCalculations, nBoot = nBoot_CI, blockLength = blockLength_var, widthCI = 90)
+closeAllConnections()
+
+mapLists(plotConcHistBoot, ntu, CIAnnualResults.ntu, yearStart = startDate)
+mapLists(plotFluxHistBoot, ntu, CIAnnualResults.ntu, yearStart = startDate)
+
+#Concentration an initial run:
+mapLists(plotHistogramTrend, ntu, eBoot.ntu, caseSetUp.ntu, flux = TRUE)
+mapLists(plotHistogramTrend, ntu, eBoot.ntu, caseSetUp.ntu, flux = FALSE)
+
+
+
+lapply(ntu, plotDiffContours, year0 = 1988,
+       year1 = 2017,
+       qBottom=0.001,
+       qTop=30,
+       maxDiff = 10)
+
+save("ntu", "eBoot.ntu", "caseSetUp.ntu", "CIAnnualResults.ntu", file = paste0("ntu_data_", Sys.Date(), ".RData"))
+
 
 # Open-water station  -----------------------------------------------------
 ### sampling isn't frequent enough...
