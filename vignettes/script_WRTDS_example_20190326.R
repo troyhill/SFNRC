@@ -663,11 +663,15 @@ na1 <- do.call("rbind", mapLists(eBootReport, eBoot.na, sodium))
 
 dat <- do.call("rbind", list(tp1, n1, ca1, na1))
 dat$stn2 <- factor(dat$stn, levels = c("S151", "S333", "S12D", "S12C", "S12B", "S12A"))
-conc_plot <- ggplot(dat, aes(y = xConcMed, x = stn2)) + geom_pointrange(aes(ymin = xConcMed - xConcMAD, ymax = xConcMed + xConcMAD)) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("Concentration (mg/L)") + xlab("")
-flux_plot <- ggplot(dat, aes(y = xFluxMed, x = stn2)) + geom_pointrange(aes(ymin = xFluxMed - xFluxMAD, ymax = xFluxMed + xFluxMAD)) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("Flux (kg/day)") + xlab("")
+conc_plot <- ggplot(dat, aes(y = xConcMed, x = stn2)) + geom_pointrange(aes(ymin = xConcMed - xConcMAD, ymax = xConcMed + xConcMAD), size = 0.35) + 
+  theme_classic() + theme(panel.spacing = unit(1.5, "lines")) + facet_grid(param ~ ., scales = "free_y") + ylab("Concentration (mg/L)") + xlab("") + 
+  geom_hline(mapping=aes(yintercept= 0 ), linetype = "dotted")
+flux_plot <- ggplot(dat, aes(y = xFluxMed, x = stn2)) + geom_pointrange(aes(ymin = xFluxMed - xFluxMAD, ymax = xFluxMed + xFluxMAD), size = 0.35) + 
+  theme_classic() + theme(panel.spacing = unit(1.5, "lines")) + facet_grid(param ~ ., scales = "free_y") + ylab("Flux (kg/day)") + xlab("") + 
+  geom_hline(mapping=aes(yintercept= 0 ), linetype = "dotted")
 
 plt <- arrangeGrob(conc_plot, flux_plot, ncol = 2)
-#  ggsave(plt, file = "Y:/troy/RDATA/northernBoundary/synthesis.png", width = 10, height = 7, units = "in", dpi = 200)
+#  ggsave(plt, file = "Y:/troy/RDATA/northernBoundary/synthesis.png", width = 8, height = 5, units = "in", dpi = 200)
 
 
 
