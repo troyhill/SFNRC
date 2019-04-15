@@ -80,9 +80,12 @@ eBootReport <- function(data = eBoot, eList = NULL,
     stn          = stn,
     param        = param,
     xConcSubZero = ecdf(xconcDat)(0),
-    xConcMed     = median(xconcDat), 
+    #xConcMean    = mean(xconcDat, na.rm = TRUE), 
+    xConcMed     = median(xconcDat, na.rm = TRUE), 
+    xConcMAD     = mad(xconcDat, na.rm = TRUE, constant = 1), 
     xFluxSubZero = ecdf(xfluxDat)(0),
-    xFluxMed     = median(xfluxDat),
+    xFluxMed     = median(xfluxDat, na.rm = TRUE),
+    xFluxMAD     = mad(xfluxDat, na.rm = TRUE, constant = 1), 
     
     pConcSubZero = ecdf(concDat)(0),
     pConcMed     = median(concDat), 
@@ -640,13 +643,21 @@ eList_BB <- modelEstimation(convertToEgret(stn = "TPBBSW-1B", target_analyte = "
 
 # Open-water station  -----------------------------------------------------
 eBootReport(data = eBoot[[1]], eList = tp[[1]])
+do.call("rbind", mapLists(eBootReport, list(eBoot, eBoot.ca), list(tp, Ca))) # doesn't work
 
-do.call("rbind", lapply(eBoot, eBootReport))
+tp1 <- do.call("rbind", mapLists(eBootReport, eBoot, tp))
+n1  <- do.call("rbind", mapLists(eBootReport, eBoot.tkn, nitro))
+ca1 <- do.call("rbind", mapLists(eBootReport, eBoot.ca, Ca))
+na1 <- do.call("rbind", mapLists(eBootReport, eBoot.na, sodium))
 
-do.call("rbind", mapLists(eBootReport, eBoot, tp))
-do.call("rbind", mapLists(eBootReport, eBoot.tkn, nitro))
-do.call("rbind", mapLists(eBootReport, eBoot.ca, Ca))
-do.call("rbind", mapLists(eBootReport, eBoot.na, sodium))
+dat <- do.call("rbind", list(tp1, n1, ca1, na1))
+dat$stn2 <- factor(dat$stn, levels = c("S151", "S333", "S12D", "S12C", "S12B", "S12A"))
+conc_plot <- ggplot(dat, aes(y = xConcMed, x = stn2)) + geom_pointrange(aes(ymin = xConcMed - xConcMAD, ymax = xConcMed + xConcMAD)) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("Concentration (mg/L)") + xlab("")
+flux_plot <- ggplot(dat, aes(y = xFluxMed, x = stn2)) + geom_pointrange(aes(ymin = xFluxMed - xFluxMAD, ymax = xFluxMed + xFluxMAD)) + theme_classic() + facet_grid(param ~ ., scales = "free_y") + ylab("Flux (kg/day)") + xlab("")
+
+plt <- arrangeGrob(conc_plot, flux_plot, ncol = 2)
+#  ggsave(plt, file = "Y:/troy/RDATA/northernBoundary/synthesis.png", width = 10, height = 7, units = "in", dpi = 200)
+
 
 
               
