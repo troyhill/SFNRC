@@ -441,6 +441,8 @@ hist(hydDat[(hydDat$stn %in% "S12C") , "flow"])
 
 wqTemp <- replaceBDLs(data = wqDat[(wqDat$param %in% targAnalyte), ])
 
+summary(wqTemp[(wqTemp$stn %in% targStns), ])
+head(wqTemp[(wqTemp$value > 300) & (wqTemp$stn %in% targStns), ])
 
 registerDoParallel(cl)
 Ca <- lapply(targStns, function(stnSelect) 
@@ -448,7 +450,8 @@ Ca <- lapply(targStns, function(stnSelect)
                                  wq_data = wqTemp, flow_data = hydDat)))
 stopCluster(cl)
 
-test <- getDaily(Ca[[4]])
+
+test <- getDaily(Ca[[1]])
 summary(test)
 ### set water year (default is 10, 12)
 Ca <- lapply(Ca, setPA, paStart = WaterYearStart, paLong = 12)
@@ -464,15 +467,23 @@ lapply(Ca, plotConcHist, concMax = 300, yearStart = startDate)
 lapply(Ca, plotFluxHist, fluxMax = 200, yearStart = startDate)
 
 
-
 # caseSetUp.ca <- lapply(Ca, trendSetUp, year1 = startDate, year2 = 2007, 
 #                         nBoot = 50, min = 100, blockLength = blockLength_var,
 #                         bootBreak = 100)
 
-caseSetUp.ca <- mapLists(trendSetUp, Ca, list2 = NULL, year2 = list(2017, 2017, 2017, 2017, 2007, 2013), year1 = startDate, 
+caseSetUp.ca <- mapLists(trendSetUp, Ca, list2 = NULL, year2 = list(2010, 2015, 2017, 2017, 2007, 2013), year1 = startDate, 
                        nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
                        bootBreak = 100)
-# wbt.s12c <- wBT(Ca[[4]], caseSetUp.ca[[4]])
+# wbt.s12a <- wBT(Ca[[2]], caseSetUp.ca[[2]])
+# closeAllConnections()
+# wbt.s12b <- wBT(Ca[[3]], caseSetUp.ca[[3]])
+# closeAllConnections()
+# wbt.s12C <- wBT(Ca[[4]], caseSetUp.ca[[4]])
+# closeAllConnections()
+# wbt.s12d <- wBT(Ca[[5]], caseSetUp.ca[[5]])
+# closeAllConnections()
+# wbt.s151 <- wBT(Ca[[6]], caseSetUp.ca[[6]])
+# closeAllConnections()
 
 eBoot.ca <- mapLists(wBT, Ca, caseSetUp.ca) # S12C flux trend is NA wtf
 closeAllConnections()
