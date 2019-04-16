@@ -471,8 +471,8 @@ lapply(Ca, plotFluxHist, fluxMax = 200, yearStart = startDate)
 #                         nBoot = 50, min = 100, blockLength = blockLength_var,
 #                         bootBreak = 100)
 
-caseSetUp.ca <- mapLists(trendSetUp, Ca, list2 = NULL, year2 = list(2010, 2015, 2017, 2017, 2007, 2013), year1 = startDate, 
-                       nBoot = nBoot_var, min = 100, blockLength = blockLength_var,
+caseSetUp.ca <- mapLists(trendSetUp, Ca, list2 = NULL, year2 = list(2017, 2017, 2017, 2017, 2007, 2013), year1 = startDate, 
+                       nBoot = nBoot_var, min = 100, blockLength = 200,
                        bootBreak = 100)
 # wbt.s12a <- wBT(Ca[[2]], caseSetUp.ca[[2]])
 # closeAllConnections()
@@ -487,7 +487,7 @@ caseSetUp.ca <- mapLists(trendSetUp, Ca, list2 = NULL, year2 = list(2010, 2015, 
 
 eBoot.ca <- mapLists(wBT, Ca, caseSetUp.ca) # S12C flux trend is NA wtf
 closeAllConnections()
-CIAnnualResults.ca <- lapply(Ca, ciCalculations, nBoot = nBoot_CI, blockLength = blockLength_var, widthCI = 90)
+CIAnnualResults.ca <- lapply(Ca, ciCalculations, nBoot = nBoot_CI, blockLength = 200, widthCI = 90)
 closeAllConnections()
 
 mapLists(plotConcHistBoot, Ca, CIAnnualResults.ca, yearStart = startDate)
