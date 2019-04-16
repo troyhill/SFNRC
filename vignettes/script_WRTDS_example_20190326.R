@@ -684,6 +684,7 @@ clevel3 <- seq(0, 0.25, 0.01)
 # png(filename = "/opt/physical/troy/RDATA/northernBoundary/contourPlot_S333_1987_1991.png", width = 7.5, height = 7, units = "in", res = 150)
 plotContours(tp[[1]], yearStart=1987, yearEnd= 1991, qBottom= qBottom, qTop= qTop, printTitle = FALSE,
              contourLevels = clevel3, qUnit=1, color.palette = colorRampPalette(c("cornflowerblue", "red")))
+points(x = tp[[1]]$Daily$Date,  y = tp[[1]]$Daily$Q, pch = 19)
 # dev.off()
 
 # png(filename = "/opt/physical/troy/RDATA/northernBoundary/contourPlot_S333_2015_2019.png", width = 7.5, height = 7, units = "in", res = 150)
