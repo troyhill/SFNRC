@@ -287,37 +287,34 @@ yearStart1 <- 2009
 yearEnd1   <- 2019
 
 qBottom   <- 0.1
-qTop      <- 2500
+qTop      <- 2600
 
-lapply(tp[-2], plotContours, 
-       yearStart = yearStart1, yearEnd = yearEnd1, qBottom = qBottom, qTop =qTop, 
-       contourLevels = clevel2, qUnit=1)
-yearStart2 <- 1979
-yearEnd2   <- 1989
-lapply(tp[-2], plotContours, 
-       yearStart = yearStart2, yearEnd = yearEnd2, qBottom = qBottom, qTop =qTop, 
-       contourLevels = clevel, qUnit=1)
-
-
-lapply(tp[-2], plotContours, 
-       yearStart = yearStart2, yearEnd = yearEnd2, qBottom = qBottom, qTop =qTop, 
-       contourLevels = clevel2, qUnit=1)
-lapply(tp[-2], plotContours, 
-       yearStart = yearStart1, yearEnd = yearEnd2, qBottom = qBottom, qTop =qTop, 
-       contourLevels = clevel2, qUnit=1)
-
-lapply(tp[-2], plotDiffContours, 
-       year0 = yearStart1, year1 = yearEnd1, qBottom = qBottom, qTop =qTop, 
-       maxDiff = maxDiff, qUnit=1)
-
-# plots difference between two years
-lapply(tp[-2], plotDiffContours, 
-       year0 = startDate, year1 = yearEnd1, qBottom = qBottom, qTop =qTop, 
-       maxDiff = maxDiff, qUnit=1)
-
-
-
-
+ 
+# lapply(tp[-2], plotContours, 
+#        yearStart = yearStart1, yearEnd = yearEnd1, qBottom = qBottom, qTop =qTop, 
+#        contourLevels = clevel2, qUnit=1)
+# yearStart2 <- 1979
+# yearEnd2   <- 1989
+# lapply(tp[-2], plotContours, 
+#        yearStart = yearStart2, yearEnd = yearEnd2, qBottom = qBottom, qTop =qTop, 
+#        contourLevels = clevel, qUnit=1)
+# 
+# 
+# lapply(tp[-2], plotContours, 
+#        yearStart = yearStart2, yearEnd = yearEnd2, qBottom = qBottom, qTop =qTop, 
+#        contourLevels = clevel2, qUnit=1)
+# lapply(tp[-2], plotContours, 
+#        yearStart = yearStart1, yearEnd = yearEnd2, qBottom = qBottom, qTop =qTop, 
+#        contourLevels = clevel2, qUnit=1)
+# 
+# lapply(tp[-2], plotDiffContours, 
+#        year0 = yearStart1, year1 = yearEnd1, qBottom = qBottom, qTop =qTop, 
+#        maxDiff = maxDiff, qUnit=1)
+# 
+# # plots difference between two years
+# lapply(tp[-2], plotDiffContours, 
+#        year0 = startDate, year1 = yearEnd1, qBottom = qBottom, qTop =qTop, 
+#        maxDiff = maxDiff, qUnit=1)
 # lapply(tp, fluxBiasMulti)
 # lapply(tp, plotConcPred)
 # lapply(tp, plotFluxPred)
@@ -678,6 +675,37 @@ plt <- arrangeGrob(conc_plot, flux_plot, ncol = 2)
 
               
 # Figures  -----------------------------------------------------                 
+
+qBottom   <- 0.1
+qTop      <- 2600
+
+### TP contour plots
+clevel3 <- seq(0, 0.25, 0.01)
+# png(filename = "/opt/physical/troy/RDATA/northernBoundary/contourPlot_S333_1987_1991.png", width = 7.5, height = 7, units = "in", res = 150)
+plotContours(tp[[1]], yearStart=1987, yearEnd= 1991, qBottom= qBottom, qTop= qTop, printTitle = FALSE,
+             contourLevels = clevel3, qUnit=1, color.palette = colorRampPalette(c("cornflowerblue", "red")))
+# dev.off()
+
+# png(filename = "/opt/physical/troy/RDATA/northernBoundary/contourPlot_S333_2015_2019.png", width = 7.5, height = 7, units = "in", res = 150)
+plotContours(tp[[1]], yearStart= 2015, yearEnd= 2019, qBottom= qBottom, qTop= qTop, printTitle = FALSE,
+             contourLevels = clevel3, qUnit=1, color.palette = colorRampPalette(c("cornflowerblue", "red")))
+# dev.off()
+
+
+### Hardness contour plots
+clevel4 <- seq(100, 400, 20)
+# png(filename = "/opt/physical/troy/RDATA/northernBoundary/contourPlot_S333_1987_1991_Ca.png", width = 7.5, height = 7, units = "in", res = 150)
+plotContours(Ca[[1]], yearStart=1987, yearEnd= 1991, qBottom= qBottom, qTop= qTop, printTitle = FALSE,
+             contourLevels = clevel4, qUnit=1, color.palette = colorRampPalette(c("lightblue",  "red")))
+# dev.off()
+
+# png(filename = "/opt/physical/troy/RDATA/northernBoundary/contourPlot_S333_2015_2019_Ca.png", width = 7.5, height = 7, units = "in", res = 150)
+plotContours(Ca[[1]], yearStart= 2015, yearEnd= 2019, qBottom= qBottom, qTop= qTop, printTitle = FALSE,
+             contourLevels = clevel4, qUnit=1, color.palette = colorRampPalette(c("lightblue", "red")))
+# dev.off()
+
+
+
 
 wid <- 4
 hgt <- 3.5
