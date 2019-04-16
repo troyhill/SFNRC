@@ -663,11 +663,12 @@ na1 <- do.call("rbind", mapLists(eBootReport, eBoot.na, sodium))
 
 dat <- do.call("rbind", list(tp1, n1, ca1, na1))
 dat$stn2 <- factor(dat$stn, levels = c("S151", "S333", "S12D", "S12C", "S12B", "S12A"))
+levels(dat$param) <- c("TP", "TKN", "Ca + Mg", "Na")
 conc_plot <- ggplot(dat, aes(y = xConcMed, x = stn2)) + geom_pointrange(aes(ymin = xConcMed - xConcMAD, ymax = xConcMed + xConcMAD), size = 0.35) + 
-  theme_classic() + theme(panel.spacing = unit(1.5, "lines")) + facet_grid(param ~ ., scales = "free_y") + ylab(expression("Concentration (mg"%.%"L"^-1*")")) + xlab("") + 
+  theme_classic() + theme(panel.spacing = unit(1.5, "lines")) + facet_grid(param ~ ., scales = "free_y") + ylab(expression("Concentration trend (mg"%.%"L"^-1*")")) + xlab("") + 
   geom_hline(mapping=aes(yintercept= 0 ), linetype = "dotted")
 flux_plot <- ggplot(dat, aes(y = xFluxMed, x = stn2)) + geom_pointrange(aes(ymin = xFluxMed - xFluxMAD, ymax = xFluxMed + xFluxMAD), size = 0.35) + 
-  theme_classic() + theme(panel.spacing = unit(1.5, "lines")) + facet_grid(param ~ ., scales = "free_y") + ylab(expression("Flux (kg"%.%"d"^-1*")")) + xlab("") + 
+  theme_classic() + theme(panel.spacing = unit(1.5, "lines")) + facet_grid(param ~ ., scales = "free_y") + ylab(expression("Flux trend (kg"%.%"d"^-1*")")) + xlab("") + 
   geom_hline(mapping=aes(yintercept= 0 ), linetype = "dotted")
 
 plt <- arrangeGrob(conc_plot, flux_plot, ncol = 2)
