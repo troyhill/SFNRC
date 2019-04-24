@@ -809,15 +809,17 @@ dat3 <- dat2[dat2$stn %in% stn.targets, ] %>% arrange(stn, flow) %>%
   mutate(qtile = cut(flow, 
     breaks=4, labels = FALSE,
     include.lowest=TRUE))
+dat3$month <- factor(month.abb[as.numeric(dat3$mo)], levels = month.abb)
+levels(dat3$month)
 
 ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow") & (dat3$stn %in% "S12D"), ], 
        aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P))) + 
   geom_point(alpha = 0.6, size = 0.6) + geom_smooth(method = "lm") + 
-  theme_classic() + facet_grid(stn ~ mo, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
+  theme_classic() + facet_grid(stn ~ month, scales = "free_y") + #scale_y_log10()  +  scale_x_log10() +
   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
   ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
-# ggsave(file = "/opt/physical/troy/RDATA/northernBoundary/CQ_monthly.png", width = 10, height = 3)
+# ggsave(file = "CQ_monthly.png", width = 7, height = 2)
 
 ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow") & (dat3$stn %in% "S12D") & (dat3$year %in% 2010:2018), ], 
        aes(x = log(flow), y = log(PHOSPHATE..TOTAL.AS.P))) + 
@@ -826,7 +828,7 @@ ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow") &
   theme(legend.position="top", axis.text.x = element_text(angle = 0, hjust = 0.5, vjust = 0.5), 
         text = element_text(size=10), plot.title = element_text(hjust = 0.5)) + #annotate("text", x = 1.5, y = 0.35, label = c("*", "*", "*", "*", ""), size = 12) +
   ylab (paste0("TP (mg/L; log scale)")) + xlab("Discharge (cfs; log scale)")
-# ggsave(file = "/opt/physical/troy/RDATA/northernBoundary/CQ_annual.png", width = 10, height = 3)
+# ggsave(file = "CQ_annual.png", width = 6.5, height = 2)
 
 
 # ggplot(dat3[!is.na(dat3[, "PHOSPHATE..TOTAL.AS.P"]) & (dat3$group %in% "flow"), ], 

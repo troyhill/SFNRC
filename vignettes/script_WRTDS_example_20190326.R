@@ -769,8 +769,8 @@ png(filename = "boxPlot_S12D.png", width = 5, height = 5.5, units = "in", res = 
 boxQTwice(tp[[5]], logScale = TRUE, pars = list(staplewex = 0), cex = 0.5)
 dev.off()
 
-png(filename = "wrtds_conc_S333.png", width = 9, height = 5, units = "in", res = 150)
-plotConcTimeDaily(tp[[1]], concMax = 0.25)
+png(filename = "wrtds_conc_S333.png", width = 9, height = 5.5, units = "in", res = 150)
+plotConcTimeDaily(tp[[1]], concMax = 0.15, yearStart = 1980)
 dev.off()
 
 png(filename = "wrtds_flux_S333.png", width = 9, height = 5, units = "in", res = 150)
