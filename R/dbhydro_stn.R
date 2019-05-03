@@ -24,9 +24,9 @@
 #' @param destination lorem ipsum
 #' @param start_date lorem ipsum
 #' @param end_date lorem ipsum
-#' @param import_data lorem ipsum
+#' @param import_data Logical; should data be returned as R object (and not saved to file)?
 #' 
-#' @return dataframe \code{dbhydro.stn} saves a csv of DBHYDRO water quality data to disk.
+#' @return dataframe \code{dbhydro.stn} saves a csv of DBHYDRO water quality data to disk or returns a dataframe.
 #' 
 #' @seealso \code{\link{dbhydro.stn.batch}} is preferred for multiple-station downloads.
 #' 
@@ -126,7 +126,7 @@ dbhydro.stn <- function(destfile = "stn_report_todaysDate.csv",
   
   httr::GET(url.init, httr::write_disk(paste0(tempdir(), destfile), overwrite = TRUE), httr::timeout(99999))
   if (import_data == TRUE) {
-    output <- utils::read.csv(paste0(tempdir(), destfile))
+    output <- utils::read.csv(paste0(tempdir(), destfile), stringsAsFactors = FALSE)
   }
   # nocov end
 }

@@ -37,10 +37,10 @@ import_data = FALSE)
 
 \item{end_date}{lorem ipsum}
 
-\item{import_data}{lorem ipsum}
+\item{import_data}{Logical; should data be returned as R object (and not saved to file)?}
 }
 \value{
-dataframe \code{dbhydro.stn} saves a csv of DBHYDRO water quality data to disk.
+dataframe \code{dbhydro.stn} saves a csv of DBHYDRO water quality data to disk or returns a dataframe.
 }
 \description{
 Downloads DBHYDRO water quality data for specified stations
