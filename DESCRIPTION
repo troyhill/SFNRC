@@ -15,6 +15,8 @@ LazyData: true
 Depends:
     R (>= 3.0),
     httr,
+    XML,
+    RCurl,
     utils,
     dismo,
     gstat,

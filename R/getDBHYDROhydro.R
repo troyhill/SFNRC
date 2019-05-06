@@ -1,0 +1,47 @@
+#' @title Retrieve R-friendly hydrology data from DBHYDRO
+#'
+#' @description Downloads and lightly processes DBHYDRO flow/stage data.
+#' 
+#' @usage getDBHYDROhydro(dbkey = "03638")
+#' 
+#' @param dbkey DBkey for station and parameter of interest. Use 'getDBkey()' to find DBkeys associated with a station.
+#' 
+#' @return dataframe \code{getDBHYDROhydro} returns a dataframe of data
+#' 
+#' 
+#' @examples
+#' \dontrun{
+#' ### example workflow:
+#' getDBkey(stn = "S12d", type = "FLOW") # find DBkey for station/parameter of interest
+#' fdat <- getDBHYDROhydro(dbkey = "01310") # download data for DBkey
+#' tail(fdat)
+#' }
+#' 
+#' @importFrom httr GET
+#' @importFrom utils read.csv
+#'  
+#' @export
+
+
+getDBHYDROhydro <- function(dbkey = "03638") {
+  urlDL <- paste0("http://my.sfwmd.gov/dbhydroplsql/web_io.report_process?v_period=uspec&v_start_date=19600101&v_end_date=20190131&v_report_type=format6&v_target_code=file_csv&v_run_mode=onLine&v_js_flag=Y&v_db_request_id=5603897&v_where_clause=&v_dbkey=", dbkey, "&v_os_code=Unix&v_interval_count=5&v_cutover_datum=1")
+  
+  fileLoc <- tempfile()
+  httr::GET(urlDL, httr::write_disk(fileLoc, overwrite = TRUE), httr::timeout(99999))
+  output <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = 3)
+  
+  names(output) <- tolower(names(output))
+  names(output)[1] <- "stn"
+  names(output)[4] <- "value"
+  
+  ### process date data
+  output$date <- gsub(pattern = "([a-zA-Z]{2}-.*)", replacement = "\\L\\1", x = output$daily.date, perl=TRUE)
+  output$date <- as.POSIXct(strptime(output$date, format = "%d-%b-%Y"))
+  output$year     <- as.numeric(substr(output$date, 1, 4))
+  output$mo       <- as.numeric(substr(output$date, 6, 7))
+  output$day      <- as.numeric(substr(output$date, 9, 10))
+  output$stn      <- gsub(pattern = "_.*", replacement = "\\1", x = output$stn, perl=TRUE) # remove anything after the underscore
+  
+  output <- output[-nrow(output), c("stn", "date", "year", "mo", "day", "value")]
+  invisible(output)
+}

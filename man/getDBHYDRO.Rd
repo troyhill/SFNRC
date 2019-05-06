@@ -2,15 +2,15 @@
 % Please edit documentation in R/getDBHYDRO.R
 \name{getDBHYDRO}
 \alias{getDBHYDRO}
-\title{Produce R-friendly water quality data from DBHYDRO}
+\title{Retrieve R-friendly water quality data from DBHYDRO}
 \usage{
-getDBHYDRO(stn = "S333", parameters = c("PHOSPHATE, TOTAL AS P", "TURBIDITY"), 
+getDBHYDRO(stn = "S333", parameters = c("PHOSPHATE, TOTAL AS P|TURBIDITY"), 
     removeFlaggedData = TRUE, outputType = "wide")
 }
 \arguments{
 \item{stn}{character string. Case insensitive.}
 
-\item{parameters}{water quality parameters to report. Set to NA to report all available parameters.}
+\item{parameters}{a grep-style character string identifying water quality parameters to report. Set to NA to report all available parameters. Partial matches are made (e.g., "TURB" and "TURBIDITY" will both yield turbidity data)}
 
 \item{removeFlaggedData}{Logical. Indicates whether flagged data should be removed}
 
@@ -20,7 +20,7 @@ getDBHYDRO(stn = "S333", parameters = c("PHOSPHATE, TOTAL AS P", "TURBIDITY"),
 dataframe \code{getDBHYDRO} returns a dataframe of data
 }
 \description{
-Downloads and lightly processes DBHYDRO data to make it easier to work with in R.
+Downloads and lightly processes DBHYDRO data.
 }
 \examples{
 \dontrun{
