@@ -4,7 +4,7 @@
 \name{finDat}
 \alias{finDat}
 \title{Data: Merged DERM and DataForever water quality data}
-\format{A dataframe with 337667 observations of 7 variables. Created on 13 November 2018.
+\format{A dataframe with 792057 observations of 7 variables. Created on 31 May 2019.
 \describe{
 \item{stn}{station name}
 \item{date}{date of observation}
