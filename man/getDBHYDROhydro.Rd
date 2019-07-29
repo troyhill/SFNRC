@@ -4,10 +4,15 @@
 \alias{getDBHYDROhydro}
 \title{Retrieve R-friendly hydrology data from DBHYDRO}
 \usage{
-getDBHYDROhydro(dbkey = "03638")
+getDBHYDROhydro(dbkey = "03638", startDate = "19600101",
+endDate = gsub(x = Sys.Date(), pattern = "-", replacement = ""))
 }
 \arguments{
 \item{dbkey}{DBkey for station and parameter of interest. Use 'getDBkey()' to find DBkeys associated with a station.}
+
+\item{startDate}{beginning of period of record, in form YYYYMMDD}
+
+\item{endDate}{end of period of record, in form YYYYMMDD}
 }
 \value{
 dataframe \code{getDBHYDROhydro} returns a dataframe of data

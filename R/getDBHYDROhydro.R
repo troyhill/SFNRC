@@ -2,9 +2,12 @@
 #'
 #' @description Downloads and lightly processes DBHYDRO flow/stage data.
 #' 
-#' @usage getDBHYDROhydro(dbkey = "03638")
+#' @usage getDBHYDROhydro(dbkey = "03638", startDate = "19600101",
+#' endDate = gsub(x = Sys.Date(), pattern = "-", replacement = ""))
 #' 
 #' @param dbkey DBkey for station and parameter of interest. Use 'getDBkey()' to find DBkeys associated with a station.
+#' @param startDate beginning of period of record, in form YYYYMMDD
+#' @param endDate end of period of record, in form YYYYMMDD
 #' 
 #' @return dataframe \code{getDBHYDROhydro} returns a dataframe of data
 #' 
@@ -23,8 +26,9 @@
 #' @export
 
 
-getDBHYDROhydro <- function(dbkey = "03638") {
-  urlDL <- paste0("http://my.sfwmd.gov/dbhydroplsql/web_io.report_process?v_period=uspec&v_start_date=19600101&v_end_date=20190131&v_report_type=format6&v_target_code=file_csv&v_run_mode=onLine&v_js_flag=Y&v_db_request_id=5603897&v_where_clause=&v_dbkey=", dbkey, "&v_os_code=Unix&v_interval_count=5&v_cutover_datum=1")
+getDBHYDROhydro <- function(dbkey = "03638", startDate = "19600101",
+                            endDate = gsub(x = Sys.Date(), pattern = "-", replacement = "")) { # format(x = strptime(x = as.character(Sys.Date()), format = "%Y-%m-%d"), "%Y-%m-%d")
+  urlDL <- paste0("http://my.sfwmd.gov/dbhydroplsql/web_io.report_process?v_period=uspec&v_start_date=", startDate, "&v_end_date=", endDate, "&v_report_type=format6&v_target_code=file_csv&v_run_mode=onLine&v_js_flag=Y&v_db_request_id=5603897&v_where_clause=&v_dbkey=", dbkey, "&v_os_code=Unix&v_interval_count=5&v_cutover_datum=1")
   
   fileLoc <- tempfile()
   httr::GET(urlDL, httr::write_disk(fileLoc, overwrite = TRUE), httr::timeout(99999))
