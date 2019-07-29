@@ -1,3 +1,11 @@
+SFNRC version 0.0.9 (release date: TBD)
+==================
+
+Changes:
+* period of record now defined by user inputs in getDBHYDROhydro() (function that uses DBKeys to download general data)
+* more analysis tools, better integration with EGRETci
+
+
 SFNRC version 0.0.7 (release date: 2018-12-13)
 ==================
 
