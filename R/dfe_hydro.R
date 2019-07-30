@@ -253,7 +253,7 @@ getHydro <- function(stns,
   # tempDat <- do.call(rbind, list(flow.list, hw.list, tw.list, stg.list))
   # tempDat <- tempDat[tempDat$param %in% parameter_list, ]
   tempDat <- dat.list[dat.list$param %in% parameter_list, ] # seems duplicative
-  
+  tempDat <- tempDat[tempDat$stn %in% stns, ]  # protects against loading of other WQ files in temp folder
   ### data are output in long form. manipulate to wide or really wide if desired.
   if (!grepl(x = data_shape, pattern = "long")) {
     tempDat <- stats::reshape(tempDat, idvar = c("stn", "date"), timevar = "param", direction = "wide")
@@ -275,7 +275,7 @@ getHydro <- function(stns,
   tempDat$date     <- as.POSIXct(tempDat$date, format = "%Y-%m-%d")
   
   tempDat <- tempDat[order(tempDat$date), ]
-  mergDat <- tempDat
+  
   ########################
   ### merge with water quality data if TRUE
   ########################

@@ -134,6 +134,7 @@ getWQ <- function(stns, target_analytes = "all",
   tempDat <- do.call(rbind, lapply(dat.files, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE, 
                                                                      col.names = output_colNames,
                                                                      colClasses = output_colClasses)))
+  tempDat <- tempDat[tempDat$stn %in% stns, ] # protects against loading of other WQ files in temp folder
   
   if (!target_analytes %in% "all") {
     tempDat <- tempDat[grepl(x = tempDat$param, pattern = target_analytes), ]
