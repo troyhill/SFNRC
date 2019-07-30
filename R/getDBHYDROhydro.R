@@ -64,6 +64,6 @@ getDBHYDROhydro <- function(dbkey = "03638", startDate = "19600101",
   }
     
   ### TODO: optionally, replace "value" with name of parameter obtained from DBKey query?
-  output <- output[-nrow(output), c("stn", "date", "year", "mo", "day", "value")]
+  output <- output[, c("stn", "date", "year", "mo", "day", "value")]
   invisible(output)
 }
