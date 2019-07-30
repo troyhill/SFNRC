@@ -39,7 +39,7 @@ getDBHYDROhydro <- function(dbkey = "03638", startDate = "19600101",
   ### 1. load file, identify first case where DBKEY column == dbkey argument
   ### 3. set skip argument and re-load file
   output_temp <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = 0, header = FALSE)  
-  skip_arg <- min(which(output_temp[, 2] == dbkey)) ### this is potentially a fragile approach to specifying DBKEY column
+  skip_arg <- min(which(output_temp[, 2] == dbkey)) - 2  ### this is potentially a fragile approach to specifying DBKEY column
   
   output <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = skip_arg)  
   
@@ -55,6 +55,14 @@ getDBHYDROhydro <- function(dbkey = "03638", startDate = "19600101",
   output$day      <- as.numeric(substr(output$date, 9, 10))
   output$stn      <- gsub(pattern = "_.*", replacement = "\\1", x = output$stn, perl=TRUE) # remove anything after the underscore
   
+  ### remove marginalia at bottom of file, as seen in 'a <- getDBHYDROhydro(dbkey = "VV474")'
+  pre_trim <- nrow(output)
+  output   <- output[!is.na(output$date), ]
+  
+  if (!nrow(output) == pre_trim) {
+    message(paste(pre_trim - nrow(output), "rows with date = NA trimmed from dataset \n"))
+  }
+    
   ### TODO: optionally, replace "value" with name of parameter obtained from DBKey query?
   output <- output[-nrow(output), c("stn", "date", "year", "mo", "day", "value")]
   invisible(output)
