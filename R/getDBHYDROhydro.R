@@ -60,7 +60,7 @@ getDBHYDROhydro <- function(dbkey = "03638", startDate = "19600101",
   output   <- output[!is.na(output$date), ]
   
   if (!nrow(output) == pre_trim) {
-    message(paste(pre_trim - nrow(output), "rows with date = NA trimmed from dataset \n"))
+    message(paste(pre_trim - nrow(output), "rows with date = NA trimmed from", dbkey, "dataset \n"))
   }
     
   ### TODO: optionally, replace "value" with name of parameter obtained from DBKey query?
