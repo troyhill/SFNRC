@@ -2,7 +2,7 @@
 % Please edit documentation in R/getDBHYDROhydro.R
 \name{getDBHYDROhydro}
 \alias{getDBHYDROhydro}
-\title{Retrieve R-friendly hydrology data from DBHYDRO}
+\title{Retrieve R-friendly hydrology data from DBHYDRO using DB keys}
 \usage{
 getDBHYDROhydro(dbkey = "03638", startDate = "19600101",
 endDate = gsub(x = Sys.Date(), pattern = "-", replacement = ""))
@@ -18,7 +18,7 @@ endDate = gsub(x = Sys.Date(), pattern = "-", replacement = ""))
 dataframe \code{getDBHYDROhydro} returns a dataframe of data
 }
 \description{
-Downloads and lightly processes DBHYDRO flow/stage data.
+Downloads and lightly processes DBHYDRO data. This function uses DB keys to download datasets and is therefore more versatile than getDBHYDRO.
 }
 \examples{
 \dontrun{
