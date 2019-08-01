@@ -286,10 +286,10 @@ getHydro <- function(stns,
     names(wq.temp) <- gsub(x = names(wq.temp), pattern = "value.| |,", replacement = "")
     
     wqDatForMerge <- wq.temp[, c(grep(x = names(wq.temp), pattern = "matrix", value = TRUE, invert = TRUE))] # exclude matrix columns
-    mergDat <- plyr::join_all(list(tempDat, wqDatForMerge), by = c("stn", "date"))
+    tempDat <- plyr::join_all(list(tempDat, wqDatForMerge), by = c("stn", "date"))
   }
 
-  invisible(mergDat) 
+  invisible(tempDat) 
   
   ########################
   ### clean up the temp folder
