@@ -18,6 +18,10 @@
 #' getDBkey(stn = "S12d", type = "FLOW") # find DBkey for station/parameter of interest
 #' fdat <- getDBHYDROhydro(dbkey = "01310") # download data for DBkey
 #' tail(fdat)
+#' 
+#' ### check that instantaneous data is also loaded properly
+#' s333.inst <- getDBHYDROhydro(dbkey = "65086")
+#' tail(s333.inst)
 #' }
 #' 
 #' @importFrom httr GET
@@ -28,18 +32,25 @@
 
 getDBHYDROhydro <- function(dbkey = "03638", startDate = "19600101",
                             endDate = gsub(x = Sys.Date(), pattern = "-", replacement = "")) { # format(x = strptime(x = as.character(Sys.Date()), format = "%Y-%m-%d"), "%Y-%m-%d")
-  urlDL <- paste0("http://my.sfwmd.gov/dbhydroplsql/web_io.report_process?v_period=uspec&v_start_date=", startDate, "&v_end_date=", endDate, "&v_report_type=format6&v_target_code=file_csv&v_run_mode=onLine&v_js_flag=Y&v_db_request_id=5603897&v_where_clause=&v_dbkey=", dbkey, "&v_os_code=Unix&v_interval_count=5&v_cutover_datum=1")
-  
+  urlDL <- paste0("http://my.sfwmd.gov/dbhydroplsql/web_io.report_process?v_period=uspec&v_start_date=", startDate, "&v_end_date=", endDate, "&v_report_type=format6&v_target_code=file_csv&v_run_mode=onLine&v_js_flag=Y&v_db_request_id=5753707&v_where_clause=&v_dbkey=", dbkey, "&v_os_code=Unix&v_interval_count=5&v_cutover_datum=1")
+                # "http://my.sfwmd.gov/dbhydroplsql/web_io.report_process?v_period=uspec&v_start_date="             "&v_end_date="           "&v_report_type=format6&v_target_code=file_csv&v_run_mode=onLine&v_js_flag=Y&v_db_request_id=5753707&v_where_clause=&v_dbkey="         "&v_os_code=Unix&v_interval_count=5&v_cutover_datum=1"
  
   
   fileLoc <- tempfile()
   httr::GET(urlDL, httr::write_disk(fileLoc, overwrite = TRUE), httr::timeout(99999))
-  ### TODO: make robust to odd cases, e.g., a <- getDBHYDROhydro(dbkey = "VV474")
-  ### "skip" is not always = 3
-  ### 1. load file, identify first case where DBKEY column == dbkey argument
-  ### 3. set skip argument and re-load file
+  ### TODO: identify instantaneous data (e.g., dbkey = "65086") and process differently
+  ### 
+  ### 1. load file, check if line 3: stat = INST or MEAN
+  # output_temp <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = 1, header = TRUE, row.names=NULL) 
+  # # row names are shifted right 2
+  # if (output_temp$UNITS[1] == "DA") {
+  #   dataType <- "daily"
+  # } else if (output_temp$UNITS[1] == "INST") {
+  #   dataType <- "inst"
+  # }
+  
   output_temp <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = 0, header = FALSE)  
-  skip_arg <- min(which(output_temp[, 2] == dbkey)) - 2  ### this is potentially a fragile approach to specifying DBKEY column
+  skip_arg <- min(which(output_temp[, 2] == dbkey)) - 1  ### this is potentially a fragile approach to specifying DBKEY column
   
   output <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = skip_arg)  
   
