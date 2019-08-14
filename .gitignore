@@ -6,3 +6,5 @@ SFNRC.Rproj
 temp.txt
 ^.*\\.png$
 .httr-oauth
+*.Rproj
+*.RData
