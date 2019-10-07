@@ -172,4 +172,4 @@ endDate <-  "20060125"
                   dbkey, "&v_os_code=Unix&v_interval_count=5&v_cutover_datum=1")
   
   
-s333.dat <- getDBHYDRO(stn = "S333"parameters = c("PHOSPHATE, TOTAL AS P"))
+s333.dat <- getDBHYDRO(stn = "S333", parameters = c("PHOSPHATE, TOTAL AS P"))
