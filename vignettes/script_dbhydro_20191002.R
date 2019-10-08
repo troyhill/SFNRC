@@ -1,6 +1,6 @@
 library(SFNRC)
-library(EGRET)
-library(dataRetrieval)
+# library(EGRET)
+# library(dataRetrieval)
 
 ### USGS 02319000 WITHLACOOCHEE RIVER NEAR PINETTA, FLA.. 1931-2019
 usgsStn <- read.delim(file = "/home/thill/RDATA/data_usgs02319000_20190507", skip = 15)
@@ -97,6 +97,7 @@ tp.long$units <- "units" # need to set units
 
 # Implement WRTDS ---------------------------------------------------------
 ### using DBHydro
+### Tons of messages: "Removing Sample data that does not have corresponding flow data"
 # cl <- parallel::makePSOCKcluster(detectCores(logical = FALSE) - 2)
 # parallel::registerDoParallel(cl)
 targAnalyte <- "PHOSPHATE, TOTAL AS P"
