@@ -91,7 +91,8 @@ tp.dfe <- lapply(wq.qualified$stn[wq.qualified$param %in% targAnalyte], function
 
 ### set water year (default is 10, 12)
 tp.dfe <- lapply(tp.dfe, setPA, paStart = 10, paLong = 12)
-# save("tp.dfe", "phos.dfe", "dat.dfe", file = "tpBackup_20191010.RData")
+
+# save("targetStns", "phos.dfe", "dat.dfe", "dat.dfe.long", "wq.qualified", "merged.data", file = "tpBackup_20191010_.RData")
 
 
 # diagnostics
