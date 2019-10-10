@@ -101,7 +101,8 @@ lapply(tp.dfe, plotResidPred)
 lapply(tp.dfe, plotResidQ)
 
 # figure 1
-lapply(tp.dfe, plotConcHist, concMax = 0.12, yearStart = 1978)
+lapply(tp.dfe, plotConcHist)
+lapply(tp.dfe, plotConcHist, concMax = 0.05, yearStart = 1978)
 lapply(tp.dfe, plotFluxHist, fluxMax = 0.16, yearStart = 1978)
 
 plotConcHist(tp.dfe[[2]])
