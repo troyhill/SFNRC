@@ -1,6 +1,5 @@
 library(SFNRC)
-# library(EGRET)
-# library(dataRetrieval)
+library(ggplot2)
 
 ### USGS 02319000 WITHLACOOCHEE RIVER NEAR PINETTA, FLA.. 1931-2019
 usgsStn <- read.delim(file = "/home/thill/RDATA/data_usgs02319000_20190507", skip = 15)
@@ -14,8 +13,10 @@ plot(X12s.3 ~ X12s.2, data = usgsStn, ylab = "flow (cfs)", xlab = "stage (ft NGV
 # "S333", "S12A", "S12B", "S12C", "S12D", "S151")
 
 targetStns <- c("S333", "S12D", "S151", 
-                # no water quality data: "S20F", "S21A", "S21", "S123", "S22", "S24", "S336", "S344", "S194", "S120", "S121",
-                "S332", "S179", "S334", "S177", "S18C", "S179", "S7", "S39"
+                # no/inadequate water quality data: "S20F", "S21A", "S21", "S123", "S22", "S24", "S336", "S344", "S194", "S120", "S121", "S334", "S179",  "G93", "S380", "S26", "S30", 
+                # inadequate flow data: "S332", "S177",  "S8", "S32","G56", 
+               "S18C", "S7", "S39",
+               "S12C", "S179"
                 )
 
 
@@ -23,46 +24,90 @@ targetStns <- c("S333", "S12D", "S151",
 
 ### requires linux and SFNRC access
 dat.dfe.long <- getHydro(stns = targetStns, # c(as.character(dfrInBay$stn), structs),
-                    parameter_list = c("flow", "head_water", "salinity", "temperature", "tail_water",
-                                       "stage", "rainfall", "precipitation", "ppt"), data_shape = "long")
+                    parameter_list = c("flow", "head_water" #, "salinity", "temperature", "tail_water", "stage", "rainfall", "precipitation", "ppt"
+                                       ), data_shape = "long")
 dat.dfe <- getHydro(stns = targetStns, # c(as.character(dfrInBay$stn), structs),
-          parameter_list = c("flow", "head_water", "salinity", "temperature", "tail_water",
-          "stage", "rainfall", "precipitation", "ppt"), data_shape = "wide")
+                    parameter_list = c("flow", "head_water" #, "salinity", "temperature", "tail_water", "stage", "rainfall", "precipitation", "ppt"
+                    ), data_shape = "wide")
 head(dat.dfe)
 
-
-targParams    <- c("PHOSPHATE, TOTAL AS P", "TURBIDITY", "AMMONIA-N", "NITRATE+NITRITE-N", "SODIUM", "HARDNESS")
-phos.dfe <- getWQ(stns = targetStns, target_analytes = paste(targParams, collapse = "|"))
+targParams    <- c("PHOSPHATE, TOTAL AS P", "KJELDAHL NITROGEN, TOTAL",  "AMMONIA-N", "NITRATE", "SODIUM", "TURBIDITY", "HARDNESS AS CACO3")
+phos.dfe <- getWQ(stns = targetStns, target_analytes = paste(targParams, collapse = "|"), 
+                  matricesToExclude = "analyte_free_water|unknown")
+phos.dfe <- phos.dfe[phos.dfe$matrix == "surface water", ] # drops 11000 rows
 head(phos.dfe)
-
+ 
 ### Data assessment
+ggplot(dat.dfe, aes(y = flow, x = date)) + geom_point(size = 0.5) + theme_classic() + facet_grid( stn ~ .)
+ggplot(phos.dfe, aes(y = value, x = date)) + geom_point(size = 0.5) + theme_classic() + facet_grid(param ~ stn, scales = "free_y")
+
 ### number of observations per parameter
-ddply(phos.dfe, .(param, stn), summarise, 
+### stations with <200 obs: S334 (all params except TP); S151 (Ca, Na)
+startDate <- "1980-01-01"
+
+wq.summary <- ddply(phos.dfe[phos.dfe$date >= startDate,], .(param, stn), summarise, 
       firstObs = head(datetime, 1),
       lastObs  = tail(datetime, 1),
       count    = sum(!is.na(value)))
+wq.qualified <- wq.summary[(wq.summary$count >= 200), ]
+wq.excluded  <- wq.summary[(wq.summary$count < 200) , ]
 
-
-ddply(dat.dfe.long, .(param, stn), summarise, 
+flow.summary <- ddply(dat.dfe.long[dat.dfe.long$param %in% "flow", ], .(param, stn), summarise, 
       firstObs = head(date, 1),
       lastObs  = tail(date, 1),
-      count    = sum(!is.na(value)))
+      count    = sum(!is.na(value)),
+      days     = round(lastObs - firstObs) + 1)
+flow.qualified <- flow.summary[flow.summary$firstObs <= startDate, ]
+flow.excluded  <- flow.summary[flow.summary$firstObs > startDate, ]
+
+
+
+merged.data <- join_all(list(dat.dfe[(dat.dfe$date >= startDate), ], phos.dfe[phos.dfe$date >= startDate,]), by = c("stn", "date"))
+noFlowData <- merged.data[(merged.data$param %in% "PHOSPHATE, TOTAL AS P") & is.na(merged.data$flow), ]
+nrow(noFlowData)
+unique(noFlowData$stn)
+
+noFlowData.all <- merged.data[is.na(merged.data$flow), ]
+
+### replace NAs with zeroes for relevant data
+# dat.dfe$flow[paste0(dat.dfe$stn, dat.dfe$date) %in% paste0(noFlowData.all$stn, noFlowData.all$date)] <- 0
+# or, remove sample data from dates with no flow data
+phos.dfe <- phos.dfe[!paste0(phos.dfe$stn, phos.dfe$date) %in% paste0(noFlowData.all$stn, noFlowData.all$date), ]
 
 # Implement WRTDS ---------------------------------------------------------
 ### using DBHydro
 # cl <- parallel::makePSOCKcluster(detectCores(logical = FALSE) - 2)
 # parallel::registerDoParallel(cl)
 targAnalyte <- "PHOSPHATE, TOTAL AS P"
-tp.dfe <- lapply(c("S333", "S12D"), function(stnSelect)
+tp.dfe <- lapply(wq.qualified$stn[wq.qualified$param %in% targAnalyte], function(stnSelect)
   modelEstimation(convertToEgret(stn = stnSelect, target_analyte = targAnalyte, 
-                                 wq_data = phos.dfe[phos.dfe$date > "2000-01-01",], flow_data = dat.dfe[dat.dfe$date > "2000-01-01", ])))
+                                 wq_data = phos.dfe[phos.dfe$date >= startDate,], flow_data = dat.dfe[dat.dfe$date >= startDate, ])))
 # parallel::stopCluster(cl)
+
+# tp151 <- phos.dfe[(phos.dfe$date >= startDate) & (phos.dfe$stn %in% "S151") & (phos.dfe$param %in% targAnalyte),]
+# flow151 <- dat.dfe[(dat.dfe$date >= startDate) & (dat.dfe$stn %in% "S151"), ]
+# a <- modelEstimation(convertToEgret(stn = "S151", target_analyte = targAnalyte, 
+#                                wq_data = tp151, flow_data = flow151))
 
 ### set water year (default is 10, 12)
 tp.dfe <- lapply(tp.dfe, setPA, paStart = 10, paLong = 12)
+# save("tp.dfe", "phos.dfe", "dat.dfe", file = "tpBackup_20191010.RData")
+
 
 # diagnostics
 lapply(tp.dfe, plotConcPred)
+lapply(tp.dfe, plotFluxPred)
+lapply(tp.dfe, plotResidPred)
+lapply(tp.dfe, plotResidQ)
+
+# figure 1
+lapply(tp.dfe, plotConcHist, concMax = 0.12, yearStart = 1978)
+lapply(tp.dfe, plotFluxHist, fluxMax = 0.16, yearStart = 1978)
+
+plotConcHist(tp.dfe[[2]])
+
+s151 <- tp.dfe[[2]]
+head(s151$Sample)
 
 ggplot(data = dat.dfe[(dat.dfe$stn %in% "S12D") & (dat.dfe$year == "2017"), ], aes(x = head_water, y = flow, col = mo)) + theme_classic() + geom_point() + labs(y = "flow (cfs)", x = "stage (ft NGVD29)", title = "S12D (2017)")
 
