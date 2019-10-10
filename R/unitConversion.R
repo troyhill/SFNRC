@@ -1,8 +1,8 @@
 #' Convert units
 #'
 #' @param data.source can be "dss" or ...
-#' @param station.type station type
-#' @param units units desired
+#' @param station.type station type. options: transect
+#' @param units units desired. options: kaf, cfs, cms
 #' @param graph_type graph produced
 #' @param digits
 #'
@@ -11,6 +11,7 @@
 #' 
 #' @importFrom stats sd
 #' @export
+#' 
 unitConversion = function(
   #data.type          = 'stage',   # stage, flow, vector
   data.source        = 'dss',
@@ -26,15 +27,26 @@ unitConversion = function(
   #cf=1.0            #only for ${data.source} == netCDF
   #if [[ ${units} == cfs ]]; then cf=0.5041593143 
   cf <- 1
-  if ( tolower(units) == 'k-af'  | tolower(units) == 'kac-ft' ) {
+  
+  ### change arguments to lowercase
+  units        <- tolower(units)
+  station.type <- tolower(station.type)
+  graph_type   <- tolower(graph_type)
+  data.source  <- tolower(data.source)
+  
+  ### argument checking
+  unit_options <- c("kaf", "kac-ft", "k-af", "cfs", "cms", "af", "mm", "cm", "m", "meters", "inch", "in", "inches")
+  if (!units %in% unit_options) stop(paste0("Units argument is not recognized. Acceptable inputs: ", paste(unit_options, collapse = ", ")))
+  
+  if ( units == 'k-af'  | units == 'kac-ft' ) {
     units <- 'kaf'  
   }   
   
-  if ( tolower(station.type) == 'transect' ) {
+  if ( station.type == 'transect' ) {
     
-    if ( tolower(units) == 'cfs' ) { 
+    if ( units == 'cfs' ) { 
       
-      if ( tolower(data.source) == 'netcdf' ) {
+      if ( data.source == 'netcdf' ) {
         cf <- 504.15931434  # may need to change as R code is updated
       }  else {
         cf <- 0.00001157
@@ -42,9 +54,9 @@ unitConversion = function(
       }
     } 
     
-    if ( tolower(units) == 'cms' ) { 
+    if ( units == 'cms' ) { 
       
-      if ( tolower(data.source) == 'netcdf' ) {
+      if ( data.source == 'netcdf' ) {
         cf <- 504.15931434 * 0.0283168  # may need to change as R code is updated
       }  else {
         cf <- 0.00001157 * 0.0283168
@@ -52,9 +64,9 @@ unitConversion = function(
       }
     } 
     
-    if ( tolower(units) == 'kaf' ) { 
+    if ( units == 'kaf' ) { 
       
-      if ( tolower(data.source) == 'netcdf' ) {
+      if ( data.source == 'netcdf' ) {
         cf <- 1.0  # may need to change as R code is updated
       }  else {
         cf <- 0.000000023
@@ -62,9 +74,9 @@ unitConversion = function(
       }
     } 
     
-    if ( tolower(units) == 'af' ) { 
+    if ( units == 'af' ) { 
       
-      if ( tolower(data.source) == 'netcdf' ) {
+      if ( data.source == 'netcdf' ) {
         cf <- 1000  # may need to change as R code is updated
       }  else {
         cf <- 0.000023
@@ -72,29 +84,29 @@ unitConversion = function(
       }
     } 
     
-    #   } else if ( tolower(units) == 'cfs' & tolower(station.type) != 'transect' ) {           # cfs-days to cfs-days
+    #   } else if ( units == 'cfs' & station.type != 'transect' ) {           # cfs-days to cfs-days
     #      cf <- 1.0
     
     
-  } else if ( tolower(units) == 'af' & tolower(station.type) != 'transect' ) {      # cfs-days to af
+  } else if ( units == 'af' & station.type != 'transect' ) {      # cfs-days to af
     cf <- 1.9835
     
-  } else if ( tolower(units) == 'kaf' & tolower(station.type) != 'transect' ) {   # cfs-days to kaf
+  } else if ( units == 'kaf' & station.type != 'transect' ) {   # cfs-days to kaf
     cf <- 0.0019835
     
-  } else if ( tolower(units) == 'cms' & tolower(station.type) != 'transect' ) {   # cfs to cms
+  } else if ( units == 'cms' & station.type != 'transect' ) {   # cfs to cms
     cf <- 0.0283168
     
-  } else if ( tolower(units) == 'mm' ) {
+  } else if ( units == 'mm' ) {
     cf=304.8
     
-  } else if ( tolower(units) == 'cm' ) {
+  } else if ( units == 'cm' ) {
     cf <- 30.48
     
-  } else if ( tolower(units) == 'm' | tolower(units) == 'meters' ) {
+  } else if ( units == 'm' | units == 'meters' ) {
     cf <- 0.3048
     
-  } else if ( tolower(units) == 'inch' | tolower(units) == 'in' | tolower(units) == 'inches' ) {
+  } else if ( units == 'inch' | units == 'in' | units == 'inches' ) {
     cf <- 12.0
     
   } else {
