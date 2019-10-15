@@ -50,7 +50,7 @@ getDBHYDROhydro <- function(dbkey = "03638", startDate = "19600101",
   # }
   
   output_temp <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = 0, header = FALSE)  
-  skip_arg <- min(which(output_temp[, 2] == dbkey)) - 1  ### this is potentially a fragile approach to specifying DBKEY column
+  skip_arg <- min(which(output_temp[, 2] == dbkey)) - 2  ### this is potentially a fragile approach to specifying DBKEY column
   
   output <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = skip_arg)  
   
