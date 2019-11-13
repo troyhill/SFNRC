@@ -2,14 +2,13 @@
 #'
 #' @param stn target station. Not case-sensitive.
 #' @param target_analyte Water quality parameter of interest. Internally converted to R-friendly form (no commas, hyphens, spaces).
-#' @param wq_data water quality dataframe. Product of \code{\link{getWQ}}
+#' @param wq_data water quality dataframe. Product of \code{\link{getWQ}}. In the \code{convertEgret} output, the date range in \code{wq_data} is modified to be the intersection of \code{wq_data} and \code{flow_data}
 #' @param flow_data flow dataframe. Product of \code{\link{getHydro}}. If set to NA, a dataframe of flow = 1.1 m3/s is created and used for analysis. This workaround is designed to allow WRTDS on stations without discharge data (e.g., open-water stations) but may not be mathematically sound. 
 #' @param interact logical Option for interactive mode. If true, there is user interaction for error handling and data checks. FALSE by default
 #' @param paStart Starting month of period of analysis. Defaults to 10. Used in most EGRET functions
 #' @param paLong Length in number of months of period of analysis. Defaults to 12. Used in most EGRET functions
 #' @param watershedKm Watershed area in km2, used to calculate runoff. Defaults to 1
 #' @param removeNegativeFlow logical, defaults to TRUE. Indicates whether negative flow data should be removed during pre-processing. EGRET tools do not accommodate negative flows.
-#' @param ... additional arguments sent to EGRET::mergeReport
 #' 
 #' @return a list as created by \code{\link[EGRET]{mergeReport}}
 #' @export
@@ -42,7 +41,7 @@
 #'      }
 
 convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL, interact = FALSE,
-                           paStart = 10, paLong = 12, watershedKm = 1, removeNegativeFlow = TRUE, ...) {
+                           paStart = 10, paLong = 12, watershedKm = 1, removeNegativeFlow = TRUE) {
   ### function converts DataForEver data to EGRET format for WRTDS analysis
   
   stn <- toupper(stn)
@@ -113,8 +112,15 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   INFO.data <- createInfo(wq_data = wq_data, paStart = paStart, # see output for ?EGRET::INFOdataframe. starting month for analysis
                           paLong = paLong, watershedKm = watershedKm)
   
+  ### identify intersection of date ranges in sample and flow data
+  minDate <- max(min(flow.daily$Date, na.rm = TRUE), min(Sample.data$Date, na.rm = TRUE))
+  maxDate <- min(max(flow.daily$Date, na.rm = TRUE), max(Sample.data$Date, na.rm = TRUE))
+  
+  
   ### merge them
-  eList_orig <- EGRET::mergeReport(INFO = INFO.data, Daily = flow.daily, Sample = Sample.data,
+  eList_orig <- EGRET::mergeReport(INFO = INFO.data, 
+                                   Daily = flow.daily[(flow.daily$Date >= minDate) & (flow.daily$Date <= maxDate)], 
+                                   Sample = Sample.data[(Sample.data$Date >= minDate) & (Sample.data$Date <= maxDate)],
                                    surfaces = NA, verbose = interact)
   eList_orig
 }

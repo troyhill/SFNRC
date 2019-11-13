@@ -4,7 +4,7 @@
 \alias{eBootReport}
 \title{Extract useful information from bootstrapped WRTDS output}
 \usage{
-eBootReport(data = eBoot, eList = NULL,
+eBootReport(data, eList = NULL,
 flux = FALSE, conc = TRUE, text = FALSE)
 }
 \arguments{

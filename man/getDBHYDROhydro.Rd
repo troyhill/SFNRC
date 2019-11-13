@@ -26,6 +26,10 @@ Downloads and lightly processes DBHYDRO data. This function uses DB keys to down
 getDBkey(stn = "S12d", type = "FLOW") # find DBkey for station/parameter of interest
 fdat <- getDBHYDROhydro(dbkey = "01310") # download data for DBkey
 tail(fdat)
+
+### check that instantaneous data is also loaded properly
+s333.inst <- getDBHYDROhydro(dbkey = "65086")
+tail(s333.inst)
 }
 
 }

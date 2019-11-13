@@ -4,7 +4,8 @@
 #' @param station.type station type. options: transect
 #' @param units units desired. options: kaf, cfs, cms
 #' @param graph_type graph produced
-#' @param digits
+#' @param digits.precision decimal places reported
+#' @param DEBUG not sure what this is for
 #'
 #' @return value
 #'
@@ -119,7 +120,7 @@ unitConversion = function(
   print(paste("the station.type is ",station.type, sep=''))
   print(paste("the units are ",units, sep=''))
   print(paste("the conversion factor is ",cf, sep=''))
-  print(paste("the statFlag is ",statFlag, sep=''))
+  # print(paste("the statFlag is ",statFlag, sep=''))
   print("")
   
   #return(list(cf,statFlag))

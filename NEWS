@@ -1,9 +1,10 @@
-SFNRC version 0.0.9 (release date: TBD)
+SFNRC version 0.0.9 (release date: 2019-11-13)
 ==================
 
 Changes:
 * period of record now defined by user inputs in getDBHYDROhydro() (function that uses DBKeys to download general data)
 * more analysis tools, better integration with EGRETci
+* convertToEgret() restricts date ranges for the sample and flow data to be the period of overlapping data. This reduces convergence problems in WRTDS survival regression.
 
 
 SFNRC version 0.0.7 (release date: 2018-12-13)

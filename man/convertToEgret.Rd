@@ -6,14 +6,14 @@
 \usage{
 convertToEgret(stn, target_analyte, wq_data = NULL, flow_data = NULL,
   interact = FALSE, paStart = 10, paLong = 12, watershedKm = 1,
-  removeNegativeFlow = TRUE, ...)
+  removeNegativeFlow = TRUE)
 }
 \arguments{
 \item{stn}{target station. Not case-sensitive.}
 
 \item{target_analyte}{Water quality parameter of interest. Internally converted to R-friendly form (no commas, hyphens, spaces).}
 
-\item{wq_data}{water quality dataframe. Product of \code{\link{getWQ}}}
+\item{wq_data}{water quality dataframe. Product of \code{\link{getWQ}}. In the \code{convertEgret} output, the date range in \code{wq_data} is modified to be the intersection of \code{wq_data} and \code{flow_data}}
 
 \item{flow_data}{flow dataframe. Product of \code{\link{getHydro}}. If set to NA, a dataframe of flow = 1.1 m3/s is created and used for analysis. This workaround is designed to allow WRTDS on stations without discharge data (e.g., open-water stations) but may not be mathematically sound.}
 
@@ -26,8 +26,6 @@ convertToEgret(stn, target_analyte, wq_data = NULL, flow_data = NULL,
 \item{watershedKm}{Watershed area in km2, used to calculate runoff. Defaults to 1}
 
 \item{removeNegativeFlow}{logical, defaults to TRUE. Indicates whether negative flow data should be removed during pre-processing. EGRET tools do not accommodate negative flows.}
-
-\item{...}{additional arguments sent to EGRET::mergeReport}
 }
 \value{
 a list as created by \code{\link[EGRET]{mergeReport}}
