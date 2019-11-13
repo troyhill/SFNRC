@@ -119,8 +119,8 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   
   ### merge them
   eList_orig <- EGRET::mergeReport(INFO = INFO.data, 
-                                   Daily = flow.daily[(flow.daily$Date >= minDate) & (flow.daily$Date <= maxDate)], 
-                                   Sample = Sample.data[(Sample.data$Date >= minDate) & (Sample.data$Date <= maxDate)],
+                                   Daily = flow.daily[(flow.daily$Date >= minDate) & (flow.daily$Date <= maxDate), ], 
+                                   Sample = Sample.data[(Sample.data$Date >= minDate) & (Sample.data$Date <= maxDate), ],
                                    surfaces = NA, verbose = interact)
   eList_orig
 }
