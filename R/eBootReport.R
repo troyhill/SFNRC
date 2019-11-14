@@ -2,7 +2,7 @@
 #'
 #' @description Summarizes concentration and/or flux trends identified by EGRETci utilities.
 #' 
-#' @usage eBootReport(data = eBoot, eList = NULL,
+#' @usage eBootReport(data, eList = NULL,
 #' flux = FALSE, conc = TRUE, text = FALSE)
 #' 
 #' @param data eBoot results from EGRETci
@@ -40,7 +40,7 @@
 
 
 
-eBootReport <- function(data = eBoot, eList = NULL,
+eBootReport <- function(data, eList = NULL,
                         flux = FALSE, conc = TRUE, text = FALSE) {
   if (!is.null(eList)) {
     stn   <- eList$INFO$staAbbrev

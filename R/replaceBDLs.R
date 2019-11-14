@@ -25,7 +25,7 @@ replaceBDLs <- function(data, valueCol = "value", mdlCol = "mdl",
 ) {
   # replaces values below MDLs
   data$bdl <- 0 
-  pb <- txtProgressBar(style = 3, min = 0, max = nrow(data))
+  pb <- utils::txtProgressBar(style = 3, min = 0, max = nrow(data))
   for (i in 1:nrow(data)) {
     if (is.na(data[, valueCol][i]) && !is.na(data[, mdlCol][i])) {
       if ((data[, mdlCol][i] > 0) & (data[, mdlCol][i] < 50)) { # idk why, but there's a -5 and a 100 in the mdl data

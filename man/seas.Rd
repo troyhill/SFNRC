@@ -22,7 +22,7 @@ two columns are appended to the input dataframe
 See above. Water year 2015 runs from Oct 01 2014 - Sept 30 2015.
 }
 \examples{
-a <- seas(wqDat, timeCol = "datetime")
+a <- seas(head(wqDat), timeCol = "datetime")
 head(a)
 
 }

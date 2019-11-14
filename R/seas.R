@@ -12,7 +12,7 @@
 #' @return two columns are appended to the input dataframe
 #' 
 #' @examples
-#' a <- seas(wqDat, timeCol = "datetime")
+#' a <- seas(head(wqDat), timeCol = "datetime")
 #' head(a)
 #' 
 #' @importFrom utils write.table

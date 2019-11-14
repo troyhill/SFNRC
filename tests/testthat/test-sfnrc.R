@@ -85,15 +85,11 @@ test_that("dbhydro.proj input checks", {
 
 test_that("dbhydro.stn.batch test", {
   expect_error(dbhydro.stn.batch(codes = 20))
-  expect_error(dbhydro.stn.batch(codes = "string", report_type = "string"))
-  
 })
 
 
 test_that("dbhydro.proj.batch test", {
   expect_error(dbhydro.proj.batch(codes = 20))
-  expect_error(dbhydro.proj.batch(codes = "string", destfile = 20))
-  
 })
 
 
