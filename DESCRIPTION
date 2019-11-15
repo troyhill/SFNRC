@@ -1,8 +1,8 @@
 Package: SFNRC
 Type: Package
 Title: APIs and Tools for Processing Data from DataForEver, DBHYDRO, and Miami-Dade Department of Environmental Resources Management
-Version: 0.0.9
-Date: 2019-11-13
+Version: 0.0.10
+Date: 2019-11-15
 Authors@R: c(
     person("Troy", "Hill", role = c("aut", "cre"), email = "Hill.Troy@gmail.com", comment = c(ORCID = "0000-0003-2980-4099")),
     person()

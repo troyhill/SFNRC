@@ -45,16 +45,18 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   ### function converts DataForEver data to EGRET format for WRTDS analysis
   
   stn <- toupper(stn)
-  ### make analyte name rFriendly
-  target_analyte <-  gsub(x = target_analyte, pattern = " |,",   replacement = "")
-  target_analyte <-  gsub(x = target_analyte, pattern = "-|[+]", replacement = "")
   
   ### download data if either dataset is not provided by user
   if (is.null(wq_data)) {
     wq_data     <- data.frame(getWQ(stns = stn, target_analytes = target_analyte, rFriendlyParamNames = TRUE))
   }
-  wq_data$param <- gsub(x = wq_data$param, pattern = " |,", replacement = "")
-  wq_data$param <- gsub(x = wq_data$param, pattern = "-|[+]", replacement = ".")
+  
+  ### make analyte name rFriendly - apply same treatment to target_analyte and wq_data$param
+  target_analyte <- gsub(x = target_analyte, pattern = " |,",   replacement = "")
+  wq_data$param  <- gsub(x = wq_data$param,  pattern = " |,",   replacement = "")
+  target_analyte <- gsub(x = target_analyte, pattern = "-|[+]", replacement = ".")
+  wq_data$param  <- gsub(x = wq_data$param,  pattern = "-|[+]", replacement = ".")
+  
   wq_data       <- data.frame(wq_data[(wq_data$stn %in% stn) & (wq_data$param %in% target_analyte), ])
   ### prep sample dataframe (water quality data)
   # ConcLow	 numeric	 Lower limit of concentration
