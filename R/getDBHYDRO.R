@@ -53,7 +53,7 @@ getDBHYDRO <- function(stn = "S333", parameters = c("PHOSPHATE, TOTAL AS P|TURBI
   }
   
   ### remove everything but surface water samples (lose field and equipment blanks)
-  a <- a[grepl(x = a$Matrix, pattern = "SW") & grepl(x = a$Sample.Type.New, pattern = "SAMP"), ]
+  a <- a[grepl(x = a$Matrix, pattern = "SW|SA") & grepl(x = a$Sample.Type.New, pattern = "SAMP"), ]
    
   ### process date data
   a$datetime <- NA 
