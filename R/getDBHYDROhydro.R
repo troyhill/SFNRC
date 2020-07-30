@@ -65,7 +65,7 @@ getDBHYDROhydro <- function(dbkey = "03638", startDate = "19600101",
     output$units     <- unitName
     ### process dates
 
-    output$date <- as.POSIXct(as.character(tolower(output$date[1])), format = "%d-%b-%Y %X")
+    output$date <- as.POSIXct(as.character(tolower(output$date)), format = "%d-%b-%Y %X")
     
     # output$date <- gsub(pattern = "([a-zA-Z]{2}-.*)", replacement = "\\L\\1", x = output$date, perl=TRUE)
     # output$date <- as.POSIXct(strptime(output$date, format = "%d-%b-%Y"))
