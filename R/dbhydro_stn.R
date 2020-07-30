@@ -124,10 +124,16 @@ dbhydro.stn <- function(destfile = "stn_report_todaysDate.csv",
                      "&v_target_code=", destination
   )
   
+  output <- NULL
+  
   httr::GET(url.init, httr::write_disk(paste0(tempdir(), destfile), overwrite = TRUE), httr::timeout(99999))
   if (import_data == TRUE) {
     output <- utils::read.csv(paste0(tempdir(), destfile), stringsAsFactors = FALSE)
   }
+  
+  unlink(paste0(tempdir(), destfile))
+  
+  invisible(output)
   # nocov end
 }
 

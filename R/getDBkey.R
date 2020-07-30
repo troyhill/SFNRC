@@ -49,7 +49,7 @@ getDBkey <- function(stn = "S333", type = "all", freq = "all", activeOnly = TRUE
   }
   
   if (activeOnly == TRUE) {
-    outDat <- outDat[outDat$`End Date` >= (Sys.Date() - 90), ]
+    outDat <- outDat[(outDat$`End Date` >= (Sys.Date() - 90)) & (!is.na(outDat$`End Date`)), ]
   } 
   
   return(outDat)

@@ -32,7 +32,7 @@ getDBHYDRO <- function(stn = "S333", parameters = c("PHOSPHATE, TOTAL AS P|TURBI
   stn        <- toupper(stn)
   parameters <- toupper(parameters)
   
-  a          <- SFNRC::dbhydro.stn(stations = stn, import = TRUE)
+  a          <- SFNRC::dbhydro.stn(stations = stn, import_data = TRUE)
   
   i    <- sapply(a, is.factor) # convert factor columns to character
   a[i] <- lapply(a[i], as.character)
