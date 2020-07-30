@@ -23,12 +23,14 @@ Downloads and lightly processes DBHYDRO data. This function uses DB keys to down
 \examples{
 \dontrun{
 ### example workflow:
-getDBkey(stn = "S12d", type = "FLOW") # find DBkey for station/parameter of interest
-fdat <- getDBHYDROhydro(dbkey = "01310") # download data for DBkey
-tail(fdat)
+getDBkey(stn = "S333", type = "FLOW") # find DBkey for station/parameter of interest
+s333.daily <- getDBHYDROhydro(dbkey = "15042") # download data for DBkey
+tail(s333.daily)
 
 ### check that instantaneous data is also loaded properly
-s333.inst <- getDBHYDROhydro(dbkey = "65086")
+### downloading large datasets may take a very long time
+s333.inst <- getDBHYDROhydro(dbkey = "65086", 
+   startDate = gsub(x = Sys.Date(), pattern = "-", replacement = ""))
 tail(s333.inst)
 }
 

@@ -27,7 +27,7 @@ getDataTypes(parameter = "salinity")
 ### search by station:
 getDataTypes(stn = "S333")
 getDataTypes(stn = "S333", exactMatch = TRUE) # note that the function does not use exact matches
-     # unless requested to do so using \\code{fixed = TRUE}
+     # unless requested to do so using \code{fixed = TRUE}
 }
 
 

@@ -4,7 +4,7 @@
 \alias{getDBkey}
 \title{Retrieve DBkeys from DBHYDRO}
 \usage{
-getDBkey(stn = "S333", type = "all", freq = "all")
+getDBkey(stn = "S333", type = "all", freq = "all", activeOnly = TRUE)
 }
 \arguments{
 \item{stn}{character string. Case insensitive.}
@@ -12,6 +12,8 @@ getDBkey(stn = "S333", type = "all", freq = "all")
 \item{type}{type of data desired, e.g., "FLOW" or "STG". Must be a perfect match, so it's a good idea to leave this set to "all".}
 
 \item{freq}{desired data frequency, e.g., "DA" or "INST". Must be a perfect match, so it's a good idea to leave this set to "all".}
+
+\item{activeOnly}{logical (default = TRUE). If set to TRUE, only active DBKeys are reported. "Active" is defined as having new data within the last three months (to accommodate lengthy pandemic disruptions)}
 }
 \value{
 dataframe \code{getDBkey} returns a dataframe of data

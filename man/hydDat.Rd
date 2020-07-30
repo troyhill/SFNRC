@@ -4,7 +4,8 @@
 \name{hydDat}
 \alias{hydDat}
 \title{Data: DataForever hydrology data}
-\format{A dataframe of flow, headwater, tailwater, and stage data for structures. Created on 19 October 2018.
+\format{
+A dataframe of flow, headwater, tailwater, and stage data for structures. Created on 19 October 2018.
 \describe{
 \item{stn}{station name}
 \item{date}{date of record, POSIXct}
@@ -16,7 +17,8 @@
 \item{mo}{month (extracted from date column)}
 \item{day}{day (extracted from date column)}
 \item{value}{amount of parameter measured}
-}}
+}
+}
 \usage{
 hydDat
 }

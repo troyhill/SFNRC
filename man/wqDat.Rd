@@ -4,7 +4,8 @@
 \name{wqDat}
 \alias{wqDat}
 \title{Data: DataForEver water quality data for northern boundary of Everglades National Park}
-\format{A dataframe of water quality data from DataForEver, downloaded on 16 October 2018.
+\format{
+A dataframe of water quality data from DataForEver, downloaded on 16 October 2018.
 \describe{
 \item{stn}{station name}
 \item{date}{date of observation}
@@ -14,7 +15,8 @@
 \item{value}{amount of parameter measured}
 \item{mdl}{method detection limit, where available}
 \item{src}{data source (DataForEver)}
-}}
+}
+}
 \usage{
 wqDat
 }

@@ -4,7 +4,8 @@
 \name{finDat}
 \alias{finDat}
 \title{Data: Merged DERM and DataForever water quality data}
-\format{A dataframe with 792057 observations of 7 variables. Created on 31 May 2019.
+\format{
+A dataframe with 792057 observations of 7 variables. Created on 31 May 2019.
 \describe{
 \item{stn}{station name}
 \item{date}{date of observation}
@@ -13,7 +14,8 @@
 \item{year}{year (extracted from date column)}
 \item{value}{amount of parameter measured}
 \item{mdl}{method detection limit, where available}
-}}
+}
+}
 \usage{
 finDat
 }

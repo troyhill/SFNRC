@@ -4,9 +4,14 @@
 \alias{unitConversion}
 \title{Convert units}
 \usage{
-unitConversion(data.source = "dss", station.type = "transect",
-  units = "kaf", graph_type = "barchart", digits.precision = 3,
-  DEBUG = FALSE)
+unitConversion(
+  data.source = "dss",
+  station.type = "transect",
+  units = "kaf",
+  graph_type = "barchart",
+  digits.precision = 3,
+  DEBUG = FALSE
+)
 }
 \arguments{
 \item{data.source}{can be "dss" or ...}

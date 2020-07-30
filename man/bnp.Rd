@@ -4,7 +4,8 @@
 \name{bnp}
 \alias{bnp}
 \title{Data: Biscayne Bay political boundaries}
-\format{A shapefile of political boundaries in Biscayne Bay, Florida. These are a subset of areas of Biscayne Bay defined as Outstanding Florida Waters. Coordinate reference system is "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+\format{
+A shapefile of political boundaries in Biscayne Bay, Florida. These are a subset of areas of Biscayne Bay defined as Outstanding Florida Waters. Coordinate reference system is "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 \describe{
 \item{OBJECTID}{a SpatialPolygonDataFrame of Biscayne Bay}
 \item{CODE}{area of basin in hectares}
@@ -18,7 +19,8 @@
 \item{WATERSHED}{unclear}
 \item{Shape_Leng}{unclear}
 \item{Shape_Area}{area of polygon, units unclear}
-}}
+}
+}
 \usage{
 bnp
 }
@@ -37,7 +39,7 @@ bnp <- readOGR(shp, layer = basename(strsplit(shp, "\\\\.")[[1]])[1], pointDropZ
 bnp <- spTransform(bnp, 
      CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 ### isolate just the areas of interest
-bnp <- bnp[as.character(bnp$OBJECTID) \\\%in\\\% c("423", "363", "290", "192"), ]
+bnp <- bnp[as.character(bnp$OBJECTID) \\%in\\% c("423", "363", "290", "192"), ]
 }
 
 }

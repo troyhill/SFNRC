@@ -4,9 +4,17 @@
 \alias{convertToEgret}
 \title{Convert DataForEver output to EGRET-compatible input}
 \usage{
-convertToEgret(stn, target_analyte, wq_data = NULL, flow_data = NULL,
-  interact = FALSE, paStart = 10, paLong = 12, watershedKm = 1,
-  removeNegativeFlow = TRUE)
+convertToEgret(
+  stn,
+  target_analyte,
+  wq_data = NULL,
+  flow_data = NULL,
+  interact = FALSE,
+  paStart = 10,
+  paLong = 12,
+  watershedKm = 1,
+  removeNegativeFlow = TRUE
+)
 }
 \arguments{
 \item{stn}{target station. Not case-sensitive.}

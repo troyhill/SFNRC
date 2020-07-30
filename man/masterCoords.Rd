@@ -4,12 +4,14 @@
 \name{masterCoords}
 \alias{masterCoords}
 \title{Data: Coordinates for water quality and hydrology stations in DataForEver}
-\format{A dataframe with 5109 monitoring stations. Coordinate reference system is "+init=epsg:3512".
+\format{
+A dataframe with 5109 monitoring stations. Coordinate reference system is "+init=epsg:3512".
 \describe{
 \item{stn}{station name}
 \item{long}{station longitude in decimal degrees}
 \item{lat}{station latitude in decimal degrees}
-}}
+}
+}
 \usage{
 masterCoords
 }

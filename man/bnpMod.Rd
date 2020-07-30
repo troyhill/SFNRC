@@ -4,12 +4,14 @@
 \name{bnpMod}
 \alias{bnpMod}
 \title{Data: Biscayne Bay model boundaries}
-\format{A shapefile of model boundaries in Biscayne Bay, Florida. Coordinate reference system is "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
+\format{
+A shapefile of model boundaries in Biscayne Bay, Florida. Coordinate reference system is "+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"
 \describe{
 \item{HECTARES}{area of basin in hectares}
 \item{BOX_CODE}{basin code}
 \item{Box_Basin}{name of basin}
-}}
+}
+}
 \usage{
 bnpMod
 }
@@ -25,7 +27,7 @@ shp <- "/opt/physical/troy/ESRIDATA/enp_boundary_line/modelBoxes.shp"
       # "/opt/physical/troy/ESRIDATA/BNP_boundary.shp"
 bnpMod <- readOGR(shp, layer = basename(strsplit(shp, "\\\\.")[[1]])[1], 
      pointDropZ = TRUE, stringsAsFactors = FALSE)
-bnpMod <- bnpMod[as.character(bnpMod$BOX_CODE) \\\%in\\\% 
+bnpMod <- bnpMod[as.character(bnpMod$BOX_CODE) \\%in\\% 
       c("SNB", "NCI", "NCO", "NNB", "SCO", "SCI", "SCM", "CS", "FBE"), ]
 bnpMod <- spTransform(bnpMod, 
       CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))

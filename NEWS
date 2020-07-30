@@ -1,4 +1,11 @@
-SFNRC version 0.0.10 (release date: TBD)
+SFNRC version 0.0.11 (release date: 2020-07-29)
+==================
+Changes:
+* getDBHYDROhydro now accommodates downloads of instantaneous data from DBHYDRO
+* getDBkey now has an option (enabled by default) to only report dbkeys for active time series (those with new data reported in the past 90 days)
+
+
+SFNRC version 0.0.10 (release date: 2020-03-01)
 ==================
 
 Changes:
