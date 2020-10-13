@@ -1,0 +1,224 @@
+---
+title: 'Exploring DBHYDRO data using the SFNRC R package'
+subtitle: ''
+output: 
+  pdf_document: 
+latex_engine: pdflatex
+vignette: >
+  %\VignetteIndexEntry{DBHYDRO}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[UTF-8]{inputenc}
+mainfont: FreeMono
+header-includes:
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+- \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+pkgs.used <- c("devtools", "knitr", "rmarkdown", "ggplot2", "scales", "SFNRC")
+pkgs.to.install <- pkgs.used[!pkgs.used %in% installed.packages()]
+if (length(pkgs.to.install) > 0) {
+  install.packages(pkgs.to.install)
+}
+if (!"SFNRC" %in% installed.packages()) {
+  devtools::install_github("troyhill/SFNRC")
+}
+lapply(X = pkgs.used, FUN = require, character.only = TRUE)
+
+theme_set(theme_bw())
+
+knitr::opts_chunk$set(echo = TRUE, comment=NA)
+```
+
+\vspace{12pt}
+\vspace{12pt}
+
+## 1. Introduction
+
+Among the tools provided in the `SFNRC` R package is a simple, streamlined means of interacting with the DBHYDRO hydrology and water quality. This vignette demonstrates some of the DBHYDRO functionality.
+
+
+\vspace{12pt}
+
+
+\vspace{3mm}\hrule
+\vspace{12pt}
+
+
+
+\vspace{12pt}
+\vspace{12pt}
+
+```{r, echo = FALSE, include=FALSE}
+# if the NitrogenUptake2016 package isn't installed, use devtools to do so:
+# set some constants
+todaysDate <- substr(as.character(Sys.time()), 1, 10)
+pointSize <- 2 # for ggplot graphics
+pd <- pd2 <- position_dodge(1.2)
+pd3 <- position_dodge(0.8)
+grayColor <- 0.55
+fig2Col   <- "gray55"
+
+
+```
+
+\vspace{12pt}
+\vspace{12pt}
+
+
+## 2. Hydrologic data
+\vspace{12pt}
+
+The starting point for DBHYDRO hydrologic data is identifying the relevant DBKey. getDBkey displays the DBkeys associated with a structure. The input is not case sensitive, and partial searches will return broader results. The default behavior for `getDBkey()` is to return active DBkeys; those with new data added during the past 90 days. Setting the argument `activeOnly = FALSE` returns all DBkeys. 
+
+\vspace{12pt}
+
+```{r stn_query, include=TRUE, echo=TRUE, eval=FALSE}
+getDBkey("s333") # returns actively used dbkeys by default
+
+getDBkey("s333", activeOnly = FALSE) # returns *all* dbkeys tied to S-333
+
+getDBkey("s33") # returns all stations starting with "s33"
+
+```
+
+\vspace{12pt}
+
+Identifying DBkeys can be labor intensive, but use of scripting means it only needs to be done once. Once a DBkey is identified we can download data directly from R. This is done with the `getDBHYDROhydro()` function (poorly-named, in retrospect):
+
+
+```{r stn_query2, include=TRUE, echo=TRUE, eval=FALSE}
+### we'll pull data for some time period
+beginDate <- "20200401"
+finalDate <- "20201001"
+
+flowDat <- getDBHYDROhydro(dbkey = "15042", startDate = beginDate, endDate = finalDate)
+
+head(flowDat)
+
+```
+
+
+\vspace{12pt}
+
+This operation can be easily performed on larger numbers of stations with use of `lapply`, `do.call`, and `rbind`. For example, if one wanted to pull data for several stations at the northern boundary of Everglades National Park:
+
+\vspace{12pt}
+
+```{r stn_query3, include=TRUE, echo=TRUE, eval=FALSE}
+
+target.keys <- c("03620", "03626", "03632",
+                 "03638", "91487", "64136")
+
+flow.data    <- do.call(rbind, lapply(target.keys,  getDBHYDROhydro, 
+                                      startDate = beginDate, endDate = finalDate))
+
+```
+
+
+\vspace{12pt}
+
+The above data are in a tidyr-friendly format and can be easily plotted.
+
+\vspace{12pt}
+
+
+```{r stn_query4, include=TRUE, echo=TRUE, eval=FALSE}
+
+ggplot(flow.data, aes(y = value, x = date)) + geom_area(aes(fill= stn), 
+        color = "gray50", alpha = 0.3, position = 'stack') + 
+        theme_classic() + ylab("Daily flow across Tamiami Trail (cfs)") + 
+        xlab("") + theme(legend.title=element_blank()) + 
+        scale_fill_brewer(palette = "RdYlGn") + ylim(0, 3700)
+
+### no-flow data can appear as zeroes or NAs.
+### changing NAs to zero can improve the behavior of stacked charts.
+flow.data2 <- flow.data
+flow.data2$value[is.na(flow.data2$value)] <- 0
+
+ggplot(flow.data2, aes(y = value, x = date)) + geom_area(aes(fill= stn), 
+        color = "gray50", alpha = 0.3, position = 'stack') + 
+        theme_classic() + ylab("Daily flow across Tamiami Trail (cfs)") + 
+        xlab("") + theme(legend.title=element_blank()) + 
+        scale_fill_brewer(palette = "RdYlGn") + ylim(0, 3700)
+
+```
+
+
+
+\vspace{12pt}
+\vspace{12pt}
+
+## 3. Water quality data
+\vspace{12pt}
+
+Using `SFNRC` to download DBHYDRO's water quality data is very straightforward. The water quality database is accessed using the function `getDBHYDRO()`. The only critical input is the name of the station according to DBHYDRO (including DBHYDRO's hyphens, capitalization, etc.). Note that this function can be slow because it downloads the full period of record.
+
+The `parameters` argument accepts a regex-style input specifying the parameters desired. 
+
+The `outputType` argument is very useful for returning data in the appropriate shape for your intended analysis. `outputType = 'full'` returns a long dataset with all samples (possibility of multiple samples on a single day). Setting `outputType` to "long" or "wide" average duplicate samples and returns a long dataset (one column with parameter names and one column with parameter values) or a wide dataset (one column of values for each parameter). The "long" form reports more information (units, MDL, PQL, RDL) than the "wide" form, which only reports values for each parameter.
+
+\vspace{12pt}
+
+
+```{r wq, include=TRUE, echo=TRUE, results = "hide"}
+
+longDat <- getDBHYDRO(stn = "s333", outputType = "long")
+wideDat <- getDBHYDRO(stn = "s333", outputType = "wide")
+
+tail(longDat)
+tail(wideDat)
+
+# identify desired stations and water quality parameters
+stations   <- c("S333")
+wqParams   <- c("PHOSPH|NITROGEN|TURBIDITY") # partial matches are acceptable
+
+wqDat <- getDBHYDRO(stn = stations, parameters = wqParams)
+
+
+```
+
+
+\vspace{12pt}
+
+The water quality parameters available at a station, and the number of samples for each, can be shown with the `getDBHYDROparams()` function. This function is a bit slow because it has to download all available data, but it can be useful if you're not sure what's available at a station.
+
+
+```{r wq2, include=TRUE, echo=TRUE, results = "hide"}
+
+stnDat <- getDBHYDROparams(stn = "s333")
+
+head(stnDat)
+
+
+```
+
+
+
+\vspace{12pt}
+
+These functions provide a foundation for a variety of workflows. For one example, water quality and hydrology data can be merged and analyzed together.
+
+
+\vspace{12pt}
+
+```{r hydro_get_data2, include=TRUE, message = FALSE, warning = FALSE, eval = FALSE}
+stations <- c("S333", "S12D")
+
+### download water quality data for multiple stations. rbind.fill joins the 
+### station-level data while accommodating missing parameters
+wqDat <- do.call(plyr::rbind.fill, lapply(stations, getDBHYDRO, parameters = wqParams))
+
+### 
+allDat <- plyr::join_all(list(flow.data, wqDat), 
+                         by = c("stn", "date", "year", "mo", "day"))
+
+ggplot(allDat, aes(y = PHOSPHATETOTALASP, x = value, col = stn)) + 
+  geom_point() + facet_wrap(~stn) + ylab("Phosphate (total; mg P/L)") + 
+  xlab("Daily flow (cfs)")
+
+
+```
+

@@ -2,7 +2,7 @@
 % Please edit documentation in R/ciCalculationsParallel.R
 \name{ciCalculationsParallel}
 \alias{ciCalculationsParallel}
-\title{A parallel-processing version fo EGRETci's bootAnnual}
+\title{A parallel-processing version of EGRETci's bootAnnual}
 \usage{
 ciCalculationsParallel(eList, probs, clusterObject, nBoot = 100, 
     blockLength = 200, widthCI = 90, seed_var = 23, ...)

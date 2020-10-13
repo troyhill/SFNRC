@@ -1,4 +1,4 @@
-#' @title A parallel-processing version fo EGRETci's bootAnnual 
+#' @title A parallel-processing version of EGRETci's bootAnnual 
 #'
 #' @description Runs EGRETci::bootAnnual in parallel. 
 #' 

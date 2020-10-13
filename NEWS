@@ -1,3 +1,11 @@
+SFNRC version 0.0.12 (release date: 2020-10-13)
+==================
+Changes:
+* Added a DBHYDRO-oriented vignette
+* removed RCurl dependency 
+* getCoords_DBHYDRO pulls coordinates for DBHYDRO stations
+
+
 SFNRC version 0.0.11 (release date: 2020-07-29)
 ==================
 Changes:
@@ -7,7 +15,6 @@ Changes:
 
 SFNRC version 0.0.10 (release date: 2020-03-01)
 ==================
-
 Changes:
 * convertToEgret() conversion of abnormal parameter names to R-friendly versions is now internally consistent.
 
@@ -23,14 +30,12 @@ Changes:
 
 SFNRC version 0.0.7 (release date: 2018-12-13)
 ==================
-
 Changes:
 * convertToEgret() adds compatibility with EGRET weighted regression modeling
 
 
 SFNRC version 0.0.6 (release date: 2018-11-25)
 ==================
-
 Changes:
 * Unit tests and coverage reported
 * DataForEver water quality data can be integrated with hydro data; getHydro() can call getWQ() 
@@ -39,6 +44,5 @@ Changes:
 
 SFNRC version 0.0.1 (release date: 2018-10-13)
 ==================
-
 Changes:
 * Initial commit
