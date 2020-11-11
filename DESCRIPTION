@@ -1,20 +1,23 @@
 Package: SFNRC
 Type: Package
-Title: APIs and Tools for Processing Data from DataForEver, DBHYDRO, and Miami-Dade Department of Environmental Resources Management
-Version: 0.0.12
-Date: 2020-10-13
+Title: APIs and Tools for Processing Data from DataForEver and DBHYDRO
+Version: 0.0.13
+Date: 2020-11-13
 Authors@R: c(
     person("Troy", "Hill", role = c("aut", "cre"), email = "Hill.Troy@gmail.com", comment = c(ORCID = "0000-0003-2980-4099")),
     person()
     )
 BugReports: https://github.com/troyhill/SFNRC/issues
-Description: An R interface for the South Florida  Natural Resources Center's water quality and flow databases, DBHYDRO, and tools used to upload, process, and analyze data from DataForEver, DBHYDRO, and the Miami-Dade Department of Environmental Resources Management.
+Description: An R interface for the water quality and hydrology databases stewarded by the South Florida Natural Resources Center (DataForEver) and the South Florida Water Management District (DBHYDRO).
 License: file LICENSE
 URL: https://github.com/troyhill/SFNRC
 LazyData: true
 Depends:
     R (>= 3.5.0),
     httr,
+    DBI,
+    RMySQL,
+    odbc,
     XML,
     utils,
     dismo,
@@ -27,7 +30,7 @@ Depends:
     EGRETci,
     doParallel,
     foreach
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Suggests: 
     covr,
     testthat,

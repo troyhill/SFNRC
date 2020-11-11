@@ -2,128 +2,88 @@
 #'
 #' @description Identifies parameters available from the DataForEver hydrology database
 #' 
-#' @usage getDataTypes(parameter = "all", stn = "all", exactMatch = FALSE)
+#' @usage getParams_DFE(dbname = "hydrology", stn = "all")
 #' 
-#' @param parameter a character string specifying the parameter(s) used to constrain the query.
-#' @param stn a character string specifying the station(s) used to constrain the query.
-#' @param exactMatch If \code{TRUE}, station name must be an exact match with the \code{stn} argument
+#' @param dbname name of the database sought for inquiry. Currently only 'hydrology' and 'waterquality' are supported. A case-insensitive character string.
+#' @param stn pattern to be matched in station names ('NULL' or 'all' return all stations). This argument applies only to water quality database. A case-insensitive grep-friendly single character element (e.g., 'S333|S197' to search for multiple stations).
 #'  
-#' @return dataframe \code{getDataTypes} returns a vector of stations and parameters.
+#' @return dataframe \code{getParams_DFE} returns a dataframe of stations and parameters.
 #' 
 #' 
 #' @examples
 #' \dontrun{
-#' ### search by parameter:
-#' getDataTypes(parameter = "salinity")
-#' 
-#' ### search by station:
-#' getDataTypes(stn = "S333")
-#' getDataTypes(stn = "S333", exactMatch = TRUE) # note that the function does not use exact matches
-#'      # unless requested to do so using \code{fixed = TRUE}
+#' ### station argument applies only to water quality database
+#' getParams_DFE(stn = "S333|S18C", dbname = "hydrology") # all possible parameters reported 
+#' getParams_DFE(stn = "S333|S18C", dbname = "waterquality") # a station-specific report
 #' }
 #' 
 #' 
-#' @importFrom utils read.delim
+#' @importFrom odbc dbConnect
+#' @importFrom RMySQL MySQL
+#' @importFrom DBI dbReadTable
+#' @importFrom odbc dbDisconnect
+#' @importFrom DBI dbListConnections
+#' @importFrom DBI dbDriver
 #' 
 #' @export
 
 
 
 
-getDataTypes <- function(parameter = "all", stn = "all", exactMatch = FALSE) {
-  
-  if (!is.character(parameter) || !(length(parameter) == 1)) {
-    stop("Input error: 'parameter' must be a single-element character vector")
-  }
-  if (!is.character(stn) || !(length(stn) == 1)) {
-    stop("Input error: 'stn' must be a single-element character vector")  }
-  if (!is.logical(exactMatch) || !(length(exactMatch) == 1)) {
-    stop("Input error: 'exactMatch' must be TRUE/FALSE")
-  }
-  
-  
-  # nocov start
-  searchParam <- parameter
-  searchStn   <- toupper(stn)
-
-  if(exactMatch) {
-    searchStn <- paste0("^", searchStn, "$")
+getParams_DFE <- function(dbname = "hydrology", stn = "all"# hydrology or waterquality
+) {
+  dbname <- tolower(dbname)
+  if (dbname %in% "waterquality") {
+    hostAddr <- "10.146.112.23"
+  } else if (dbname %in% "hydrology") {
+    hostAddr <- "10.146.112.14"
+  } else {
+    stop("dbname not accepted as a valid input")
   }
   
-  list.loc     <- file.path(tempdir(), "stn_temp.lst")
-  bash.script.loc  <- file.path(tempdir(), "bash_stnLike.sh")
+  ### prep for failure. Goal here is to close all connections opened during the function.
+  init.connections <- DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))
+  on.exit(lapply( DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))[!DBI::dbListConnections( DBI::dbDriver( drv = "MySQL")) %in% init.connections], odbc::dbDisconnect))
   
-  ########################
-  ### bash script taken from: /opt/physical/util/station_datatype_list_all.sh
-  ### NOTE: This still has an opt/physical dependency -  bindir=/opt/physical/appaserver/src_hydrology
-  ########################
   
-  fileConn<-file(bash.script.loc)
-  writeLines(c("#!/bin/sh
-                # ---------------------------------------------
-                # station_datatype_list_all.sh
-                # ---------------------------------------------
-                #
-                # Freely available software: see Appaserver.org
-                # ---------------------------------------------
-
-                if [ \"$#\" -ne 1 ]
-                                 then
-                               echo \"Usage: $0 application\" 1>&2
-                               exit 1
-                               fi
-                               
-                               application=$1
-                               
-                               station_datatype=`get_table_name $application station_datatype`
-                               
-                               echo \"	select station, datatype					\\
-                	from $station_datatype						\\
-                	order by station, datatype;\"					|
-                                 sql '|'									|
-                                 cat"), fileConn)
-  close(fileConn)
-  
-  system(paste0('chmod 777 ', bash.script.loc))
-  bash.cmd <- paste0('bash -c "
-                     . set_project hydrology
-                     ', bash.script.loc, ' hydrology ', ' > ', list.loc, '
-                     
-                     "')
-  system(bash.cmd)
-  
-  Sys.sleep(1) # to avoid odd behavior from loading data before downloads finish
-  
-  ########################
-  ### load downloaded files into R
-  ########################
-  
-  ### stopped working on this here. 
-  stnDat <- utils::read.delim(list.loc, stringsAsFactors = FALSE, header = FALSE, na.strings = "null", skip = 1, dec = " ",
-                col.names = c("stn", "datetime_modified"), colClasses = c("character"))
-
-  stnDatReturn  <- sapply(strsplit(x = stnDat$stn, split = " "), "[", 1)
-  stnDatFinal <- data.frame(matrix(unlist(strsplit(stnDatReturn, "\\Q|\\E")), ncol=2, byrow=TRUE))
-  
-  names(stnDatFinal) <- c("stn", "parameter")
-  
-  ### Not sure how these get converted to factors
-  stnDatFinal$stn       <- as.character(stnDatFinal$stn)
-  stnDatFinal$parameter <- as.character(stnDatFinal$parameter)
-  
-  if (!searchStn %in% "ALL") {
-    stnDatFinal <- stnDatFinal[grep(x = stnDatFinal$stn, pattern = searchStn), ]
+  if ((stn %in% "all") || is.null(stn)) {
+    con <- odbc::dbConnect(RMySQL::MySQL(),
+                           dbname   = dbname,
+                           host     = hostAddr,
+                           port     = 3306,
+                           user     = 'read_only',
+                           password = 'read_only')
+    if (dbname %in% "hydrology") {
+      dfe.type <- DBI::dbReadTable(con,'datatype') # all parameters.
+    } else if (dbname %in% "waterquality") {
+      dfe.type <- DBI::dbReadTable(con,'parameter')
+    }
+    odbc::dbDisconnect(con)
+  } else {
+    ### run query for specific stations and return available parameters and number of samples based on POR query
+    if (dbname %in% "hydrology") {
+      con <- odbc::dbConnect(RMySQL::MySQL(),
+                             dbname   = dbname,
+                             host     = hostAddr,
+                             port     = 3306,
+                             user     = 'read_only',
+                             password = 'read_only')
+      dfe.type <- DBI::dbReadTable(con,'datatype') # TODO: identify params available at a specific station?
+      odbc::dbDisconnect(con)
+    } else if (dbname %in% "waterquality") {
+      stnNames <- unlist(strsplit(stn, "\\|"))
+      a        <- getDFE(stn = stnNames, dbname = "waterquality")
+      dfe.type <- stats::aggregate(concentration ~ station + parameter, data = a, FUN = length)
+      names(dfe.type)[3] <- "observations"
+    }
   }
-  if (!searchParam %in% "all") {
-    stnDatFinal <- stnDatFinal[stnDatFinal$parameter %in% searchParam, ]
-  }
-  stnDatFinal
-  
-  ########################
-  ### clean up the temp folder
-  ########################
-  # newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
-  # invisible(file.remove(newFiles))
-  
-  # nocov end
+  # if (!is.null(stn)) {
+  #   dfe.sta <- dfe.sta[grepl(x = dfe.sta$station, pattern = stn), ]
+  # }
+  # 
+  # sql <- sprintf("SELECT station, datatype
+  #               	order by station, datatype")
+  # output <- dbGetQuery(con,sql)
+  # odbc::dbDisconnect(con)
+  return(dfe.type)
 }

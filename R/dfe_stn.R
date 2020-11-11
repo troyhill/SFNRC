@@ -1,109 +1,57 @@
 #' @title DataForEver station query
 #'
-#' @description Identifies DataForEver stations matching query
+#' @description Identifies DataForEver stations in hydrology or water quality databases
 #' 
-#' @usage getStn(query = "S33")
+#' @usage getStn_DFE(dbname = "hydrology", pattern  = NULL)
 #' 
-#' @param query a character string. Case insensitive.
+#' @param dbname name of the database sought for inquiry. Currently only 'hydrology' and 'waterquality' are supported. A case-insensitive character string.
+#' @param pattern pattern to be matched in station names ('NULL' returns all stations). A case-insensitive grep-friendly single character element (e.g., 'S333|S197' to search for multiple stations).
 #' 
-#' @return dataframe \code{getStn} returns a vector of stations
+#' @return dataframe \code{getStn_DFE} returns a dataframe with stations and all associated information (coordinates, notes)
 #' 
 #' 
 #' @examples
 #' \dontrun{
-#' a <- getStn(query = "S33")
-#' a <- getStn(query = "s333")
+#'   getStn_DFE(pattern = "S333")
+#'   getStn_DFE(pattern = "S333", dbname = "waterquality")
 #' }
 #' 
-#' @importFrom utils read.delim
+#' @importFrom odbc dbConnect
+#' @importFrom RMySQL MySQL
+#' @importFrom DBI dbReadTable
+#' @importFrom odbc dbDisconnect
+#' @importFrom DBI dbListConnections
+#' @importFrom DBI dbDriver
 #' 
 #' @export
 
-
-
-
-getStn <- function(query = "S33") {
-  ### input checks
-  if (!is.character(query) || !(length(query) == 1)) {
-    stop("'query' must be a single, grep-style character vector specifying station search criteria")
+  getStn_DFE <- function(dbname = "hydrology", # hydrology or waterquality
+                         pattern  = NULL # optional regex string to use as query
+  ) {
+    dbname <- tolower(dbname)
+    if (dbname %in% "waterquality") {
+      hostAddr <- "10.146.112.23"
+    } else if (dbname %in% "hydrology") {
+      hostAddr <- "10.146.112.14"
+    } else {
+      stop("dbname not accepted as a valid input")
+    }
+    ### prep for failure. Goal here is to close all connections opened during the function.
+    init.connections <- DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))
+    on.exit(lapply( DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))[!DBI::dbListConnections( DBI::dbDriver( drv = "MySQL")) %in% init.connections], odbc::dbDisconnect))
+    
+    con <- odbc::dbConnect(RMySQL::MySQL(),
+                           dbname   = dbname,
+                           host     = hostAddr,
+                           port     = 3306,
+                           user     = 'read_only',
+                           password = 'read_only')
+    dfe.sta <- DBI::dbReadTable(con,'station')
+    
+    if (!is.null(pattern)) {
+      dfe.sta <- dfe.sta[grepl(x = tolower(dfe.sta$station), pattern = tolower(pattern)), ]
+    }
+    odbc::dbDisconnect(con)
+    return(dfe.sta)
   }
   
-  # nocov start
-  stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
-  bash.script.loc  <- file.path(tempdir(), "bash_stnLike.sh")
-  
-  ########################
-  ### bash script taken from: /opt/physical/util/stationLike.sh
-  ### NOTE: This still has an opt/physical dependency -  bindir=/opt/physical/appaserver/src_hydrology
-  ########################
-  
-  fileConn<-file(bash.script.loc)
-  writeLines(c("#!/bin/ksh
-               # ---------------------------------------------
-               # station.sh
-               # ---------------------------------------------
-               #
-               # Check to see if a station exists...
-               # ---------------------------------------------
-               
-               if [ \"$#\" -ne 1 ]
-                 then
-               echo \"Usage: $0 station\" 1>&2
-               exit 1
-               fi
-               
-               station=$1
-               
-               if [[ $DATABASE == hydrology ]]; then
-               
-               echo \"DATABASE is set to:\" $DATABASE
-               dbResponse=$(echo \"select station, comments, last_change 			\\
-            		from station                                                \\
-            		where station like '%${station}%';\"		                    \\
-                                        | sql ' ' )					
-                           
-                           else
-                             echo \"DATABASE is set to:\" $DATABASE
-                           dbResponse=$(echo \"select station last_change 			            \\
-            		from station                                                \\
-            		where station like '%${station}%';\"		                    \\
-                                        | sql ' ' )					
-                           
-               fi
-               
-               if [[ $dbResponse = \"\" ]]; then
-               print  \"No Station named: $station\"
-               else
-                 
-                 print  \"$dbResponse\"
-               
-               fi"), fileConn)
-  close(fileConn)
-  
-  system(paste0('chmod 777 ', bash.script.loc))
-  bash.cmd <- paste0('bash -c "
-                     . set_project hydrology
-                     ', bash.script.loc, ' ', toupper(query), ' > ', stn.list.loc, '
-
-                     "')
-  system(bash.cmd)
-  
-  Sys.sleep(1) # to avoid odd behavior from loading data before downloads finish
-  
-  ########################
-  ### load downloaded files into R
-  ########################
-  stnDat <- utils::read.delim(stn.list.loc, stringsAsFactors = FALSE, header = FALSE, na.strings = "null", skip = 1, dec = " ",
-                col.names = c("stn", "datetime_modified"), colClasses = c("character"))
-
-  stnDatReturn <- sapply(strsplit(x = stnDat$stn, split = " "), "[", 1)
-  stnDatReturn
-  
-  ########################
-  ### clean up the temp folder
-  ########################
-  # newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
-  # invisible(file.remove(newFiles))
-  
-  # nocov end
-}
