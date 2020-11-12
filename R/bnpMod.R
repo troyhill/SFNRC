@@ -13,9 +13,9 @@
 #' @name bnpMod
 #' @usage bnpMod
 #' @examples 
-#' plot(bnpMod)
 #' 
 #' \dontrun{
+#' plot(bnpMod)
 #' ### code used to generate object
 #' shp <- "/opt/physical/troy/ESRIDATA/enp_boundary_line/modelBoxes.shp" 
 #'       # "/opt/physical/troy/ESRIDATA/BNP_boundary.shp"

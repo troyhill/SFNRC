@@ -198,10 +198,11 @@ getDFE <- function(dbname = "hydrology",# hydrology or waterquality
     # wq <- wq[wq$matrix == "surface water"] # good idea but hard to identify all valid matrices
     ### issue for CRAN checks
     ### where multiple measurements are available in a day, average them
-    dd.wq <- plyr::ddply(wq[, names(wq) %in% c("station", "date", "parameter", "value", "minimum_detection_limit")], .(station, date, parameter),
+    dd.wq <- plyr::ddply(wq[, names(wq) %in% c("station", "date", "parameter", "value", "minimum_detection_limit")], 
+                         c("station", "date", "parameter"),
                          summarise,
-                         value = mean(value, na.rm = TRUE),
-                         minimum_detection_limit = max(minimum_detection_limit, na.rm = TRUE))
+                         value = mean(get("value"), na.rm = TRUE),
+                         minimum_detection_limit = max(get("minimum_detection_limit"), na.rm = TRUE))
     wq.temp <- stats::reshape(dd.wq, 
                               idvar = c("station", "date"), timevar = "parameter", 
                               direction = "wide")

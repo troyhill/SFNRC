@@ -5,7 +5,7 @@
 
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/SFNRC)](https://cran.r-project.org/package=SFNRC) 
 
-The `SFNRC` R package supports integration and analysis of water quality and hydrology data in south Florida. The package is optimized for use on linux operating systems connected to the South Florida Natural Resources Center's intranet, conditions that provides command-line access to internal databases.
+The `SFNRC` R package supports integration and analysis of water quality and hydrology data in south Florida. The package provides an API for the South Florida Water Management District's DBHYDRO database. For users connected to the South Florida Natural Resources Center's servers, the package also provides direct access to DataForEver data.
 
 
 ## Install the package

@@ -19,9 +19,9 @@ bnpMod
 Biscayne Bay box model boundaries, simplified using Ramer-Douglas-Peucker algorithm.
 }
 \examples{
-plot(bnpMod)
 
 \dontrun{
+plot(bnpMod)
 ### code used to generate object
 shp <- "/opt/physical/troy/ESRIDATA/enp_boundary_line/modelBoxes.shp" 
       # "/opt/physical/troy/ESRIDATA/BNP_boundary.shp"

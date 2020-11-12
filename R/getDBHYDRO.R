@@ -82,7 +82,7 @@ getDBHYDRO <- function(stn = "S333", parameters = c("PHOSPHATE, TOTAL AS P|TURBI
   } else {
     ### average measurements on same day
     tempDat  <- plyr::ddply(a, c("stn", "date", "year", "mo", "day", "param", "MDL", "units"), plyr::summarise, 
-                            value = mean(value, na.rm = TRUE))
+                            value = mean(get("value"), na.rm = TRUE))
     
     # ?anyDuplicated(tempDat[, c("stn", "date", "year", "mo", "day", "param")])
     # tempDat[tempDat$date == "2006-09-26", ]

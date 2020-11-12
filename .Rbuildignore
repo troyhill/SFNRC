@@ -17,3 +17,4 @@
 ^vignettes\\.*\.Rmd$
 ^vignettes\\.*\.pdf$
 ^\.httr-oauth$
+.*.png

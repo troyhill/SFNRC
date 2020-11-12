@@ -2,6 +2,7 @@ SFNRC version 0.0.13 (release date: 2020-11-13)
 ==================
 Changes:
 * Updated DataForEver API to use SQL, allowing use on Windows operating systems (but still requiring a connection to NPS servers)
+* Removed interp() function for spatial interpolation, and the many associated dependencies
 
 
 SFNRC version 0.0.12 (release date: 2020-10-13)

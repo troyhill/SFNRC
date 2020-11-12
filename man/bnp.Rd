@@ -28,9 +28,10 @@ bnp
 Data: Biscayne Bay political boundaries
 }
 \examples{
-plot(bnp)
+
 
 \dontrun{
+plot(bnp)
 ### code used to generate object
 shp <- "/opt/physical/troy/ESRIDATA/enp_boundary_line/PublicLandsBoundary.shp"
      # "/opt/physical/troy/ESRIDATA/BNP_boundary.shp"

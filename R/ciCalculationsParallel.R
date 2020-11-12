@@ -41,6 +41,7 @@
 #' @importFrom parallel stopCluster
 #' @importFrom doParallel registerDoParallel
 #' @importFrom foreach foreach
+#' @importFrom foreach %dopar%
 #' @importFrom EGRETci ciBands
 #' @importFrom EGRETci bootAnnual
 #'  
@@ -50,6 +51,7 @@
 
 ciCalculationsParallel <- function(eList, probs, clusterObject, nBoot = 100, 
                                     blockLength = 200, widthCI = 90, seed_var = 23, ...) {
+  `%dopar%` <- foreach::`%dopar%` # define local dopar per https://stackoverflow.com/a/43919826
   doParallel::registerDoParallel(clusterObject)
   repAnnual <- foreach::foreach(n = 1:nBoot, .packages=c('EGRETci')) %dopar% {
     annualResults <- EGRETci::bootAnnual(eList, 
