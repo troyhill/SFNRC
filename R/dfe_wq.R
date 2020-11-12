@@ -31,7 +31,7 @@
 #'              startDate = "2018-01-01")
 #' 
 #' a2 <- getDFE(stn = c("S12A", "S333"), dbname = "waterquality", startDate = "2018-01-01")
-#' unique(a2$station)
+#' unique(a2$stn)
 #' 
 #' 
 #' }
@@ -172,16 +172,18 @@ getDFE <- function(dbname = "hydrology",# hydrology or waterquality
       names(output)[names(output) %in% "concentration"] <- "value"
   }
   
-  colsToKeep <- which(names(output) %in%  c("station", "date", "parameter", "value"))
+  ### change 'station' column to 'stn' to match DBHYDRO output
+  names(output)[names(output) %in% "station"] <- "stn"
+  colsToKeep <- which(names(output) %in%  c("stn", "date", "parameter", "value"))
   if (!grepl(x = data_shape, pattern = "long")) {
-    output <- stats::reshape(output[, colsToKeep], idvar = c("station", "date"), 
+    output <- stats::reshape(output[, colsToKeep], idvar = c("stn", "date"), 
                              timevar = "parameter", direction = "wide")
     names(output) <- gsub(x = names(output), pattern = "value.", 
                            replacement = "")
   }
   if (grepl(x = data_shape, pattern = "really_wide")) {
     output <- stats::reshape(output, idvar = c("date"), 
-                              timevar = c("station"), direction = "wide")
+                              timevar = c("stn"), direction = "wide")
   }
   
   
@@ -198,20 +200,20 @@ getDFE <- function(dbname = "hydrology",# hydrology or waterquality
     # wq <- wq[wq$matrix == "surface water"] # good idea but hard to identify all valid matrices
     ### issue for CRAN checks
     ### where multiple measurements are available in a day, average them
-    dd.wq <- plyr::ddply(wq[, names(wq) %in% c("station", "date", "parameter", "value", "minimum_detection_limit")], 
-                         c("station", "date", "parameter"),
+    dd.wq <- plyr::ddply(wq[, names(wq) %in% c("stn", "date", "parameter", "value", "minimum_detection_limit")], 
+                         c("stn", "date", "parameter"),
                          summarise,
                          value = mean(get("value"), na.rm = TRUE),
                          minimum_detection_limit = max(get("minimum_detection_limit"), na.rm = TRUE))
     wq.temp <- stats::reshape(dd.wq, 
-                              idvar = c("station", "date"), timevar = "parameter", 
+                              idvar = c("stn", "date"), timevar = "parameter", 
                               direction = "wide")
     names(wq.temp) <- gsub(x = names(wq.temp), pattern = "value.| |,", 
                            replacement = "")
     wqDatForMerge <- wq.temp[, c(grep(x = names(wq.temp), 
-                                      pattern = paste0("station|date|minimum_detection_limit|", addWaterQualityParams), value = TRUE))]
+                                      pattern = paste0("stn|date|minimum_detection_limit|", addWaterQualityParams), value = TRUE))]
     output <- plyr::join_all(list(output, wqDatForMerge), 
-                              by = c("station", "date"))
+                              by = c("stn", "date"))
   }
   
   

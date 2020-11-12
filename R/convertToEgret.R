@@ -50,8 +50,11 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   ### potential problem if something expects a 'value' column
   concentrationColumn <- "value"
   paramColumn         <- "parameter"
-  stationColumn       <- "station"
+  stationColumn       <- "stn"
   dateColumn          <- "date"
+  
+  ### identify data sources - DFE or DBHYDRO
+  
   
   ### download data if either dataset is not provided by user
   if (is.null(wq_data)) {

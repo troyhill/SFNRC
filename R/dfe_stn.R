@@ -52,6 +52,9 @@
       dfe.sta <- dfe.sta[grepl(x = tolower(dfe.sta$station), pattern = tolower(pattern)), ]
     }
     odbc::dbDisconnect(con)
+    
+    ### change 'station' column to 'stn' to match DBHYDRO output
+    names(dfe.sta)[names(dfe.sta) %in% "station"] <- "stn"
     return(dfe.sta)
   }
   
