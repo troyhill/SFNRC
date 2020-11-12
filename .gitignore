@@ -8,5 +8,5 @@ temp.txt
 .httr-oauth
 *.Rproj
 *.RData
-/vignettes/*.R
+vignettes/*.R
 tpBackup_20191010
