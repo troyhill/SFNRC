@@ -4,9 +4,11 @@
 .Ruserdata
 SFNRC.Rproj
 temp.txt
-*.png$
+*.png
 .httr-oauth
 *.Rproj
 *.RData
+vignettes/*.html
+vignettes/*.pdf
 vignettes/*.R
 tpBackup_20191010
