@@ -2,8 +2,8 @@
 #'
 #' @param stn target station. Not case-sensitive.
 #' @param target_analyte Water quality parameter of interest. Internally converted to R-friendly form (no commas, hyphens, spaces).
-#' @param wq_data water quality dataframe. Product of \code{\link{getDFE}}. In the \code{convertEgret} output, the date range in \code{wq_data} is modified to be the intersection of \code{wq_data} and \code{flow_data}
-#' @param flow_data flow dataframe. Product of \code{\link{getDFE}}. If set to NA, a dataframe of flow = 1.1 m3/s is created and used for analysis. This workaround is designed to allow WRTDS on stations without discharge data (e.g., open-water stations) but may not be mathematically sound. 
+#' @param wq_data water quality dataframe. Product of \code{\link{getDFE} or \link{getDBHYDRO}}. In the \code{convertEgret} output, the date range in \code{wq_data} is modified to be the intersection of \code{wq_data} and \code{flow_data}
+#' @param flow_data flow dataframe. Product of \code{\link{getDFE} or \link{getDBHYDROhydro}}. If set to NA, a dataframe of flow = 1.1 m3/s is created and used for analysis. This workaround is designed to allow WRTDS on stations without discharge data (e.g., open-water stations) but may not be mathematically sound. 
 #' @param interact logical Option for interactive mode. If true, there is user interaction for error handling and data checks. FALSE by default
 #' @param paStart Starting month of period of analysis. Defaults to 10. Used in most EGRET functions
 #' @param paLong Length in number of months of period of analysis. Defaults to 12. Used in most EGRET functions
@@ -22,8 +22,8 @@
 #' targAnalyte <- "PHOSPHATE, TOTAL AS P"
 #' 
 #' ### subsetting occurs inside the function, so this prep is not necessary
-#' # wq_dat <- wqDat[(wqDat$stn %in% targStn) & (wqDat$param %in% targAnalyte), ]
-#' # flow_dat <- hydDat[hydDat$stn %in% targStn, ]
+#' # wq_dat <- wqDat[(wqDat$station %in% targStn) & (wqDat$param %in% targAnalyte), ]
+#' # flow_dat <- hydDat[hydDat$station %in% targStn, ]
 #' \dontrun{ # 20190404: this example causes Appveyor to fail
 #' eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
 #'      wq_data = wqDat, flow_data = hydDat)
@@ -77,7 +77,8 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   
   
   if (is.null(flow_data)) {
-    flow_data   <- data.frame(getDFE(stn = stn, dbname = "waterquality", params = "flow"))
+    flow_data   <- data.frame(getDFE(stn = stn, dbname = "hydrology", params = "flow"))
+    ### TODO: if above line fails, use getDBHYDROhydro
   }
   if (length(flow_data) == 1 && is.na(flow_data)) { 
     # for open-water stations with no discharge, create a series of flow = 1 for every day covering 
@@ -119,7 +120,7 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   
   ### generate INFO metadata 
   INFO.data <- createInfo(wq_data = wq_data, paStart = paStart, # see output for ?EGRET::INFOdataframe. starting month for analysis
-                          paLong = paLong, watershedKm = watershedKm)
+                          paLong = paLong, watershedKm = watershedKm, stationColumn = stationColumn)
   
   ### identify intersection of date ranges in sample and flow data
   minDate <- max(min(flow.daily$Date, na.rm = TRUE), min(Sample.data$Date, na.rm = TRUE))

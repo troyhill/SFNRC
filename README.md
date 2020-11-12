@@ -19,20 +19,6 @@ devtools::install_github("troyhill/SFNRC")
 library(SFNRC)
 ```
 
-The linux version of the package comes with an introductory vignette showing some capabilities and usage examples:
-
-```r
-vignette("DataForEver")
-```
-
-Users of non-linux systems can view a pdf of the vignette [here](https://github.com/troyhill/SFNRC/blob/master/vignettes/DataForEver.pdf), although the DataForEver APIs only work on linux operating systems. 
-
-
-
-
-
-
-
 
 
 

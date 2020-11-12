@@ -4,6 +4,7 @@
 #' @param paStart Starting month of period of analysis. Defaults to 10. Used in most EGRET functions
 #' @param paLong Length in number of months of period of analysis. Defaults to 12. Used in most EGRET functions
 #' @param watershedKm Watershed area, used to calculate runoff. Defaults to 1
+#' @param stationColumn name of station column in dataset.
 #'
 #' @return a single-row dataframe with EGRET-style metadata. See ?EGRET::INFOdataframe for more information.
 #' @export
@@ -12,11 +13,11 @@
 #' INFO <- createInfo(wq_data = wqDat)
 
 createInfo <- function(wq_data, paStart = 10, # see output for ?EGRET::INFOdataframe. starting month for analysis
-                       paLong = 12, watershedKm = 1
+                       paLong = 12, watershedKm = 1, stationColumn = "station"
 ) { # creates EGRET-style INFO metadata object from WQ data
   ### TODO: see  ?INFOdataframe to improve input checks. esp. param.units - do unit conversions to mg/L if necessary
   param.units    <- wq_data$units[1]
-  shortName      <- wq_data$stn[1]
+  shortName      <- wq_data[, stationColumn][1]
   paramShortName <- gsub(x = wq_data$param[1], pattern = " |,",   replacement = "")
   paramShortName <- gsub(x = paramShortName, pattern = "-|[+]", replacement = "")
   drainSqKm      <- watershedKm # Used for calculating runoff

@@ -21,9 +21,9 @@ convertToEgret(
 
 \item{target_analyte}{Water quality parameter of interest. Internally converted to R-friendly form (no commas, hyphens, spaces).}
 
-\item{wq_data}{water quality dataframe. Product of \code{\link{getDFE}}. In the \code{convertEgret} output, the date range in \code{wq_data} is modified to be the intersection of \code{wq_data} and \code{flow_data}}
+\item{wq_data}{water quality dataframe. Product of \code{\link{getDFE} or \link{getDBHYDRO}}. In the \code{convertEgret} output, the date range in \code{wq_data} is modified to be the intersection of \code{wq_data} and \code{flow_data}}
 
-\item{flow_data}{flow dataframe. Product of \code{\link{getDFE}}. If set to NA, a dataframe of flow = 1.1 m3/s is created and used for analysis. This workaround is designed to allow WRTDS on stations without discharge data (e.g., open-water stations) but may not be mathematically sound.}
+\item{flow_data}{flow dataframe. Product of \code{\link{getDFE} or \link{getDBHYDROhydro}}. If set to NA, a dataframe of flow = 1.1 m3/s is created and used for analysis. This workaround is designed to allow WRTDS on stations without discharge data (e.g., open-water stations) but may not be mathematically sound.}
 
 \item{interact}{logical Option for interactive mode. If true, there is user interaction for error handling and data checks. FALSE by default}
 
@@ -46,8 +46,8 @@ targStn <- "S333"
 targAnalyte <- "PHOSPHATE, TOTAL AS P"
 
 ### subsetting occurs inside the function, so this prep is not necessary
-# wq_dat <- wqDat[(wqDat$stn \%in\% targStn) & (wqDat$param \%in\% targAnalyte), ]
-# flow_dat <- hydDat[hydDat$stn \%in\% targStn, ]
+# wq_dat <- wqDat[(wqDat$station \%in\% targStn) & (wqDat$param \%in\% targAnalyte), ]
+# flow_dat <- hydDat[hydDat$station \%in\% targStn, ]
 \dontrun{ # 20190404: this example causes Appveyor to fail
 eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
      wq_data = wqDat, flow_data = hydDat)
