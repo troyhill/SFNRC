@@ -1,7 +1,10 @@
- language: R
+ language: r
  cache: packages
- sudo: required
  r_build_args: --resave-data --no-manual --no-build-vignettes
+ warnings_are_errors: false
+ os: linux
+ dist: xenial
+ 
  addons:
   apt:
     packages:
@@ -14,6 +17,3 @@
  after_success:
     - Rscript -e 'covr::codecov()'
 
- environment:
-    global:
-      WARNINGS_ARE_ERORRS: 0
