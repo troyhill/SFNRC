@@ -18,13 +18,13 @@ addWaterQualityParams = NULL)
 
 \item{endDate}{end of desired date range (if NULL, the latest date in period of record is used)}
 
-\item{params}{grep-style character vector naming analytes of interest. default is "all". e.g., # target_analytes <- c("PHOSPHATE|NITROGEN|AMMONI|SUSPENDED|DISSOLVED OXYGEN|CALCIUM|POTASSIUM|HARDNESS|SODIUM|CHLORIDE|TEMP|CONDUCTIVITY, FIELD|SILICA|LEAD, TOTAL|MAGNESIUM|TURBIDITY|CHLOROPHYLL|MERCURY, TOTAL|SULFATE|ZINC, TOTAL|CHLORDANE|MALATHION|CARBOPHENOTHION|PH, FIELD")}
+\item{params}{grep-style character vector naming analytes of interest. default is "all".}
 
 \item{matricesToExclude}{character vector specifying any sample matrices to be excluded. Spelling/case must be a perfect match to DataForEver entries. For example, "analyte_free_water" indicates field blanks. Advisible to check output using, e.g., \code{unique(wqDat$matrix)}}
 
 \item{rFriendlyParamNames}{TRUE/FALSE; indicates whether parameter names should be modified to be R-friendly (no special characters, commas, or spaces). Advisable for analysis, as this makes analysis easier and pre-empts changes coerced by, e.g., \code{plyr::ddply}}
 
-\item{data_shape}{shape of output dataframe. Default is long (one row per date-station-param) but can also be wide (one row per date-station) or really_wide (one row per date)}
+\item{data_shape}{shape of output dataframe. Default is long (one row per date-station-param) but can also be wide (one row per date-station) or really_wide (one row per date). If multiple observations are available for a date, they are averaged if this argument is set to 'wide' or 'really_wide'.}
 
 \item{addWaterQuality}{if `dbname = 'hydrology'`, setting this to TRUE will allow wq data to be downloaded and merged internally}
 

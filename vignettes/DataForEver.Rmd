@@ -1,19 +1,19 @@
 ---
-title: 'Exploring DataForEver data using the SFNRC R package'
-subtitle: ''
-output: 
-  pdf_document: 
+title: "Accessing DataForEver data using the SFNRC R package"
 latex_engine: pdflatex
-vignette: >
-  %\VignetteIndexEntry{DataForEver}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\usepackage[UTF-8]{inputenc}
 mainfont: FreeMono
+output:
+  pdf_document: null
+  html_document:
+    df_print: paged
+subtitle: ''
 header-includes:
 - \usepackage{pdflscape}
 - \newcommand{\blandscape}{\begin{landscape}}
 - \newcommand{\elandscape}{\end{landscape}}
 - \usepackage[utf8]{inputenc}
+vignette: |
+  %\VignetteIndexEntry{DataForEver} %\VignetteEngine{knitr::rmarkdown} %\usepackage[UTF-8]{inputenc}
 ---
 
 ```{r setup, include=FALSE, echo=FALSE}
@@ -47,20 +47,20 @@ knitr::opts_chunk$set(echo = TRUE, comment=NA)
 
 ## 1. Introduction
 
-The `SFNRC` R package provides a simple, streamlined means of interacting with the DataForEver hydrology and water quality databases from within an analytical programming environment (RStudio). Additional tools are also included in the package, including:
-
-- APIs for the South Florida Water Management District's DBHYDRO database
-
-- A function to process data collected by the Miami-Dade Department of Environmental and Resources Management in preparation for merging it with DataForEver data
-
-- A responsive tool for spatial interpolation of data
-
-- Utility functions to calculate annual geometric means, label seasons and water years, and similar rudimentary tasks.
-
-This vignette demonstrates the DataForEver functions in the `SFNRC` R package. DataForEver comprises internal databases of the South Florida Natural Resources Center, and unfortunately can only be used when directly connected to the SFNRC's internal servers. These elements of the `SFNRC` R package are not presently available to non-NPS users.
+The `SFNRC` R package provides access to the DataForEver hydrology and water quality databases directly from R. This vignette demonstrates the use of  DataForEver-related functions in the `SFNRC` R package. Because DataForEver is hosted on internal servers of the South Florida Natural Resources Center, it can only be used when directly connected to the SFNRC's network. The elements of the `SFNRC` R package described in this vignette are not presently available to non-NPS users.
 
 
 \vspace{12pt}
+
+The `SFNRC` package is available on GitHub and can be installed with the following commands: 
+
+```{r install_SFNRC, include=TRUE, echo=TRUE, eval=FALSE}
+### install devtools R package
+if (!"devtools" %in% installed.packages()) install.packages("devtools")
+### install SFNRC
+if (!"SFNRC" %in% installed.packages())  devtools::install_github("troyhill/SFNRC")
+```
+
 
 
 \vspace{3mm}\hrule
@@ -104,7 +104,7 @@ getStn_DFE(pattern = "S333", dbname = "hydrology")
 
 \vspace{12pt}
 
-Users can also query the parameters available from the hydrology or water quality databases. Queries of the water quality database can provide more concise, station-level lists of available parameters. If stations are used in the query, the output reports the number of observations for each parameter.
+Users can also query the parameters available from the hydrology or water quality databases. Queries of the water quality database can provide more concise, station-level lists of available parameters. If stations are used in the query, the output reports the number of observations for each station-parameter combination.
 
 
 \vspace{12pt}
@@ -126,7 +126,7 @@ getParams_DFE(stn = "S333|S18C", dbname = "waterquality")
 ## 3. Accessing DataForEver data
 \vspace{12pt}
 
-Using `SFNRC` to access DataForEver data is very straightforward. The water quality database and hydrology databases are both accessed using the function `getDFE()`:
+Using `SFNRC` to access DataForEver data is very straightforward. Data from the water quality database and hydrology databases are both accessed using the function `getDFE()`:
 
 \vspace{12pt}
 
@@ -151,7 +151,7 @@ unique(wqDat$station)
 
 \vspace{12pt}
 
-The `data_shape` argument reshapes data from long to wide form to facilitate a broad range of analyses.
+The `data_shape` argument reshapes data from long to wide form to facilitate a broad range of analyses. The default form is `long` (one row per date-station-param) but this can also be set to `wide` (one row per date-station) or `really_wide` (one row per date). Importantly, if there are multiple observations for a single date, they are averaged if the `data_shape` argument is set to `wide` or `really_wide`.
 
 \vspace{12pt}
 
@@ -266,90 +266,4 @@ grid.arrange(TP.NTU, TN.TP, ncol = 2)
 
 \vspace{12pt}
 \vspace{12pt}
-
-### 20201110: updated up to this point
-
-## 4. Spatial interpolation wrapper
-
-\vspace{12pt}
-
-Spatial interpolation of data is streamlined by the `interp()` function. The function takes a user-specified SpatialPolygonDataframe and interpolates point data. The interpolation method applied to the data can be `ordinary kriging` or `nearest neighbor`. Ordinary kriging estimates data using a variogram model of similarity as a function of distance. By default, a broad range of models are attempted and the best-fitting model is used to produce the output. If `ordinary kriging` is selected but the variogram does not converge (typically indicative of substantial variation over small distances), the `nearest neighbor` approach will instead be used. 
-
-Nearest neighbor interpolation generates Voronoi polygons for the sampling locations and applies the value from each sampling point uniformly within its respective polygon.
-
-\vspace{12pt}
-
-An example of a complete workflow is below. Stations in Biscayne Bay are selected programatically, data undergo some initial processing and an interpolated map of salinity is produced.
-
-\vspace{12pt}
-
-
-```{r interp_prep1, include=TRUE, echo=TRUE, eval=FALSE}
-# find stations in Biscayne Bay
-bsc.stns <- getDataTypes(stn = "BISC|BB")
-stns     <- as.character(unique(bsc.stns[bsc.stns$parameter %in% "salinity", "stn"]))
-
-# get data
-paramsToGet   <- c("salinity")
-bsc           <- getHydro(stns = stns, parameter_list = paramsToGet)
-names(bsc)[4] <- "SALINITY"
-```
-
-
-```{r interp_prep2, fig.width = 6, fig.height = 4, message = FALSE, include=FALSE, echo=FALSE}
-bsc <- reshape2::dcast(finDat[, -c(4, 7)], stn + date + year ~ param, fun.aggregate = mean) 
-
-```
-
-
-```{r interp_prep3, message = FALSE, include=TRUE, echo=TRUE, warning = FALSE, fig.width = 3.5, fig.height = 3.5}
-
-### assign wet/dry seasons
-bsc        <- seas(bsc, wetSeas = c("May", "Sep"), waterYearBegin = "Oct", timeCol = "date")
-bsc$seas2  <- paste0(bsc$waterYr,"-", bsc$seas)
-
-### calculate annual geometric means
-agm        <- ddply(bsc, .(stn, seas2), numcolwise(geoMean))
-
-### add coordinates to make point data spatial
-names(agm)    <- gsub(x = names(agm), pattern = " |,", replacement = "")
-names(agm)    <- gsub(x = names(agm), pattern = "-|[+]", replacement = ".")
-agmWithCoords <- join_all(list(agm, as.data.frame(masterCoords)), by = "stn")
-sitesInBay    <- agmWithCoords[!is.na(agmWithCoords$long), ]
-coordinates(sitesInBay) <- c("long", "lat")
-proj4string(sitesInBay) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
-
-
-# interpolate! 
-interp(inputData = sitesInBay, mapLayer = bnpMod,
-       paramCol = "SALINITY", year = "2016-dry", yearCol = "seas2",
-       interpMethod = "nearest neighbor")
-```
-
-
-
-\vspace{12pt}
-
-
-
-## 4. Integration with USGS-R/EGRET weighted regression tools
-
-The function `converToEgret` reformats DataForEver data to enable analysis with a suite of excellent trend analysis tools developed by USGS. The object created by running `converToEgret` can be used directly as an input to EGRET functions. 
-
-See https://github.com/USGS-R/EGRET for more information on EGRET.
-
-
-```{r convertToEgret, message = FALSE, eval=FALSE, echo=FALSE, warning = FALSE, fig.width = 3.5, fig.height = 3.5}
-
-### prep data for EGRET
-targStn <- "S333"
-targAnalyte <- "PHOSPHATE, TOTAL AS P"
-
-eList <- convertToEgret(stn = targStn, target_analyte = targAnalyte, 
-                        wq_data = wqDat, flow_data = hydDat)
-
-### run a model - this takes a couple minutes
-eList <- modelEstimation(eList)
-
-```
 

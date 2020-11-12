@@ -2,8 +2,7 @@
 #'
 #'
 #'
-#' @format A dataframe of flow, headwater, tailwater, and stage data for structures. Created 
-#' on 10 November 2020.
+#' @format A dataframe of flow, headwater, tailwater, and stage data for structures. Created on 10 November 2020.
 #' \describe{
 #' \item{station}{station name}
 #' \item{date}{date of record, POSIXct}
@@ -14,7 +13,7 @@
 #' \item{flow}{flow (cfs)}
 #' \item{HEAD_WATER}{headwater stage (ft; NGVD29)}
 #' \item{TAIL_WATER}{tailwater stage (ft; NGVD29)}
-#' \item{FLOW}flow (cfs)}
+#' \item{FLOW}{flow (cfs)}
 #' \item{year}{year (extracted from date column)}
 #' \item{mo}{month (extracted from date column)}
 #' \item{day}{day (extracted from date column)}
