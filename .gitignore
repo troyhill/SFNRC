@@ -11,4 +11,5 @@ temp.txt
 vignettes/*.html
 vignettes/*.pdf
 vignettes/*.R
+vignettes/GEER_20190325.R
 tpBackup_20191010
