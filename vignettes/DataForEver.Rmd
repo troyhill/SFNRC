@@ -221,43 +221,54 @@ hyd.wq <- plyr::join_all(list(hydDat[hydDat$stn %in% stations, ], wq.temp),
 At this point the data can be plotted or analyzed. For example, simple time series plots:
 
 \vspace{12pt}
-```{r hydro_show_merged, include=TRUE, echo=FALSE, warning=FALSE, message=FALSE, fig.width = 3, fig.height = 3}
+```{r hydro_show_merged, include=TRUE, echo=TRUE, warning=FALSE, message=FALSE, fig.width = 3, fig.height = 3}
+library(ggplot2) 
+library(gridExtra)
+
 ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = date, shape = stn)) + 
-  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth() + facet_grid(stn ~ .) + ylim(0, 0.1) + ylab("Total P (mg/L)") + xlab("")
+  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth() + 
+  facet_grid(stn ~ .) + ylim(0, 0.1) + ylab("Total P (mg/L)") + xlab("")
 
 ```
 
 \vspace{12pt}
+
+\pagebreak
 
 Relationships between hydrologic and water quality parameters can be explored: 
 
 \vspace{12pt}
 
-```{r plot_wqFlow, echo=FALSE, warning=FALSE, message=FALSE, fig.width = 3, fig.height = 4}
-invisible(CQ <- ggplot(data = data.frame(hyd.wq[(hyd.wq$flow > 0) & !is.na(hyd.wq$flow), ]), aes(y = log(PHOSPHATETOTALASP), x = log(flow), shape = stn)) + 
-  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth(method = "lm") + facet_grid(stn ~ .) + ylab("log(TP) (mg/L)") + xlab("log(discharge) (cfs)"))
+```{r plot_wqFlow, echo=TRUE, warning=FALSE, message=FALSE, fig.width = 3, fig.height = 4}
+CQ <- ggplot(data = data.frame(hyd.wq[(hyd.wq$flow > 0) & !is.na(hyd.wq$flow), ]), 
+  aes(y = log(PHOSPHATETOTALASP), x = log(flow), shape = stn)) + 
+  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth(method = "lm") + 
+  facet_grid(stn ~ .) + ylab("log(TP) (mg/L)") + xlab("log(discharge) (cfs)")
 
-invisible(C_HW <- ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = head_water, shape = stn)) + 
-  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth() + facet_grid(stn ~ .) + ylim(0, 0.1) + ylab("log(TP) (mg/L)") + xlab("Head water stage (feet NGVD29)"))
+C_HW <- ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = head_water, 
+  shape = stn)) + theme_classic() + geom_point(show.legend = FALSE) + geom_smooth() + 
+  facet_grid(stn ~ .) + ylim(0, 0.1) + ylab("log(TP) (mg/L)") + 
+  xlab("Head water stage (feet NGVD29)")
 
-invisible(grid.arrange(CQ, C_HW, nrow = 2))
+grid.arrange(CQ, C_HW, nrow = 2)
 
 ```
 
-\vspace{12pt}
-\vspace{12pt}
-
+\pagebreak
 
 And relationships between water quality parameters can be evaluated:
 
 \vspace{12pt}
 
-```{r plot_wq_bivariate, echo=FALSE, warning=FALSE, message=FALSE, fig.width = 6, fig.height = 4}
-TP.NTU <- ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = TURBIDITY, shape = stn)) + 
-  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth(method = "lm") + facet_grid(stn ~ .) + ylab("TP (mg/L)") + xlab("Turbidity (NTU)") + ylim(0, 0.1)
+```{r plot_wq_bivariate, echo=TRUE, warning=FALSE, message=FALSE, fig.width = 6, fig.height = 4}
+TP.NTU <- ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = TURBIDITY, 
+  shape = stn)) + theme_classic() + geom_point(show.legend = FALSE) + geom_smooth(method = "lm") + 
+  facet_grid(stn ~ .) + ylab("TP (mg/L)") + xlab("Turbidity (NTU)") + ylim(0, 0.1)
 
-TN.TP <- ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = TOTALNITROGEN, shape = stn))  + theme(legend.position="none") + 
-  theme_classic() + geom_point(show.legend = FALSE) + geom_smooth(method = "lm") + facet_grid(stn ~ .) + ylab("TP (mg/L)") + xlab("TN (mg/L)") + ylim(0, 0.1) + xlim(0, 3)
+TN.TP <- ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = TOTALNITROGEN, 
+  shape = stn))  + theme(legend.position="none") + theme_classic() + 
+  geom_point(show.legend = FALSE) + geom_smooth(method = "lm") + facet_grid(stn ~ .) + 
+  ylab("TP (mg/L)") + xlab("TN (mg/L)") + ylim(0, 0.1) + xlim(0, 3)
 
 grid.arrange(TP.NTU, TN.TP, ncol = 2)
 

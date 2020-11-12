@@ -52,14 +52,24 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   paramColumn         <- "parameter"
   stationColumn       <- "stn"
   dateColumn          <- "date"
-  
-  ### identify data sources - DFE or DBHYDRO
-  
+  flowColumn          <- "flow"
   
   ### download data if either dataset is not provided by user
   if (is.null(wq_data)) {
-    wq_data     <- data.frame(getDFE(stn = stn, dbname = "waterquality", params = target_analyte, rFriendlyParamNames = TRUE))
+    wq_data <- getDBHYDRO(stn = stn, outputType = "long", parameters = target_analyte)
+    wq_data <- DBHYDROToDFE(data = wq_data, type = "waterquality")
+    # wq_data     <- data.frame(getDFE(stn = stn, dbname = "waterquality", params = target_analyte, rFriendlyParamNames = TRUE))
   }
+  ### identify data sources - DFE or DBHYDRO
+  ### WQ data based on ncol == 9 in DBHYDRO (but much wider in DFE)
+  if (ncol(wq_data) == 9) { 
+    wq_data <- DBHYDROToDFE(data = wq_data, type = "waterquality")
+  }
+  ### stop if WQ dataset doesn't meet needs.
+  if (sum(c(concentrationColumn, paramColumn, stationColumn, dateColumn) %in% names(wq_data)) < 4) {
+    stop ("water quality dataset does not appear to have the needed columns: date, stn, parameter, value")
+  }
+  
   
   ### make analyte name rFriendly - apply same treatment to target_analyte and wq_data$param
   target_analyte     <- gsub(x = target_analyte, pattern = " |,",   replacement = "")
@@ -79,10 +89,28 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   
   
   
+  ### download data if either dataset is not provided by user
   if (is.null(flow_data)) {
-    flow_data   <- data.frame(getDFE(stn = stn, dbname = "hydrology", params = "flow"))
+    # flow_data   <- data.frame(getDFE(stn = stn, dbname = "hydrology", params = "flow"))
     ### TODO: if above line fails, use getDBHYDROhydro
+    ### identify best dbkey
+    dbkeys <- getDBkey(stn = stn, type = "FLOW", freq = "DA")
+    message ("Flow data was not provided by user. DBHYDRO dataset selected: \n", names(dbkeys), "\n", dbkeys[which.max(dbkeys$`End Date`), ])
+    selectedKey <- dbkeys[which.max(dbkeys$`End Date`), ][, 1] # first column has dbkey
+    flow_data <- getDBHYDROhydro(dbkey = selectedKey)
+    flow_data <- DBHYDROToDFE(data = flow_data, type = "hydrology")
   }
+  ### identify data sources - DFE or DBHYDRO
+  ### WQ data based on ncol == 9 in DBHYDRO (but much wider in DFE)
+  if (ncol(wq_data) == 9) { 
+    wq_data <- DBHYDROToDFE(data = wq_data, type = "hydrology")
+  }
+  ### stop if WQ dataset doesn't meet needs.
+  if (sum(c(flowColumn, stationColumn, dateColumn) %in% names(wq_data)) < 3) {
+    stop ("hydrology dataset does not appear to have the needed columns: date, stn, flow")
+  }
+  
+  
   if (length(flow_data) == 1 && is.na(flow_data)) { 
     # for open-water stations with no discharge, create a series of flow = 1 for every day covering 
     # time span of water quality data
@@ -101,9 +129,9 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   ### EGRET doesn't support negative flow days - remove them here and announce to user
   ### a more bespoke user-defined approach is preferred
   if (removeNegativeFlow) {
-    if (nrow(flow_data[which(flow_data$flow < 0), ]) > 0 ) {
-      cat(nrow(flow_data[which(flow_data$flow < 0), ]) , " negative discharge measurements were removed from the dataset in pre-processing \n")
-      flow_data     <- flow_data[flow_data$flow  >= 0, ]
+    if (nrow(flow_data[which(flow_data[, flowColumn] < 0), ]) > 0 ) {
+      cat(nrow(flow_data[which(flow_data[, flowColumn] < 0), ]) , " negative discharge measurements were removed from the dataset in pre-processing \n")
+      flow_data     <- flow_data[flow_data[, flowColumn]  >= 0, ]
     }
   }
   # nrow(flow_data)
@@ -113,11 +141,11 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   # flow_dat[c(flow_data$flow  < 0), ]
   ### prep daily dataframe (flow data)
   flow_data$code     <- ""
-  flow_data$dateTime <- as.Date(flow_data$date) # as.character(as.Date(flow_data$date)) ### dateTime column is critical
+  flow_data$dateTime <- as.Date(flow_data[, dateColumn]) # as.character(as.Date(flow_data$date)) ### dateTime column is critical
   
   # remove rows with NAs for dates, or else suffer the wrath of a POSIXlt error in EGRET::populateDaily(populateDateColumns())
   flow_data <- flow_data[!is.na(flow_data$dateTime), ]
-  names(flow_data)[names(flow_data) %in% c("flow")] <- c("value")
+  names(flow_data)[names(flow_data) %in% c(flowColumn)] <- c("value")
   flow.daily         <- EGRET::populateDaily(rawData = flow_data, qConvert = 1/0.0283168, 
                                              verbose = interact) # convert cubic feet per second to cubic meters per second
   
