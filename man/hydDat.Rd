@@ -56,7 +56,7 @@ hydDat <- getDFE(stn = targetStns, dbname = "hydrology", # c(as.character(dfrInB
 params = c("flow", "head_water", "salinity", "temperature", "tail_water", 
 "stage", "rainfall", "precipitation", "ppt"), data_shape = "wide")
 
-# save(hydDat, file = "C:/RDATA/SFNRC/data/hydDat.RData")
+# save(hydDat, file = "C:/RDATA/SFNRC/data/hydDat.RData", compress='xz')
 
 }
 

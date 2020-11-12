@@ -56,7 +56,7 @@
 #'  
 #' ### export to .csv: 
 #' # write.csv(wqDat, file = file.path(tempdir(), "wqDat.csv"))
-#' # save(wqDat, file = "C:/RDATA/SFNRC/data/wqDat.RData")
+#' # save(wqDat, file = "C:/RDATA/SFNRC/data/wqDat.RData", compress='xz')
 #' }
 #' head(wqDat)
 #' 
