@@ -45,7 +45,7 @@ a1 <- getDFE(stn = c("S12A", "S333"), dbname = "hydrology", params = "head_water
              startDate = "2018-01-01")
 
 a2 <- getDFE(stn = c("S12A", "S333"), dbname = "waterquality", startDate = "2018-01-01")
-unique(a2$station)
+unique(a2$stn)
 
 
 }
