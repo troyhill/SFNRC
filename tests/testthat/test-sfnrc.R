@@ -18,16 +18,6 @@ test_that("interp runs", {
 })
 
 
-test_that("getWQ breaks", {
-  expect_error(getWQ(stns = "S333", target_analytes = c("string1", "string2")))
-  expect_error(getWQ(stns = "S333", matricesToExclude = c("string1", "string2")))
-  expect_error(getWQ(stns = "S333", output_colNames = c("string1", "string2")))
-  expect_error(getWQ(stns = "S333", output_colClasses = c("string1", "string2")))
-  expect_error(getWQ(stns = "S333", rFriendlyParamNames = "string1"))
-  expect_error(getWQ(stns = 20))
-})
-
-
 test_that("se gives correct output", { 
   expect_equal(se(c(5, 5, 5, NA)), 0)
 })
@@ -39,28 +29,6 @@ test_that("geoMean gives correct output", {
   expect_equal(geoMean(c(15, 15, 15, NA), nas = TRUE, zero.propagate = TRUE), 15) 
   expect_equal(geoMean(c(15, 15, 15, 0), nas = TRUE, zero.propagate = TRUE), 0)
 })
-
-
-test_that("getHydro can error out", {
-  expect_error(getHydro(stns = 20))
-  expect_error(getHydro(stns = "S333", parameter_list = 20))
-  expect_error(getHydro(stns = "S333", data_shape = 20))
-  expect_error(getHydro(stns = "S333", data_shape = "sort_of_wide"))
-  expect_error(getHydro(stns = "S333", getWaterQuality = "string1"))
-})
-
-
-test_that("getDataTypes can error out", {
-  expect_error(getDataTypes(parameter = 20))
-  expect_error(getDataTypes(stn = 20))
-  expect_error(getDataTypes(exactMatch = "string"))
-})
-
-test_that("getStn can error out", {
-  expect_error(getStn(query = 20))
-  expect_error(getStn(query = c("string1", "string2")))
-})
-
 
 test_that("dbhydro.stn input checks", {
   expect_error(dbhydro.stn(rename_proj = 20))
