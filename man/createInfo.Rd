@@ -9,7 +9,7 @@ createInfo(
   paStart = 10,
   paLong = 12,
   watershedKm = 1,
-  stationColumn = "station"
+  stationColumn = "stn"
 )
 }
 \arguments{

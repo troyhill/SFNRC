@@ -13,7 +13,7 @@
 #' INFO <- createInfo(wq_data = wqDat)
 
 createInfo <- function(wq_data, paStart = 10, # see output for ?EGRET::INFOdataframe. starting month for analysis
-                       paLong = 12, watershedKm = 1, stationColumn = "station"
+                       paLong = 12, watershedKm = 1, stationColumn = "stn"
 ) { # creates EGRET-style INFO metadata object from WQ data
   ### TODO: see  ?INFOdataframe to improve input checks. esp. param.units - do unit conversions to mg/L if necessary
   param.units    <- wq_data$units[1]
