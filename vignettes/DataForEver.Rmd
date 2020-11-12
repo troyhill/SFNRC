@@ -59,6 +59,8 @@ The `SFNRC` package is available on GitHub and can be installed with the followi
 if (!"devtools" %in% installed.packages()) install.packages("devtools")
 ### install SFNRC
 if (!"SFNRC" %in% installed.packages())  devtools::install_github("troyhill/SFNRC")
+
+library(SFNRC)
 ```
 
 
