@@ -1,3 +1,9 @@
+SFNRC version 0.0.13 (release date: 2020-11-13)
+==================
+Changes:
+* Updated DataForEver API to use SQL, allowing use on Windows operating systems (but still requiring a connection to NPS servers)
+
+
 SFNRC version 0.0.12 (release date: 2020-10-13)
 ==================
 Changes:

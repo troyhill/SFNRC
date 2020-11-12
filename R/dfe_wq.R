@@ -1,180 +1,221 @@
-#' @title DataForEver water quality database API
+#' @title DataForEver database API
 #'
-#' @description Downloads and compiles DataForEver water quality data. This function Works only on linux machines on the SFNRC network with access to the opt/physical drive. Code issues system commands, runs shell scripts, and modifies files in a temp folder on the local hard drive.
+#' @description Downloads and compiles DataForEver water quality or hydrology data.
 #' 
-#' @usage getWQ(stns, target_analytes = "all", 
-#' matricesToExclude = "analyte_free_water",
-#' output_colNames = c("stn", "date", "time", "param", "units", 
-#' "matrix", "mdl", "value"),
-#' output_colClasses = c("character", "character", "character", 
-#' "character", "character", "character", "numeric", "numeric"),
-#' rFriendlyParamNames = FALSE)
+#' @usage getDFE(dbname = "hydrology", stn    = "S333", startDate = NULL,
+#' endDate   = NULL, params    = NULL, matricesToExclude = "analyte_free_water",
+#' rFriendlyParamNames = FALSE, data_shape = "long", addWaterQuality = FALSE,
+#' addWaterQualityParams = NULL)
 #' 
-#' @param stns a single-column dataframe of DataForEver station names. Case insensitive.
+#' @param dbname name of the database sought for inquiry. Currently only 'hydrology' and 'waterquality' are supported. A case-insensitive character string.
+#' @param stn pattern to be matched in station names ('NULL' or 'all' return all stations). This argument applies only to water quality database. A case-insensitive grep-friendly single character element (e.g., 'S333|S197' to search for multiple stations).
+#' @param startDate start of desired date range (if NULL, the first date in period of record is used)
+#' @param endDate end of desired date range (if NULL, the latest date in period of record is used)
+#' @param params grep-style character vector naming analytes of interest. default is "all". 
 #' @param matricesToExclude character vector specifying any sample matrices to be excluded. Spelling/case must be a perfect match to DataForEver entries. For example, "analyte_free_water" indicates field blanks. Advisible to check output using, e.g., \code{unique(wqDat$matrix)}
-#' @param target_analytes grep-style character vector naming analytes of interest. default is "all". e.g., # target_analytes <- c("PHOSPHATE|NITROGEN|AMMONI|SUSPENDED|DISSOLVED OXYGEN|CALCIUM|POTASSIUM|HARDNESS|SODIUM|CHLORIDE|TEMP|CONDUCTIVITY, FIELD|SILICA|LEAD, TOTAL|MAGNESIUM|TURBIDITY|CHLOROPHYLL|MERCURY, TOTAL|SULFATE|ZINC, TOTAL|CHLORDANE|MALATHION|CARBOPHENOTHION|PH, FIELD")
-#' @param output_colNames names of columns in output (changing this is not recommended; this argument is more of a placeholder)
-#' @param output_colClasses classes of columns in output (changing this is not recommended; this argument is more of a placeholder)
 #' @param rFriendlyParamNames TRUE/FALSE; indicates whether parameter names should be modified to be R-friendly (no special characters, commas, or spaces). Advisable for analysis, as this makes analysis easier and pre-empts changes coerced by, e.g., \code{plyr::ddply}
-#' @return dataframe \code{getWQ} returns a dataframe with water quality measurements from each station identified in \code{stns}.
+#' @param data_shape shape of output dataframe. Default is long (one row per date-station-param) but can also be wide (one row per date-station) or really_wide (one row per date). If multiple observations are available for a date, they are averaged if this argument is set to 'wide' or 'really_wide'.
+#' @param addWaterQuality if `dbname = 'hydrology'`, setting this to TRUE will allow wq data to be downloaded and merged internally
+#' @param addWaterQualityParams if hydrologic and water quality parameters are collected simultaneously, this argument specifies the water quality parameters  
 #' 
-#' @seealso \code{\link{getHydro}}
+#' @return dataframe \code{getDFE} returns a dataframe with observations from each station identified in \code{stn} argument.
+#' 
+#' @seealso \code{\link{getDFE}}
 #' 
 #' @examples
 #' 
 #' \dontrun{
-#' head(getWQ(stns = stations, target_analytes = c("PHOSPHATE|NITROGEN|AMMONI")))
+#' ### to check hydro parameter names:
+#' # getParams_DFE(dbname = "hydrology")$datatype
+#' a1 <- getDFE(stn = c("S12A", "S333"), dbname = "hydrology", params = "head_water|flow",
+#'              startDate = "2018-01-01")
 #' 
-#' # to convert data from long to wide:
-#' stations <- c("S333", "S12A", "S12B", "S12C", "S12D")
-#' targParams    <- c("PHOSPHATE, TOTAL AS P", "TURBIDITY")
-#' 
-#' wideDat  <- stats::reshape(wqDat[(wqDat$stn %in% stations) & (wqDat$param %in% targParams), ],
-#'      idvar = c("stn", "date", "year", "mo", "day", "time", "datetime"),
-#'      timevar = "param", direction = "wide")
-#' # clean up the names
-#' names(wideDat) <- gsub(x = names(wideDat), pattern = "value.| |,", replacement = "")
+#' a2 <- getDFE(stn = c("S12A", "S333"), dbname = "waterquality", startDate = "2018-01-01")
+#' unique(a2$station)
 #' 
 #' 
-#' 
-#' 
-#' 
-#' ### download a bunch of data:
-#' targetStns <- c("S21A", "S21", "S22", "S25", "S25A", 
-#' "S25B", "S26", "S27", "S28", 
-#' "G58", "S700", "G93", "S123", "S197", "S333", 
-#' "S12A", "S12B", "S12C", "S12D", "S151")
-#' 
-#' wq.df <- getWQ(stns = targetStns)
 #' }
 #' 
-#' @importFrom utils write.table
-#' @importFrom utils read.delim
-#' 
+#' @importFrom odbc dbConnect
+#' @importFrom RMySQL MySQL
+#' @importFrom DBI dbReadTable
+#' @importFrom odbc dbDisconnect
+#' @importFrom DBI dbGetQuery
+#' @importFrom DBI dbListConnections
+#' @importFrom DBI dbDriver
 #' @export
 
-
-### DataForEver water quality data: downloads data and compiles a dataframe of water quality data based on a list of stations. 
-### Works only on linux, issues system commands and modifies files on disk
-getWQ <- function(stns, target_analytes = "all", 
+getDFE <- function(dbname = "hydrology",# hydrology or waterquality
+                   stn    = "S333", # setting this to NULL (download all data) is not advisable. There is no internal checking whether station name is valid - verify names are correct with getStns_DFE
+                   startDate = NULL,
+                   endDate   = NULL,
+                   params    = NULL, # recommended to leave this as NULL and post-process yourself (to minimized trial and error guessing of param names). If not NULL, must be a regex-style single-element character string (e.g., 'TURBIDITY|NITROGEN' or 'FLOW|STAGE'). For hydrology database queries, param names must be exact matches with what appears in the database.
                    matricesToExclude = "analyte_free_water",
-                   output_colNames = c("stn",         "date",      "time",      "param",     "units",     "matrix",    "mdl",       "value"),
-                   output_colClasses = c("character", "character", "character", "character", "character", "character", "numeric", "numeric"),
-                   rFriendlyParamNames = FALSE) {
-  # stns = a single-column dataframe of DataForEver station names
-  # target_analytes = grep-style character vector naming analytes of interest. default is "all". e.g., # target_analytes <- c("PHOSPHATE|NITROGEN|AMMONI|SUSPENDED|DISSOLVED OXYGEN|CALCIUM|POTASSIUM|HARDNESS|SODIUM|CHLORIDE|TEMP|CONDUCTIVITY, FIELD|SILICA|LEAD, TOTAL|MAGNESIUM|TURBIDITY|CHLOROPHYLL|MERCURY, TOTAL|SULFATE|ZINC, TOTAL|CHLORDANE|MALATHION|CARBOPHENOTHION|PH, FIELD")
-  # output_colNames = names of columns in output (should correspond to extractDataForEver_WQ_wMDL.sh)
-  # output_colClasses = classes of columns in output (should correspond to extractDataForEver_WQ_wMDL.sh)
-  # requires permissions on the shell script, access to NPS processes etc. 
-  # TODO: select date ranges, option for outputting wide data
-  
-  ### error checking
-  if (!is.character(stns)) {
-    stop("'stns' must be a character vector. For viable stations, use `masterCoords` or `getStn()`")
-  }
-  if (!is.character(target_analytes) || !(length(target_analytes) == 1)) {
-    stop("'target_analytes' must be a single character string")
-  }
-  if (!is.character(matricesToExclude) || !(length(matricesToExclude) == 1)) {
-    stop("'matricesToExclude' must be a single character string")
-  }
-  if (!is.character(output_colNames) || !(length(output_colNames) == 8)) {
-    stop("'output_colNames' must be a character vector with eight elements (these are the names of columns in output)")
-  }
-  if (!is.character(output_colClasses) || !(length(output_colClasses) == 8)) {
-    stop("'output_colClasses' must be a character vector with eight elements (representing output data classes)")
-  }
+                   rFriendlyParamNames = FALSE,
+                   data_shape  = "long",
+                   addWaterQuality = FALSE,
+                   addWaterQualityParams = NULL
+) {
   if (!is.logical(rFriendlyParamNames)) {
     stop("'rFriendlyParamNames' must be TRUE or FALSE")
   }
-  
-  
-  files.in.tmp     <- list.files(tempdir(), recursive = TRUE)  # nocov start
-  stn.list.loc     <- file.path(tempdir(), "stn_temp.lst")
-  folder_with_data <- file.path(tempdir(), "data")
-  bash.script.loc  <- file.path(tempdir(), "bash_temp.sh")
-  
-  utils::write.table(toupper(stns), file = stn.list.loc, col.names = FALSE, row.names = FALSE, sep = "", quote = FALSE)
-  
-  
-  ### create bash script to download water quality data
-  fileConn<-file(bash.script.loc)
-  writeLines(c("#!/bin/bash
-               while read station; do  
-               echo \"reading nutrient data from $station\"
-               echo \"redirecting stdout to: $station.dat\"
-               echo \"select * from results where station='$station'\"  			\\
-               | sql \'|\' \\
-               | gawk -F \"|\" '{printf\"%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n\", $1, $2, $3, $4, $5, $6, $7, $8}' 	\\
-               > $1/\"$station\"_wq.dat;  
-               done < $2
-               "
-  ), fileConn)
-  close(fileConn)
-  
-  system(paste0('chmod 777 ', bash.script.loc))
-  
-  system(paste0('bash -c "
-                mkdir ', folder_with_data, '
-                . set_project waterquality
-                /bin/bash ', bash.script.loc, ' ', folder_with_data,' ', stn.list.loc, '
-                find ', folder_with_data,' -name \'*.dat\' -size -2k
-                find ', folder_with_data,' -name \'*.dat\' -size -2k -delete
-                
-                "')) 
-  
-  ### It would be ideal to include QC flags with the data.
-  
-  Sys.sleep(2) # This seems necessary to avoid loading data prior to download completion
-  # now load downloaded files into R
-  dat.files   <- grep(list.files(folder_with_data, full.names = TRUE), pattern = "_wq", value = TRUE)
-  # unique_stns <- unique(sapply(strsplit(list.files(folder_with_data), split = "_"), "[", 1))
-  
-  # https://stackoverflow.com/questions/11433432/importing-multiple-csv-files-into-r
-  tempDat <- do.call(rbind, lapply(dat.files, function(x) utils::read.delim(x, stringsAsFactors = FALSE, header = FALSE, 
-                                                                     col.names = output_colNames,
-                                                                     colClasses = output_colClasses)))
-  tempDat <- tempDat[tempDat$stn %in% stns, ] # protects against loading of other WQ files in temp folder
-  
-  if (!target_analytes %in% "all") {
-    tempDat <- tempDat[grepl(x = tempDat$param, pattern = target_analytes), ]
+  if (any(grepl(x = stn, pattern = "\\|"))) {
+    stn <- unlist(strsplit(stn, "\\|"))
   }
   
-  if (rFriendlyParamNames) {
-    # modify column with parameter names to not have commas, +/- signs
-    tempDat[, output_colNames[4]] <-  gsub(x = tempDat[, output_colNames[4]], pattern = " |,", replacement = "")
-    tempDat[, output_colNames[4]] <-  gsub(x = tempDat[, output_colNames[4]], pattern = "-|[+]", replacement = ".")
+  ### prep for failure. Goal here is to close all connections opened during the function.
+  init.connections <- DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))
+  on.exit(lapply( DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))[!DBI::dbListConnections( DBI::dbDriver( drv = "MySQL")) %in% init.connections], odbc::dbDisconnect))
+  
+  dbname <- tolower(dbname)
+  if (dbname %in% "waterquality") {
+    hostAddr <- "10.146.112.23"
+  } else if (dbname %in% "hydrology") {
+    hostAddr <- "10.146.112.14"
+  } else {
+    stop("dbname not accepted as a valid input")
   }
   
-  ########################
-  ### clean up the temp folder
-  ########################
-  # newFiles <- list.files(tempdir(), full.names = TRUE, recursive = TRUE)[!list.files(tempdir(), recursive = TRUE) %in% files.in.tmp]
-  # file.remove(newFiles)
-           
-                                   
-  ########################
-  ### clean up the data
-  ########################
-  tempDat$year     <- substr(tempDat$date, 1, 4) #as.numeric(sapply(strsplit(tempDat$date, "-"), "[", 1))
-  tempDat$mo       <- substr(tempDat$date, 6, 7) #as.numeric(sapply(strsplit(tempDat$date, "-"), "[", 2))
-  tempDat$day      <- substr(tempDat$date, 9, 10) #as.numeric(sapply(strsplit(tempDat$date, "-"), "[", 3))
-  tempDat$datetime <- as.POSIXct(paste0(tempDat$date, tempDat$time), format = "%Y-%m-%d%H%M")
-  tempDat$date     <- as.POSIXct(tempDat$date, format = "%Y-%m-%d")
+  if (is.null(startDate)) startDate <- "1900-01-01" 
+  if (is.null(endDate))   endDate   <- as.character(Sys.Date())
+  if (all(sapply(X = list(stn, params), FUN = is.null)) && (startDate %in% "1900-01-01") && (endDate %in% as.character(Sys.Date())) ) {
+    ### scenario: get entire database
+    stop("to download a full copy of the database, please contact troy_hill@nps.gov")
+  }
   
-  tempDat$units <- toupper(tempDat$units)
-  tempDat$units <- gsub(x = tempDat$units, pattern = " ", replacement = "")
-  tempDat$units[tempDat$units %in% "PPT"]       <- "PSU"
-  tempDat$units[tempDat$units %in% c("METERS")] <- "METER"
-  tempDat$units[tempDat$units %in% "MG/M^3"]    <- "MG/M3"
+  con <- odbc::dbConnect(RMySQL::MySQL(),
+                         dbname   = dbname,
+                         host     = hostAddr,
+                         port     = 3306,
+                         user     = 'read_only',
+                         password = 'read_only')
   
-  tempDat$param[tempDat$param %in% c("AMMONIA, TOTAL AS N", "NITROGEN, AMMONIA AS NH4")] <- "AMMONIA-N"
-  tempDat$param[tempDat$param %in% c("temp")] <- "TEMP"
   
-  ### remove QC samples
-  tempDat <- tempDat[!tempDat$matrix %in% c(matricesToExclude), ]
+  if (dbname %in% "hydrology") {
+    if (!is.null(stn) && (!stn %in% "all")) {
+      ### scenario: all params, one or more stations
+      ### robust solution for multiple stations
+      paramNames <- unlist(strsplit(params, "\\|"))
+      
+      for (i in 1:length(stn)) {
+        for (j in 1:length(paramNames)){ # works: FLOW/flow, head_water, tail_water
+        sql <- sprintf("SELECT *
+                 FROM measurement WHERE station='%s'
+                 AND datatype='%s' AND measurement_date BETWEEN
+                 '%s' AND '%s' ",stn[i], paramNames[j], startDate, endDate)
+        output.tmp <- DBI::dbGetQuery(con, sql)
+        if (i == 1 && j == 1) {
+          output <- output.tmp
+        } else {
+          output <- rbind(output, output.tmp)
+        }
+        }
+      }
+    } 
+    odbc::dbDisconnect(con)
+    output$date     <- as.POSIXct(output$measurement_date, format = "%Y-%m-%d")
+    output$datetime <- as.POSIXct(paste0(output$measurement_date, output$measurement_time), format = "%Y-%m-%d%H%M")
+    names(output)[names(output) %in% "measurement_value"] <- "value"
+    names(output)[names(output) %in% "datatype"]          <- "parameter"
+  }
   
-  invisible(tempDat)  # nocov end
+  if (dbname %in% "waterquality") {
+    ### this works for waterquality - need to make applicable to hydrology
+    if (!is.null(stn) && (!stn %in% "all")) {
+      ### scenario: all params, one or more stations
+      ### robust solution for multiple stations
+      for (i in 1:length(stn)) {
+        sql <- sprintf("SELECT *
+                   FROM results WHERE station='%s' AND
+                 collection_date BETWEEN '%s' AND '%s'", stn[i], startDate, endDate)
+        output.tmp <- DBI::dbGetQuery(con, sql)
+        if (i == 1) {
+          output <- output.tmp
+        } else {
+          output <- rbind(output, output.tmp)
+        }
+      }
+    } 
+    odbc::dbDisconnect(con)
+    
+    if ((!params %in% "all") && (!is.null(params))) {
+      ### scenario: if one or more specific params are sought
+      ### frankly it's quicker to just subset the dataset 
+      output <- output[grep(x = output$parameter, pattern = params), ]
+    }
+    
+    if (rFriendlyParamNames) {
+      # modify column with parameter names to not have commas, +/- signs
+      output$parameter <-  gsub(x = output$parameter, pattern = " |,", replacement = "")
+      output$parameter <-  gsub(x = output$parameter, pattern = "-|[+]", replacement = ".")
+    }
+    
+    ########################
+    ### clean up the data
+    ########################
+      
+      output$units <- toupper(output$units)
+      output$units <- gsub(x = output$units, pattern = " ", replacement = "")
+      output$units[output$units %in% "PPT"]       <- "PSU"
+      output$units[output$units %in% c("METERS")] <- "METER"
+      output$units[output$units %in% "MG/M^3"]    <- "MG/M3"
+      
+      output$parameter[output$parameter %in% c("AMMONIA, TOTAL AS N", "NITROGEN, AMMONIA AS NH4")] <- "AMMONIA-N"
+      output$parameter[output$parameter %in% c("temp")] <- "TEMP"
+      
+      ### remove QC samples
+      output <- output[!output$matrix %in% c(matricesToExclude), ]
+      
+      output$date     <- as.POSIXct(output$collection_date, format = "%Y-%m-%d")
+      output$datetime <- as.POSIXct(paste0(output$collection_date, output$collection_time), format = "%Y-%m-%d%H%M")
+    
+      names(output)[names(output) %in% "concentration"] <- "value"
+  }
   
+  colsToKeep <- which(names(output) %in%  c("station", "date", "parameter", "value"))
+  if (!grepl(x = data_shape, pattern = "long")) {
+    output <- stats::reshape(output[, colsToKeep], idvar = c("station", "date"), 
+                             timevar = "parameter", direction = "wide")
+    names(output) <- gsub(x = names(output), pattern = "value.", 
+                           replacement = "")
+  }
+  if (grepl(x = data_shape, pattern = "really_wide")) {
+    output <- stats::reshape(output, idvar = c("date"), 
+                              timevar = c("station"), direction = "wide")
+  }
+  
+  
+  output$year     <- format(output$date, format = "%Y")
+  output$mo       <- format(output$date, format = "%m")
+  output$day      <- format(output$date, format = "%d")
+  
+  if (addWaterQuality) {
+    wq <- getDFE(dbname = "waterquality", stn = stn, startDate = startDate,
+                     endDate   = endDate,
+                     params    = addWaterQualityParams,
+                     matricesToExclude = "analyte_free_water"
+    )
+    # wq <- wq[wq$matrix == "surface water"] # good idea but hard to identify all valid matrices
+    ### issue for CRAN checks
+    ### where multiple measurements are available in a day, average them
+    dd.wq <- plyr::ddply(wq[, names(wq) %in% c("station", "date", "parameter", "value", "minimum_detection_limit")], .(station, date, parameter),
+                         summarise,
+                         value = mean(value, na.rm = TRUE),
+                         minimum_detection_limit = max(minimum_detection_limit, na.rm = TRUE))
+    wq.temp <- stats::reshape(dd.wq, 
+                              idvar = c("station", "date"), timevar = "parameter", 
+                              direction = "wide")
+    names(wq.temp) <- gsub(x = names(wq.temp), pattern = "value.| |,", 
+                           replacement = "")
+    wqDatForMerge <- wq.temp[, c(grep(x = names(wq.temp), 
+                                      pattern = paste0("station|date|minimum_detection_limit|", addWaterQualityParams), value = TRUE))]
+    output <- plyr::join_all(list(output, wqDatForMerge), 
+                              by = c("station", "date"))
+  }
+  
+  
+  return(output)
 }
+
+
 

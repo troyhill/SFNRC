@@ -2,18 +2,21 @@
 #'
 #'
 #'
-#' @format A dataframe of flow, headwater, tailwater, and stage data for structures. Created on 19 October 2018.
+#' @format A dataframe of flow, headwater, tailwater, and stage data for structures. Created on 10 November 2020.
 #' \describe{
-#' \item{stn}{station name}
+#' \item{station}{station name}
 #' \item{date}{date of record, POSIXct}
+#' \item{stage}{stage (ft; NGVD29)}
 #' \item{flow}{flow (cfs)}
 #' \item{head_water}{headwater stage (ft; NGVD29)}
 #' \item{tail_water}{tailwater stage (ft; NGVD29)}
-#' \item{stage}{stage (ft; NGVD29)}
+#' \item{flow}{flow (cfs)}
+#' \item{HEAD_WATER}{headwater stage (ft; NGVD29)}
+#' \item{TAIL_WATER}{tailwater stage (ft; NGVD29)}
+#' \item{FLOW}{flow (cfs)}
 #' \item{year}{year (extracted from date column)}
 #' \item{mo}{month (extracted from date column)}
 #' \item{day}{day (extracted from date column)}
-#' \item{value}{amount of parameter measured}
 #'}
 #' @docType data
 #' @keywords biscayne bay, hydrology data
@@ -43,11 +46,11 @@
 #' "G58", "S700", "G93", "S123", "S197",
 #' "S333", "S12A", "S12B", "S12C", "S12D", "S151")
 #' 
-#' hydDat <- getHydro(stns = targetStns, # c(as.character(dfrInBay$stn), structs), 
-#' parameter_list = c("flow", "head_water", "salinity", "temperature", "tail_water", 
+#' hydDat <- getDFE(stn = targetStns, dbname = "hydrology", # c(as.character(dfrInBay$stn), structs), 
+#' params = c("flow", "head_water", "salinity", "temperature", "tail_water", 
 #' "stage", "rainfall", "precipitation", "ppt"), data_shape = "wide")
 #' 
-#' # save(hydDat, file = "/home/thill/RDATA/git-repos/SFNRC/data/hydDat.RData")
+#' # save(hydDat, file = "C:/RDATA/SFNRC/data/hydDat.RData")
 #' 
 #' }
 #' 

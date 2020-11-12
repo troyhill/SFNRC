@@ -5,16 +5,23 @@
 \alias{wqDat}
 \title{Data: DataForEver water quality data for northern boundary of Everglades National Park}
 \format{
-A dataframe of water quality data from DataForEver, downloaded on 16 October 2018.
+A dataframe of water quality data from DataForEver, downloaded on 10 November 2020.
 \describe{
-\item{stn}{station name}
-\item{date}{date of observation}
-\item{param}{parameter name}
+\item{station}{station name}
+\item{collection_date}{date of observation}
+\item{collection_time}{time of observation}
+\item{parameter}{parameter name}
 \item{units}{measurement units}
-\item{year}{year (extracted from date column)}
+\item{matrix}{sample matrix}
+\item{minimum_detection_limit}{method detection limit, where available}
 \item{value}{amount of parameter measured}
-\item{mdl}{method detection limit, where available}
-\item{src}{data source (DataForEver)}
+\item{exception}{QC flag}
+\item{Last_change}{date of last change}
+\item{date}{date of record, POSIXct}
+\item{datetime}{date and time of record, POSIXct}
+\item{year}{year (extracted from date column)}
+\item{mo}{month (extracted from date column)}
+\item{day}{day (extracted from date column)}
 }
 }
 \usage{
@@ -51,12 +58,11 @@ targetStations <- c("COOPERTN", "FROGCITY", "G311", "G342A", "G342B", "G342C",
 "S123",  "S21A", "S21", "S20", "S20F", "S20G",
 "S333", "S12A", "S12B", "S12C", "S12D", "S151")
 
-testDat <- getWQ(stns = targetStations)
+wqDat <- getDFE(stn = paste(targetStations, collapse = "|"), dbname = "waterquality")
  
 ### export to .csv: 
-write.csv(testDat, file = file.path(tempdir(), "wqDat.csv"))
-# wqDat <- testDat
-# save(wqDat, file = "/home/thill/RDATA/git-repos/SFNRC/data/wqDat.RData")
+# write.csv(wqDat, file = file.path(tempdir(), "wqDat.csv"))
+# save(wqDat, file = "C:/RDATA/SFNRC/data/wqDat.RData")
 }
 head(wqDat)
 
