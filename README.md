@@ -27,14 +27,6 @@ Installing this package from out-dated versions of R (NPS users) will cause an e
 Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
 ```
 
-Until tryCatch statements are used in the DataForEver functions, `getDFE()` calls that fail may leave their database connections intact. It may be necessary at some point to kill all database connections. I use the `DBI` package for this (`odbc` is installed with the `SFNRC` package):
-
-```r
-if (!"DBI" %in% installed.packages()) {install.packages("DBI")}
-### to kill all SQL connections
-DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))
-lapply( DBI::dbListConnections( DBI::dbDriver( drv = "MySQL")), odbc::dbDisconnect)             
-```
 
 ## License
 
