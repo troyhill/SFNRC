@@ -3,9 +3,9 @@ title: "Accessing DataForEver data using the SFNRC R package"
 latex_engine: pdflatex
 mainfont: FreeMono
 output:
-  pdf_document: null
   html_document:
     df_print: paged
+  pdf_document: null
 subtitle: ''
 header-includes:
 - \usepackage{pdflscape}
@@ -194,7 +194,7 @@ Merging water quality and hydrology data is a routine task that is automated by 
 ### simultaneously download hydrology and water quality data:
 hyd.wq <- getDFE(stn = stations, 
                    params = hydroParams, # hydrology database parameters
-                   startDate = "2018-01-01",
+                   startDate = "2000-01-01",
                    addWaterQuality = TRUE, 
                    addWaterQualityParams = wqParams) # water quality database parameters
 

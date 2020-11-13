@@ -172,6 +172,11 @@ getDFE <- function(dbname = "hydrology",# hydrology or waterquality
       names(output)[names(output) %in% "concentration"] <- "value"
   }
   
+  if (addWaterQuality) {
+    ### if WQ and hydro data are desired, reshape hydro data to be wide, to match WQ dataset
+    data_shape <- "wide"
+  }
+  
   ### change 'station' column to 'stn' to match DBHYDRO output
   names(output)[names(output) %in% "station"] <- "stn"
   colsToKeep <- which(names(output) %in%  c("stn", "date", "parameter", "value"))
@@ -197,6 +202,7 @@ getDFE <- function(dbname = "hydrology",# hydrology or waterquality
                      params    = addWaterQualityParams,
                      matricesToExclude = "analyte_free_water"
     )
+    
     # wq <- wq[wq$matrix == "surface water"] # good idea but hard to identify all valid matrices
     ### issue for CRAN checks
     ### where multiple measurements are available in a day, average them

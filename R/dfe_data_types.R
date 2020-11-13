@@ -73,7 +73,7 @@ getParams_DFE <- function(dbname = "hydrology", stn = "all"# hydrology or waterq
     } else if (dbname %in% "waterquality") {
       stnNames <- unlist(strsplit(stn, "\\|"))
       a        <- getDFE(stn = stnNames, dbname = "waterquality")
-      dfe.type <- stats::aggregate(concentration ~ station + parameter, data = a, FUN = length)
+      dfe.type <- stats::aggregate(value ~ stn + parameter, data = a, FUN = length)
       names(dfe.type)[3] <- "observations"
     }
   }
