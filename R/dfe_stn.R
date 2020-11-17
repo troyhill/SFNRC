@@ -56,6 +56,6 @@
     
     ### change 'station' column to 'stn' to match DBHYDRO output
     names(dfe.sta)[names(dfe.sta) %in% "station"] <- "stn"
-    return(dfe.sta)
+    return(dfe.sta[, c("stn", "lat_nad83", "long_nad83", "utm_x", "utm_y")])
   }
   
