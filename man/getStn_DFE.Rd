@@ -4,12 +4,12 @@
 \alias{getStn_DFE}
 \title{DataForEver station query}
 \usage{
-getStn_DFE(dbname = "hydrology", pattern  = NULL)
+getStn_DFE(pattern  = NULL, dbname = "hydrology")
 }
 \arguments{
-\item{dbname}{name of the database sought for inquiry. Currently only 'hydrology' and 'waterquality' are supported. A case-insensitive character string.}
-
 \item{pattern}{pattern to be matched in station names ('NULL' returns all stations). A case-insensitive grep-friendly single character element (e.g., 'S333|S197' to search for multiple stations).}
+
+\item{dbname}{name of the database sought for inquiry. Currently only 'hydrology' and 'waterquality' are supported. A case-insensitive character string.}
 }
 \value{
 dataframe \code{getStn_DFE} returns a dataframe with stations and all associated information (coordinates, notes)

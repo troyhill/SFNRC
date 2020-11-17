@@ -89,5 +89,5 @@ getParams_DFE <- function(dbname = "hydrology", stn = "all"# hydrology or waterq
   ### change 'station' column to 'stn' to match DBHYDRO output
   names(dfe.type)[names(dfe.type) %in% "station"] <- "stn"
   
-  return(dfe.type)
+  return(dfe.type[order(dfe.type$datatype), c("datatype", "units", "description")])
 }

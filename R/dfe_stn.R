@@ -2,7 +2,7 @@
 #'
 #' @description Identifies DataForEver stations in hydrology or water quality databases
 #' 
-#' @usage getStn_DFE(dbname = "hydrology", pattern  = NULL)
+#' @usage getStn_DFE(pattern  = NULL, dbname = "hydrology")
 #' 
 #' @param dbname name of the database sought for inquiry. Currently only 'hydrology' and 'waterquality' are supported. A case-insensitive character string.
 #' @param pattern pattern to be matched in station names ('NULL' returns all stations). A case-insensitive grep-friendly single character element (e.g., 'S333|S197' to search for multiple stations).
@@ -25,8 +25,9 @@
 #' 
 #' @export
 
-  getStn_DFE <- function(dbname = "hydrology", # hydrology or waterquality
-                         pattern  = NULL # optional regex string to use as query
+  getStn_DFE <- function(pattern  = NULL, # optional regex string to use as query
+                         dbname = "hydrology" # hydrology or waterquality
+                         
   ) {
     dbname <- tolower(dbname)
     if (dbname %in% "waterquality") {
