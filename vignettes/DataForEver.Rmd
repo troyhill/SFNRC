@@ -3,9 +3,9 @@ title: "Accessing DataForEver data using the SFNRC R package"
 latex_engine: pdflatex
 mainfont: FreeMono
 output:
+  pdf_document: null
   html_document:
     df_print: paged
-  pdf_document: null
 subtitle: ''
 header-includes:
 - \usepackage{pdflscape}
