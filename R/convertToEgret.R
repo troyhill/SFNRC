@@ -103,12 +103,12 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
     flow_data <- DBHYDROToDFE(data = flow_data, type = "hydrology")
   }
   ### identify data sources - DFE or DBHYDRO
-  ### WQ data based on ncol == 9 in DBHYDRO (but much wider in DFE)
-  if (ncol(wq_data) == 9) { 
-    wq_data <- DBHYDROToDFE(data = wq_data, type = "hydrology")
+  ### flow data based on ncol == 9 in DBHYDRO (but much wider in DFE)
+  if (ncol(flow_data) == 9) { 
+    flow_data <- DBHYDROToDFE(data = flow_data, type = "hydrology")
   }
   ### stop if WQ dataset doesn't meet needs.
-  if (sum(c(flowColumn, stationColumn, dateColumn) %in% names(wq_data)) < 3) {
+  if (sum(c(flowColumn, stationColumn, dateColumn) %in% names(flow_data)) < 3) {
     stop ("hydrology dataset does not appear to have the needed columns: date, stn, flow")
   }
   
