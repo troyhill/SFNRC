@@ -16,7 +16,11 @@ createInfo <- function(wq_data, paStart = 10, # see output for ?EGRET::INFOdataf
                        paLong = 12, watershedKm = 1, stationColumn = "stn"
 ) { # creates EGRET-style INFO metadata object from WQ data
   ### TODO: see  ?INFOdataframe to improve input checks. esp. param.units - do unit conversions to mg/L if necessary
-  param.units    <- wq_data$units[1]
+  if ("units" %in% names(wq_data)) {
+    param.units    <- wq_data$units[1]
+  } else {
+    param.units    <- "unknown"
+  }
   shortName      <- wq_data[, stationColumn][1]
   paramShortName <- gsub(x = wq_data$param[1], pattern = " |,",   replacement = "")
   paramShortName <- gsub(x = paramShortName, pattern = "-|[+]", replacement = "")
