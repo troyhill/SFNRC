@@ -192,9 +192,9 @@ getDFE <- function(dbname = "hydrology",# hydrology or waterquality
   }
   
   
-  output$year     <- format(output$date, format = "%Y")
-  output$mo       <- format(output$date, format = "%m")
-  output$day      <- format(output$date, format = "%d")
+  output$year     <- as.numeric(format(output$date, format = "%Y"))
+  output$mo       <- as.numeric(format(output$date, format = "%m"))
+  output$day      <- as.numeric(format(output$date, format = "%d"))
   
   if (addWaterQuality) {
     wq <- getDFE(dbname = "waterquality", stn = stn, startDate = startDate,
