@@ -4,6 +4,7 @@
 #' @param target_analyte Water quality parameter of interest. Internally converted to R-friendly form (no commas, hyphens, spaces).
 #' @param wq_data water quality dataframe. Product of \code{\link{getDFE} or \link{getDBHYDRO}}. In the \code{convertEgret} output, the date range in \code{wq_data} is modified to be the intersection of \code{wq_data} and \code{flow_data}
 #' @param flow_data flow dataframe. Product of \code{\link{getDFE} or \link{getDBHYDROhydro}}. If set to NA, a dataframe of flow = 1.1 m3/s is created and used for analysis. This workaround is designed to allow WRTDS on stations without discharge data (e.g., open-water stations) but may not be mathematically sound. 
+#' @param qConvert a conversion factor applied to the flow data. Default is 1 (no conversion). Use 1/0.0283168 to convert cfs to cubic meters per second.
 #' @param interact logical Option for interactive mode. If true, there is user interaction for error handling and data checks. FALSE by default
 #' @param paStart Starting month of period of analysis. Defaults to 10. Used in most EGRET functions
 #' @param paLong Length in number of months of period of analysis. Defaults to 12. Used in most EGRET functions
@@ -40,7 +41,8 @@
 #'      
 #'      }
 
-convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL, interact = FALSE,
+convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL, qConvert = 1, 
+                           interact = FALSE,
                            paStart = 10, paLong = 12, watershedKm = 1, removeNegativeFlow = TRUE) {
   ### function converts DataForEver data to EGRET format for WRTDS analysis
   
@@ -146,7 +148,7 @@ convertToEgret <- function(stn, target_analyte, wq_data = NULL, flow_data = NULL
   # remove rows with NAs for dates, or else suffer the wrath of a POSIXlt error in EGRET::populateDaily(populateDateColumns())
   flow_data <- flow_data[!is.na(flow_data$dateTime), ]
   names(flow_data)[names(flow_data) %in% c(flowColumn)] <- c("value")
-  flow.daily         <- EGRET::populateDaily(rawData = flow_data, qConvert = 1/0.0283168, 
+  flow.daily         <- EGRET::populateDaily(rawData = flow_data, qConvert = qConvert, 
                                              verbose = interact) # convert cubic feet per second to cubic meters per second
   
   ### generate INFO metadata 

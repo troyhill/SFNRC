@@ -9,6 +9,7 @@ convertToEgret(
   target_analyte,
   wq_data = NULL,
   flow_data = NULL,
+  qConvert = 1,
   interact = FALSE,
   paStart = 10,
   paLong = 12,
@@ -24,6 +25,8 @@ convertToEgret(
 \item{wq_data}{water quality dataframe. Product of \code{\link{getDFE} or \link{getDBHYDRO}}. In the \code{convertEgret} output, the date range in \code{wq_data} is modified to be the intersection of \code{wq_data} and \code{flow_data}}
 
 \item{flow_data}{flow dataframe. Product of \code{\link{getDFE} or \link{getDBHYDROhydro}}. If set to NA, a dataframe of flow = 1.1 m3/s is created and used for analysis. This workaround is designed to allow WRTDS on stations without discharge data (e.g., open-water stations) but may not be mathematically sound.}
+
+\item{qConvert}{a conversion factor applied to the flow data. Default is 1 (no conversion). Use 1/0.0283168 to convert cfs to cubic meters per second.}
 
 \item{interact}{logical Option for interactive mode. If true, there is user interaction for error handling and data checks. FALSE by default}
 
