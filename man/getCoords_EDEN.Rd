@@ -23,13 +23,13 @@ stns <- c(
 "S18C_T",
 "NESRS1"
 )
-stn.coords <- do.call(rbind, lapply(X = stns, getEDENcoords))
+stn.coords <- do.call(rbind, lapply(X = stns, getCoords_EDEN))
 
 ### convert to spatial data and plot
 stn.coords           <- stn.coords[!is.na(stn.coords$latitude), ]
 stn.coords$longitude <- -1 * stn.coords$longitude
 coordinates(stn.coords) <- c("easting", "northing")
-proj4string(stn.coords) <- CRS('+proj=utm +datum=WGS84')
+proj4string(stn.coords) <- "+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # crs(fireHydro::edenDEM)
 
 plot(stn.coords)
 }

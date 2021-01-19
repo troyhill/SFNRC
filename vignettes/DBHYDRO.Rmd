@@ -37,7 +37,30 @@ knitr::opts_chunk$set(echo = TRUE, comment=NA)
 
 ## 1. Introduction
 
-Among the tools provided in the `SFNRC` R package is a simple, streamlined means of interacting with the DBHYDRO hydrology and water quality. This vignette demonstrates some of the DBHYDRO functionality.
+Among the tools provided in the `SFNRC` R package is a simple, streamlined means of interacting with the DBHYDRO hydrology and water quality databases. This vignette demonstrates how to use the DBHYDRO-related functions. 
+
+The `SFNRC` R package is hosted on GitHub and can be installed from the R console using the devtools package, as shown below. The package only needs to be installed once.
+
+
+\vspace{12pt}
+
+```{r installation, include=TRUE, echo=TRUE, eval=FALSE}
+# if devtools isn't already installed, install it
+install.packages("devtools") 
+
+# devtools can be used to install packages from GitHub
+devtools::install_github("troyhill/SFNRC@master")
+
+```
+
+\vspace{12pt}
+
+In scripts that rely on `SFNRC` functions, the package should be loaded with the command `library(SFNRC)`.
+
+```{r loadSFNRC, include=TRUE, echo=TRUE, eval=FALSE}
+library(SFNRC)
+
+```
 
 
 \vspace{12pt}
@@ -71,7 +94,7 @@ fig2Col   <- "gray55"
 ## 2. Hydrologic data
 \vspace{12pt}
 
-The starting point for DBHYDRO hydrologic data is identifying the relevant DBKey. getDBkey displays the DBkeys associated with a structure. The input is not case sensitive, and partial searches will return broader results. The default behavior for `getDBkey()` is to return active DBkeys; those with new data added during the past 90 days. Setting the argument `activeOnly = FALSE` returns all DBkeys. 
+The starting point for DBHYDRO hydrologic data is identifying the relevant DBKey. getDBkey displays the DBkeys associated with a structure. The input is not case sensitive, and partial searches will return broader results. The default behavior for `getDBkey()` is to only return active DBkeys; those with new data added during the past 90 days. Setting the argument `activeOnly = FALSE` returns all DBkeys. Sometimes site names may be different in DBHYDRO than in other databases (e.g., the 'P33' station in DataForEver is 'NP-P33' in DBHYDRO). In other cases, a hyphen or space may be missing or added in. If you think a site exists but getDBkey isn't returning anything, a trip to the DBHYDRO website to check the site name (or find the relevant dbkey) may save you some time.
 
 \vspace{12pt}
 
@@ -126,6 +149,8 @@ The above data are in a tidyr-friendly format and can be easily plotted.
 
 
 ```{r stn_query4, include=TRUE, echo=TRUE, eval=FALSE}
+### these plotting commands use the ggplot2 package. To install it:
+### install.packages("ggplot2")
 
 ggplot(flow.data, aes(y = value, x = date)) + geom_area(aes(fill= stn), 
         color = "gray50", alpha = 0.3, position = 'stack') + 

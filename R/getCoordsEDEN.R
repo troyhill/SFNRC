@@ -17,13 +17,13 @@
 #' "S18C_T",
 #' "NESRS1"
 #' )
-#' stn.coords <- do.call(rbind, lapply(X = stns, getEDENcoords))
+#' stn.coords <- do.call(rbind, lapply(X = stns, getCoords_EDEN))
 #' 
 #' ### convert to spatial data and plot
 #' stn.coords           <- stn.coords[!is.na(stn.coords$latitude), ]
 #' stn.coords$longitude <- -1 * stn.coords$longitude
 #' coordinates(stn.coords) <- c("easting", "northing")
-#' proj4string(stn.coords) <- CRS('+proj=utm +datum=WGS84')
+#' proj4string(stn.coords) <- "+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # crs(fireHydro::edenDEM)
 #' 
 #' plot(stn.coords)
 #' }
@@ -71,7 +71,11 @@ getCoords_EDEN <- function(stn = "S18C_T") {
       # vals.char  <- strsplit(clip1, "</td><td>")[[1]][2] # should be, e.g., "30[degree symbol] 1.6"
       ### remove degree symbol
       clip2      <- as.numeric(strsplit(val, "\u00B0|'")[[1]]) # degrees, minutes, seconds
-      decimalDegrees        <- clip2[1] + clip2[2] / 60 + clip2[3] / 360
+      # decimalDegrees        <- clip2[1] + clip2[2] / 60 + clip2[3] / 360
+      degs <- clip2[1]
+      mins <- clip2[2]
+      secs <- clip2[3]
+      decimalDegrees       <- degs + mins / 60 + secs / 3600
     } else if (coordType %in% c("NAVD_to_NGVD")) {
       decimalDegrees       <- -1 * as.numeric(strsplit(val, "</td>")[[1]][1]) # value on website is NGVD to NAVD. I want inverse.
     }
