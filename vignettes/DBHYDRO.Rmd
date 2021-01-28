@@ -166,7 +166,7 @@ flow.data2 <- flow.data
 flow.data2$value[is.na(flow.data2$value)] <- 0
 
 ggplot(flow.data2, aes(y = value, x = date)) + geom_area(aes(fill= stn), 
-        color = "gray50", alpha = 0.3, position = 'stack') + 
+        color = "gray50", alpha = 0.3, position = "stack") + 
         theme_classic() + ylab("Daily flow across Tamiami Trail (cfs)") + 
         xlab("") + theme(legend.title=element_blank()) + 
         scale_fill_brewer(palette = "RdYlGn") + ylim(0, 3700)
