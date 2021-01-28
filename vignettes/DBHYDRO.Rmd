@@ -151,6 +151,7 @@ The above data are in a tidyr-friendly format and can be easily plotted.
 ```{r stn_query4, include=TRUE, echo=TRUE, eval=FALSE}
 ### these plotting commands use the ggplot2 package. To install it:
 ### install.packages("ggplot2")
+### library(ggplot2)
 
 ggplot(flow.data, aes(y = value, x = date)) + geom_area(aes(fill= stn), 
         color = "gray50", alpha = 0.3, position = 'stack') + 
