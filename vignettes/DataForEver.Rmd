@@ -52,11 +52,14 @@ The `SFNRC` R package provides access to the DataForEver hydrology and water qua
 
 \vspace{12pt}
 
-The `SFNRC` package is available on GitHub and can be installed with the following commands: 
+The `SFNRC` R package is hosted on GitHub and can be installed from the R console using the devtools package, as shown below. The package only needs to be installed once.
 
 ```{r install_SFNRC, include=TRUE, echo=TRUE, eval=FALSE}
-### install devtools R package
+### install devtools R package and a couple others that we'll use
 if (!"devtools" %in% installed.packages()) install.packages("devtools")
+if (!"ggplot2" %in% installed.packages()) install.packages("ggplot2")
+if (!"gridExtra" %in% installed.packages()) install.packages("gridExtra")
+
 ### install SFNRC
 if (!"SFNRC" %in% installed.packages())  devtools::install_github("troyhill/SFNRC")
 

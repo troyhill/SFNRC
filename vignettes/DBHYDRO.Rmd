@@ -45,11 +45,12 @@ The `SFNRC` R package is hosted on GitHub and can be installed from the R consol
 \vspace{12pt}
 
 ```{r installation, include=TRUE, echo=TRUE, eval=FALSE}
-# if devtools isn't already installed, install it
-install.packages("devtools") 
+# if devtools (and ggplot2, used later) aren't already installed, install it
+if (!"devtools" %in% installed.packages()) install.packages("devtools")
+if (!"ggplot2" %in% installed.packages()) install.packages("ggplot2")
 
 # devtools can be used to install packages from GitHub
-devtools::install_github("troyhill/SFNRC@master")
+if (!"SFNRC" %in% installed.packages()) devtools::install_github("troyhill/SFNRC@master")
 
 ```
 
