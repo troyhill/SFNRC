@@ -1,13 +1,13 @@
-#' @title Create columns indicating wet/dry season and federal water year 
+#' @title Create columns indicating wet/dry season and water year 
 #'
-#' @description See above. Water year 2015 runs from Oct 01 2014 - Sept 30 2015.
+#' @description Federal water year 2022 runs from 01 Oct 2021 - 30 Sept 2022 (beginning with the dry season). Florida water year 2022 runs from 01 May 2021 - 30 April 2022 (beginning with the wet season).
 #' 
-#' @usage seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sep"), waterYearBegin = "Oct")
+#' @usage seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sep"), waterYearBegin = month.abb[which(month.abb %in% wetSeas[2]) + 1])
 #' 
 #' @param inputData input dataframe 
 #' @param timeCol POSIXct column of timestamps
 #' @param wetSeas the first and last month of the wet season (inclusive; use abbreviated months as in \code{month.abb}) 
-#' @param waterYearBegin the first full month of each water year (abbreviated form, as in \code{month.abb}). 
+#' @param waterYearBegin the first full month of each water year (abbreviated form, as in \code{month.abb}, e.g., "Oct"). Default behavior is consistent with the federal water year, where a new WY begins at the start of the dry season (Oct).
 #' 
 #' @return two columns are appended to the input dataframe
 #' 
@@ -22,7 +22,7 @@
 #' @export
 
 seas <- function(inputData, timeCol = "datetime", 
-                 wetSeas = c("May", "Sep"), waterYearBegin = "Oct") {
+                 wetSeas = c("May", "Sep"), waterYearBegin = month.abb[which(month.abb %in% wetSeas[2]) + 1]) {
   
   if (!is.character(timeCol) || !(length(timeCol) == 1)) {
     stop("'timeCol' must be a single character string naming the column with date/time info")

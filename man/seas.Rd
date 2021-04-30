@@ -2,9 +2,9 @@
 % Please edit documentation in R/seas.R
 \name{seas}
 \alias{seas}
-\title{Create columns indicating wet/dry season and federal water year}
+\title{Create columns indicating wet/dry season and water year}
 \usage{
-seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sep"), waterYearBegin = "Oct")
+seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sep"), waterYearBegin = month.abb[which(month.abb %in% wetSeas[2]) + 1])
 }
 \arguments{
 \item{inputData}{input dataframe}
@@ -13,13 +13,13 @@ seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sep"), waterYearBegin 
 
 \item{wetSeas}{the first and last month of the wet season (inclusive; use abbreviated months as in \code{month.abb})}
 
-\item{waterYearBegin}{the first full month of each water year (abbreviated form, as in \code{month.abb}).}
+\item{waterYearBegin}{the first full month of each water year (abbreviated form, as in \code{month.abb}, e.g., "Oct"). Default behavior is consistent with the federal water year, where a new WY begins at the start of the dry season (Oct).}
 }
 \value{
 two columns are appended to the input dataframe
 }
 \description{
-See above. Water year 2015 runs from Oct 01 2014 - Sept 30 2015.
+Federal water year 2022 runs from 01 Oct 2021 - 30 Sept 2022 (beginning with the dry season). Florida water year 2022 runs from 01 May 2021 - 30 April 2022 (beginning with the wet season).
 }
 \examples{
 a <- seas(head(wqDat), timeCol = "datetime")

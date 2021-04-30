@@ -11,5 +11,5 @@
 #' @importFrom stats sd
 #' @export
 se <- function(x) {
-  sd(x, na.rm = TRUE) / sqrt(sum(x, na.rm = TRUE))
+  sd(x, na.rm = TRUE) / sqrt(sum(!is.na(x)))
 }
