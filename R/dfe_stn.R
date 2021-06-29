@@ -47,7 +47,7 @@
                            port     = 3306,
                            user     = 'read_only',
                            password = 'read_only')
-    dfe.sta <- DBI::dbReadTable(con,'station')
+    suppressWarnings(dfe.sta <- DBI::dbReadTable(con,'station'))
     
     if (!is.null(pattern)) {
       dfe.sta <- dfe.sta[grepl(x = tolower(dfe.sta$station), pattern = tolower(pattern)), ]
