@@ -1,6 +1,6 @@
 #' @title DataForEver hydrology database parameter query
 #'
-#' @description Identifies parameters available from the DataForEver hydrology database
+#' @description Identifies parameters available from the DataForEver hydrology database. Note that the structure of the returned dataframe can vary depending on the database queried.
 #' 
 #' @usage getParams_DFE(dbname = "hydrology", stn = "all")
 #' 
@@ -13,8 +13,10 @@
 #' @examples
 #' \dontrun{
 #' ### station argument applies only to water quality database
-#' getParams_DFE(stn = "S333|S18C", dbname = "hydrology") # all possible parameters reported 
-#' getParams_DFE(stn = "S333|S18C", dbname = "waterquality") # a station-specific report
+#' t1 <- getParams_DFE(stn = "all", dbname = "hydrology")       # all hydrology parameters
+#' t2 <- getParams_DFE(stn = "all", dbname = "waterquality")    # all water quality parameters
+#' t3 <- getParams_DFE(stn = "S333|S18C", dbname = "hydrology") # station-specific hydro report 
+#' t4 <- getParams_DFE(stn = "S333|S18C", dbname = "waterquality") # station-specific WQreport
 #' }
 #' 
 #' 
@@ -35,59 +37,52 @@ getParams_DFE <- function(dbname = "hydrology", stn = "all"# hydrology or waterq
   dbname <- tolower(dbname)
   if (dbname %in% "waterquality") {
     hostAddr <- "10.146.112.23"
-  } else if (dbname %in% "hydrology") {
+  }
+  else if (dbname %in% "hydrology") {
     hostAddr <- "10.146.112.14"
-  } else {
+  }
+  else {
     stop("dbname not accepted as a valid input")
   }
-  
-  ### prep for failure. Goal here is to close all connections opened during the function.
-  init.connections <- DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))
-  on.exit(lapply( DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))[!DBI::dbListConnections( DBI::dbDriver( drv = "MySQL")) %in% init.connections], odbc::dbDisconnect))
-  
-  
+  init.connections <- DBI::dbListConnections(DBI::dbDriver(drv = "MySQL"))
+  on.exit(lapply(DBI::dbListConnections(DBI::dbDriver(drv = "MySQL"))[!DBI::dbListConnections(DBI::dbDriver(drv = "MySQL")) %in% 
+                                                                        init.connections], odbc::dbDisconnect))
   if ((stn %in% "all") || is.null(stn)) {
-    con <- odbc::dbConnect(RMySQL::MySQL(),
-                           dbname   = dbname,
-                           host     = hostAddr,
-                           port     = 3306,
-                           user     = 'read_only',
-                           password = 'read_only')
+    con <- odbc::dbConnect(RMySQL::MySQL(), dbname = dbname, 
+                           host = hostAddr, port = 3306, user = "read_only", 
+                           password = "read_only")
     if (dbname %in% "hydrology") {
-      dfe.type <- DBI::dbReadTable(con,'datatype') # all parameters.
-    } else if (dbname %in% "waterquality") {
-      dfe.type <- DBI::dbReadTable(con,'parameter')
+      suppressWarnings(dfe.type <- DBI::dbReadTable(con, "datatype"))
+      dfe.type <- dfe.type[order(dfe.type$datatype), c("datatype", 
+                                                       "units", "description")]
+    }
+    else if (dbname %in% "waterquality") {
+      suppressWarnings(dfe.type <- DBI::dbReadTable(con, "parameter"))
     }
     odbc::dbDisconnect(con)
-  } else {
-    ### run query for specific stations and return available parameters and number of samples based on POR query
-    if (dbname %in% "hydrology") {
-      con <- odbc::dbConnect(RMySQL::MySQL(),
-                             dbname   = dbname,
-                             host     = hostAddr,
-                             port     = 3306,
-                             user     = 'read_only',
-                             password = 'read_only')
-      dfe.type <- DBI::dbReadTable(con,'datatype') # TODO: identify params available at a specific station?
-      odbc::dbDisconnect(con)
-    } else if (dbname %in% "waterquality") {
-      stnNames <- unlist(strsplit(stn, "\\|"))
-      a        <- getDFE(stn = stnNames, dbname = "waterquality")
-      dfe.type <- stats::aggregate(value ~ stn + parameter, data = a, FUN = length)
-      names(dfe.type)[3] <- "observations"
-    }
   }
-  # if (!is.null(stn)) {
-  #   dfe.sta <- dfe.sta[grepl(x = dfe.sta$station, pattern = stn), ]
-  # }
-  # 
-  # sql <- sprintf("SELECT station, datatype
-  #               	order by station, datatype")
-  # output <- dbGetQuery(con,sql)
-  # odbc::dbDisconnect(con)
-  
-  ### change 'station' column to 'stn' to match DBHYDRO output
-  names(dfe.type)[names(dfe.type) %in% "station"] <- "stn"
-  
-  return(dfe.type[order(dfe.type$datatype), c("datatype", "units", "description")])
+  else {
+    if (dbname %in% "hydrology") {
+      con <- odbc::dbConnect(RMySQL::MySQL(), dbname = dbname, 
+                             host = hostAddr, port = 3306, user = "read_only", 
+                             password = "read_only")
+      suppressWarnings(dfe.type <- DBI::dbReadTable(con, "datatype"))
+      odbc::dbDisconnect(con)
+      dfe.type <- dfe.type[order(dfe.type$datatype), c("datatype", 
+                                           "units", "description")]
+    }
+    else if (dbname %in% "waterquality") {
+      stnNames <- unlist(strsplit(stn, "\\|"))
+      suppressWarnings(a <- getDFE(stn = stnNames, dbname = "waterquality"))
+      dfe.type <- stats::aggregate(value ~ stn + parameter, 
+                                   data = a, FUN = length)
+      names(dfe.type)[3] <- "observations"
+      ### sort 
+      dfe.type <- dfe.type[order(dfe.type$stn), c("stn", 
+                                           "parameter", "observations")]
+    }
+    
+  }
+  # names(dfe.type)[names(dfe.type) %in% "station"] <- "stn"
+  return(dfe.type)
 }

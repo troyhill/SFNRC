@@ -72,11 +72,9 @@ getDFE <- function(dbname = "hydrology",# hydrology or waterquality
   if (any(grepl(x = stn, pattern = "\\|"))) {
     stn <- unlist(strsplit(stn, "\\|"))
   }
-  
-  ### prep for failure. Goal here is to close all connections opened during the function.
-  init.connections <- DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))
-  on.exit(lapply( DBI::dbListConnections( DBI::dbDriver( drv = "MySQL"))[!DBI::dbListConnections( DBI::dbDriver( drv = "MySQL")) %in% init.connections], odbc::dbDisconnect))
-  
+  init.connections <- DBI::dbListConnections(DBI::dbDriver(drv = "MySQL"))
+  on.exit(lapply(DBI::dbListConnections(DBI::dbDriver(drv = "MySQL"))[!DBI::dbListConnections(DBI::dbDriver(drv = "MySQL")) %in% 
+                                                                        init.connections], odbc::dbDisconnect))
   dbname <- tolower(dbname)
   if (dbname %in% "waterquality") {
     hostAddr <- "10.146.112.23"
@@ -85,156 +83,127 @@ getDFE <- function(dbname = "hydrology",# hydrology or waterquality
   } else {
     stop("dbname not accepted as a valid input")
   }
-  
-  if (is.null(startDate)) startDate <- "1900-01-01" 
-  if (is.null(endDate))   endDate   <- as.character(Sys.Date())
-  if (all(sapply(X = list(stn, params), FUN = is.null)) && (startDate %in% "1900-01-01") && (endDate %in% as.character(Sys.Date())) ) {
-    ### scenario: get entire database
+  if (is.null(startDate)) 
+    startDate <- "1900-01-01"
+  if (is.null(endDate)) 
+    endDate <- as.character(Sys.Date())
+  if (all(sapply(X = list(stn, params), FUN = is.null)) && 
+      (startDate %in% "1900-01-01") && (endDate %in% 
+                                        as.character(Sys.Date()))) {
     stop("to download a full copy of the database, please contact troy_hill@nps.gov")
   }
-  
-  con <- odbc::dbConnect(RMySQL::MySQL(),
-                         dbname   = dbname,
-                         host     = hostAddr,
-                         port     = 3306,
-                         user     = 'read_only',
-                         password = 'read_only')
-  
-  
+  con <- odbc::dbConnect(RMySQL::MySQL(), dbname = dbname, 
+                         host = hostAddr, port = 3306, user = "read_only", 
+                         password = "read_only")
   if (dbname %in% "hydrology") {
+    if(is.null(params)) {
+      params <- paste0(SFNRC::getParams_DFE(dbname = dbname, stn = stn)$datatype, collapse = "|")
+    }
+    
     if (!is.null(stn) && (!stn %in% "all")) {
-      ### scenario: all params, one or more stations
-      ### robust solution for multiple stations
       paramNames <- unlist(strsplit(params, "\\|"))
-      
       for (i in 1:length(stn)) {
-        for (j in 1:length(paramNames)){ # works: FLOW/flow, head_water, tail_water
-        sql <- sprintf("SELECT *
-                 FROM measurement WHERE station='%s'
-                 AND datatype='%s' AND measurement_date BETWEEN
-                 '%s' AND '%s' ",stn[i], paramNames[j], startDate, endDate)
-        output.tmp <- DBI::dbGetQuery(con, sql)
-        if (i == 1 && j == 1) {
-          output <- output.tmp
-        } else {
-          output <- rbind(output, output.tmp)
-        }
+        for (j in 1:length(paramNames)) {
+          sql <- sprintf("SELECT *\n                 FROM measurement WHERE station='%s'\n                 AND datatype='%s' AND measurement_date BETWEEN\n                 '%s' AND '%s' ", 
+                         stn[i], paramNames[j], startDate, endDate)
+          suppressWarnings(output.tmp <- DBI::dbGetQuery(con, sql))
+          if (i == 1 && j == 1) {
+            output <- output.tmp
+          }
+          else {
+            output <- rbind(output, output.tmp)
+          }
         }
       }
-    } 
+    }
     odbc::dbDisconnect(con)
-    output$date     <- as.POSIXct(output$measurement_date, format = "%Y-%m-%d")
-    output$datetime <- as.POSIXct(paste0(output$measurement_date, output$measurement_time), format = "%Y-%m-%d%H%M")
+    output$date <- as.POSIXct(output$measurement_date, format = "%Y-%m-%d")
+    output$datetime <- as.POSIXct(paste0(output$measurement_date, 
+                                         output$measurement_time), format = "%Y-%m-%d%H%M")
     names(output)[names(output) %in% "measurement_value"] <- "value"
-    names(output)[names(output) %in% "datatype"]          <- "parameter"
+    names(output)[names(output) %in% "datatype"] <- "parameter"
   }
-  
   if (dbname %in% "waterquality") {
-    ### this works for waterquality - need to make applicable to hydrology
     if (!is.null(stn) && (!stn %in% "all")) {
-      ### scenario: all params, one or more stations
-      ### robust solution for multiple stations
       for (i in 1:length(stn)) {
-        sql <- sprintf("SELECT *
-                   FROM results WHERE station='%s' AND
-                 collection_date BETWEEN '%s' AND '%s'", stn[i], startDate, endDate)
-        output.tmp <- DBI::dbGetQuery(con, sql)
+        sql <- sprintf("SELECT *\n                   FROM results WHERE station='%s' AND\n                 collection_date BETWEEN '%s' AND '%s'", 
+                       stn[i], startDate, endDate)
+        suppressWarnings(output.tmp <- DBI::dbGetQuery(con, sql))
         if (i == 1) {
           output <- output.tmp
-        } else {
+        }
+        else {
           output <- rbind(output, output.tmp)
         }
       }
-    } 
+    }
     odbc::dbDisconnect(con)
-    
     if ((!params %in% "all") && (!is.null(params))) {
-      ### scenario: if one or more specific params are sought
-      ### frankly it's quicker to just subset the dataset 
-      output <- output[grep(x = output$parameter, pattern = params), ]
+      output <- output[grep(x = output$parameter, pattern = params), 
+      ]
     }
-    
     if (rFriendlyParamNames) {
-      # modify column with parameter names to not have commas, +/- signs
-      output$parameter <-  gsub(x = output$parameter, pattern = " |,", replacement = "")
-      output$parameter <-  gsub(x = output$parameter, pattern = "-|[+]", replacement = ".")
+      output$parameter <- gsub(x = output$parameter, pattern = " |,", 
+                               replacement = "")
+      output$parameter <- gsub(x = output$parameter, pattern = "-|[+]", 
+                               replacement = ".")
     }
-    
-    ########################
-    ### clean up the data
-    ########################
-      
-      output$units <- toupper(output$units)
-      output$units <- gsub(x = output$units, pattern = " ", replacement = "")
-      output$units[output$units %in% "PPT"]       <- "PSU"
-      output$units[output$units %in% c("METERS")] <- "METER"
-      output$units[output$units %in% "MG/M^3"]    <- "MG/M3"
-      
-      output$parameter[output$parameter %in% c("AMMONIA, TOTAL AS N", "NITROGEN, AMMONIA AS NH4")] <- "AMMONIA-N"
-      output$parameter[output$parameter %in% c("temp")] <- "TEMP"
-      
-      ### remove QC samples
-      output <- output[!output$matrix %in% c(matricesToExclude), ]
-      
-      output$date     <- as.POSIXct(output$collection_date, format = "%Y-%m-%d")
-      output$datetime <- as.POSIXct(paste0(output$collection_date, output$collection_time), format = "%Y-%m-%d%H%M")
-    
-      names(output)[names(output) %in% "concentration"] <- "value"
+    output$units <- toupper(output$units)
+    output$units <- gsub(x = output$units, pattern = " ", 
+                         replacement = "")
+    output$units[output$units %in% "PPT"] <- "PSU"
+    output$units[output$units %in% c("METERS")] <- "METER"
+    output$units[output$units %in% "MG/M^3"] <- "MG/M3"
+    output$parameter[output$parameter %in% c("AMMONIA, TOTAL AS N", 
+                                             "NITROGEN, AMMONIA AS NH4")] <- "AMMONIA-N"
+    output$parameter[output$parameter %in% c("temp")] <- "TEMP"
+    output <- output[!output$matrix %in% c(matricesToExclude), 
+    ]
+    output$date <- as.POSIXct(output$collection_date, format = "%Y-%m-%d")
+    output$datetime <- as.POSIXct(paste0(output$collection_date, 
+                                         output$collection_time), format = "%Y-%m-%d%H%M")
+    names(output)[names(output) %in% "concentration"] <- "value"
   }
-  
   if (addWaterQuality) {
-    ### if WQ and hydro data are desired, reshape hydro data to be wide, to match WQ dataset
     data_shape <- "wide"
   }
-  
-  ### change 'station' column to 'stn' to match DBHYDRO output
   names(output)[names(output) %in% "station"] <- "stn"
-  colsToKeep <- which(names(output) %in%  c("stn", "date", "parameter", "value"))
+  colsToKeep <- which(names(output) %in% c("stn", "date", 
+                                           "parameter", "value"))
   if (!grepl(x = data_shape, pattern = "long")) {
-    output <- stats::reshape(output[, colsToKeep], idvar = c("stn", "date"), 
-                             timevar = "parameter", direction = "wide")
+    output <- stats::reshape(output[, colsToKeep], idvar = c("stn", 
+                                                             "date"), timevar = "parameter", direction = "wide")
     names(output) <- gsub(x = names(output), pattern = "value.", 
-                           replacement = "")
+                          replacement = "")
   }
   if (grepl(x = data_shape, pattern = "really_wide")) {
     output <- stats::reshape(output, idvar = c("date"), 
-                              timevar = c("stn"), direction = "wide")
+                             timevar = c("stn"), direction = "wide")
   }
-  
-  
-  output$year     <- as.numeric(format(output$date, format = "%Y"))
-  output$mo       <- as.numeric(format(output$date, format = "%m"))
-  output$day      <- as.numeric(format(output$date, format = "%d"))
-  
+  output$year <- as.numeric(format(output$date, format = "%Y"))
+  output$mo <- as.numeric(format(output$date, format = "%m"))
+  output$day <- as.numeric(format(output$date, format = "%d"))
   if (addWaterQuality) {
-    wq <- getDFE(dbname = "waterquality", stn = stn, startDate = startDate,
-                     endDate   = endDate,
-                     params    = addWaterQualityParams,
-                     matricesToExclude = "analyte_free_water"
-    )
-    
-    # wq <- wq[wq$matrix == "surface water"] # good idea but hard to identify all valid matrices
-    ### issue for CRAN checks
-    ### where multiple measurements are available in a day, average them
-    dd.wq <- plyr::ddply(wq[, names(wq) %in% c("stn", "date", "parameter", "value", "minimum_detection_limit")], 
-                         c("stn", "date", "parameter"),
-                         summarise,
-                         value = mean(get("value"), na.rm = TRUE),
-                         minimum_detection_limit = max(get("minimum_detection_limit"), na.rm = TRUE))
-    wq.temp <- stats::reshape(dd.wq, 
-                              idvar = c("stn", "date"), timevar = "parameter", 
-                              direction = "wide")
+    wq <- getDFE(dbname = "waterquality", stn = stn, 
+                 startDate = startDate, endDate = endDate, params = addWaterQualityParams, 
+                 matricesToExclude = "analyte_free_water")
+    dd.wq <- plyr::ddply(wq[, names(wq) %in% c("stn", 
+                                               "date", "parameter", "value", "minimum_detection_limit")], 
+                         c("stn", "date", "parameter"), 
+                         summarise, value = mean(get("value"), na.rm = TRUE), 
+                         minimum_detection_limit = max(get("minimum_detection_limit"), 
+                                                       na.rm = TRUE))
+    wq.temp <- stats::reshape(dd.wq, idvar = c("stn", 
+                                               "date"), timevar = "parameter", direction = "wide")
     names(wq.temp) <- gsub(x = names(wq.temp), pattern = "value.| |,", 
                            replacement = "")
     wqDatForMerge <- wq.temp[, c(grep(x = names(wq.temp), 
-                                      pattern = paste0("stn|date|minimum_detection_limit|", addWaterQualityParams), value = TRUE))]
+                                      pattern = paste0("stn|date|minimum_detection_limit|", 
+                                                       addWaterQualityParams), value = TRUE))]
     output <- plyr::join_all(list(output, wqDatForMerge), 
-                              by = c("stn", "date"))
+                             by = c("stn", "date"))
   }
-  
-  
   return(output)
 }
-
 
 
