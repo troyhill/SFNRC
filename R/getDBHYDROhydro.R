@@ -34,6 +34,17 @@
 
 getDBHYDROhydro <- function(dbkey = "03638", startDate = "19600101",
                             endDate = gsub(x = Sys.Date(), pattern = "-", replacement = "")) { # format(x = strptime(x = as.character(Sys.Date()), format = "%Y-%m-%d"), "%Y-%m-%d")
+  
+  if(grepl(x = startDate, pattern = "-")) {
+    startDate <- gsub(x = startDate, pattern = "-", replacement = "")
+    cat("hyphens in startDate are being removed; date format is assumed to be %Y-%m-%d")
+  }
+  if(grepl(x = endDate, pattern = "-")) {
+    endDate <- gsub(x = endDate, pattern = "-", replacement = "")
+    cat("hyphens in endDate are being removed; date format is assumed to be %Y-%m-%d")
+  }
+  
+  
   urlDL <- paste0("http://my.sfwmd.gov/dbhydroplsql/web_io.report_process?v_period=uspec&v_start_date=", startDate, "&v_end_date=", endDate, "&v_report_type=format6&v_target_code=file_csv&v_run_mode=onLine&v_js_flag=Y&v_db_request_id=5753707&v_where_clause=&v_dbkey=", dbkey, "&v_os_code=Unix&v_interval_count=5&v_cutover_datum=1")
                 # "http://my.sfwmd.gov/dbhydroplsql/web_io.report_process?v_period=uspec&v_start_date="             "&v_end_date="           "&v_report_type=format6&v_target_code=file_csv&v_run_mode=onLine&v_js_flag=Y&v_db_request_id=5753707&v_where_clause=&v_dbkey="         "&v_os_code=Unix&v_interval_count=5&v_cutover_datum=1"
  

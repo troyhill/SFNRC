@@ -56,6 +56,16 @@ getDFE <- function(dbname = "hydrology",# hydrology or waterquality
                    addWaterQuality = FALSE,
                    addWaterQualityParams = NULL
 ) {
+  ### if there arent hyphens, add them
+  # if(!grepl(x = startDate, pattern = "-")) {
+  #   startDate <- gsub(x = startDate, pattern = "-", replacement = "")
+  #   cat("hyphens in startDate are being added; date format is assumed to be %Y%m%d")
+  # }
+  # if(!grepl(x = endDate, pattern = "-")) {
+  #   endDate <- gsub(x = endDate, pattern = "-", replacement = "")
+  #   cat("hyphens in endDate are being added; date format is assumed to be %Y%m%d")
+  # }
+  
   if (!is.logical(rFriendlyParamNames)) {
     stop("'rFriendlyParamNames' must be TRUE or FALSE")
   }
