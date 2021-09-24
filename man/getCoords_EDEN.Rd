@@ -4,13 +4,15 @@
 \alias{getCoords_EDEN}
 \title{Retrieve station coordinates from EDEN}
 \usage{
-getCoords_EDEN(stn = "S18C_T")
+getCoords_EDEN(stn = "S18C_T", spatial = TRUE)
 }
 \arguments{
 \item{stn}{character string. Case sensitive.}
+
+\item{spatial}{logical. If `TRUE`, a spatialPointsDataFrame is returned. If `FALSE`, a dataframe is returned}
 }
 \value{
-dataframe \code{getCoords_EDEN} returns a dataframe with lat/long (epsg:4326) UTM zone 19 coordinates, and the NAVD-to-NGVD conversion factor (units = feet). [ft. NAVD88] + [conversion factor] = [ft. NGVD29]
+dataframe/spdf \code{getCoords_EDEN} returns a dataframe or spatialPointsDataFrame with lat/long (epsg:4326) UTM zone 19 coordinates, and the NAVD-to-NGVD conversion factor (units = feet). [ft. NAVD88] + [conversion factor] = [ft. NGVD29]
 }
 \description{
 Scrapes EDEN station coordinate data.
@@ -25,11 +27,6 @@ stns <- c(
 )
 stn.coords <- do.call(rbind, lapply(X = stns, getCoords_EDEN))
 
-### convert to spatial data and plot
-stn.coords           <- stn.coords[!is.na(stn.coords$latitude), ]
-stn.coords$longitude <- -1 * stn.coords$longitude
-coordinates(stn.coords) <- c("easting", "northing")
-proj4string(stn.coords) <- "+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # crs(fireHydro::edenDEM)
 
 plot(stn.coords)
 }

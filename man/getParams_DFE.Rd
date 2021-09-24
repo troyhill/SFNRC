@@ -15,13 +15,15 @@ getParams_DFE(dbname = "hydrology", stn = "all")
 dataframe \code{getParams_DFE} returns a dataframe of stations and parameters.
 }
 \description{
-Identifies parameters available from the DataForEver hydrology database
+Identifies parameters available from the DataForEver hydrology database. Note that the structure of the returned dataframe can vary depending on the database queried.
 }
 \examples{
 \dontrun{
 ### station argument applies only to water quality database
-getParams_DFE(stn = "S333|S18C", dbname = "hydrology") # all possible parameters reported 
-getParams_DFE(stn = "S333|S18C", dbname = "waterquality") # a station-specific report
+t1 <- getParams_DFE(stn = "all", dbname = "hydrology")       # all hydrology parameters
+t2 <- getParams_DFE(stn = "all", dbname = "waterquality")    # all water quality parameters
+t3 <- getParams_DFE(stn = "S333|S18C", dbname = "hydrology") # station-specific hydro report 
+t4 <- getParams_DFE(stn = "S333|S18C", dbname = "waterquality") # station-specific WQreport
 }
 
 

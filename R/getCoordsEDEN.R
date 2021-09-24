@@ -2,11 +2,12 @@
 #'
 #' @description Scrapes EDEN station coordinate data.
 #' 
-#' @usage getCoords_EDEN(stn = "S18C_T")
+#' @usage getCoords_EDEN(stn = "S18C_T", spatial = TRUE)
 #' 
 #' @param stn character string. Case sensitive.
+#' @param spatial logical. If `TRUE`, a spatialPointsDataFrame is returned. If `FALSE`, a dataframe is returned
 #' 
-#' @return dataframe \code{getCoords_EDEN} returns a dataframe with lat/long (epsg:4326) UTM zone 19 coordinates, and the NAVD-to-NGVD conversion factor (units = feet). [ft. NAVD88] + [conversion factor] = [ft. NGVD29]
+#' @return dataframe/spdf \code{getCoords_EDEN} returns a dataframe or spatialPointsDataFrame with lat/long (epsg:4326) UTM zone 19 coordinates, and the NAVD-to-NGVD conversion factor (units = feet). [ft. NAVD88] + [conversion factor] = [ft. NGVD29]
 #' 
 #' 
 #' @examples
@@ -19,11 +20,6 @@
 #' )
 #' stn.coords <- do.call(rbind, lapply(X = stns, getCoords_EDEN))
 #' 
-#' ### convert to spatial data and plot
-#' stn.coords           <- stn.coords[!is.na(stn.coords$latitude), ]
-#' stn.coords$longitude <- -1 * stn.coords$longitude
-#' coordinates(stn.coords) <- c("easting", "northing")
-#' proj4string(stn.coords) <- "+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # crs(fireHydro::edenDEM)
 #' 
 #' plot(stn.coords)
 #' }
@@ -36,7 +32,7 @@
 #' @export
 
 
-getCoords_EDEN <- function(stn = "S18C_T") {
+getCoords_EDEN <- function(stn = "S18C_T", spatial = TRUE) {
   targetURL <- paste0("https://sofia.usgs.gov/eden/station.php?stn_name=", stn)
   tempDoc      <- XML::htmlParse(readLines(targetURL, warn=FALSE),
                                  useInternalNodes = TRUE)
@@ -85,6 +81,10 @@ getCoords_EDEN <- function(stn = "S18C_T") {
       break
     }
     # message("continuing loop: iteration ", i)
+  }
+  if (spatial) {
+    ### convert to spatial data
+    outDF <- makeSpatialCoords(outDF, format = "eden")
   }
   outDF
 }

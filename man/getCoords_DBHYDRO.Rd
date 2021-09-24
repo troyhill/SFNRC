@@ -4,13 +4,15 @@
 \alias{getCoords_DBHYDRO}
 \title{Retrieve station coordinates from DBHYDRO}
 \usage{
-getCoords_DBHYDRO(stn = "LASPALM11")
+getCoords_DBHYDRO(stn = "LASPALM11", spatial = TRUE)
 }
 \arguments{
 \item{stn}{character string. Case sensitive.}
+
+\item{spatial}{logical. If `TRUE`, a spatialPointsDataFrame is returned. If `FALSE`, a dataframe is returned}
 }
 \value{
-dataframe \code{getCoords_DBHYDRO} returns a dataframe with lat/long (epsg:4326) and UTM zone 19 coordinates.
+dataframe/spdf \code{getCoords_DBHYDRO} returns a dataframe or spatialPointsDataFrame with lat/long (epsg:4326) and UTM zone 19 coordinates.
 }
 \description{
 Downloads DBHYDRO station coordinate data. Note that these coordinates may be incorrect in DBHYDRO (e.g., LASPALM12 appears right next to LPG1, when in reality it is ~500 meters north).
@@ -35,7 +37,7 @@ SMA.keys <- c(
 SMAlist    <- lapply(X = SMA.keys, getDBHYDROhydro, startDate = "20200101", 
      endDate = "20200901")
 SMADat     <- do.call(rbind, SMAlist)
-sma.coords <- do.call(rbind, lapply(X = unique(SMADat$stn), getCoords_DBHYDRO))
+sma.coords <- do.call(rbind, lapply(X = unique(SMADat$stn), getCoords_DBHYDRO, spatial = FALSE))
 
 ### convert to spatial data and plot
 sma.crds           <- sma.coords[!is.na(sma.coords$latitude), ]

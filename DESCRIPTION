@@ -24,7 +24,9 @@ Depends:
     EGRET,
     EGRETci,
     doParallel,
-    foreach
+    foreach,
+    sp,
+    rgdal
 RoxygenNote: 7.1.1
 Suggests: 
     covr,

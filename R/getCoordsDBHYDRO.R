@@ -2,12 +2,12 @@
 #'
 #' @description Downloads DBHYDRO station coordinate data. Note that these coordinates may be incorrect in DBHYDRO (e.g., LASPALM12 appears right next to LPG1, when in reality it is ~500 meters north).
 #' 
-#' @usage getCoords_DBHYDRO(stn = "LASPALM11")
+#' @usage getCoords_DBHYDRO(stn = "LASPALM11", spatial = TRUE)
 #' 
 #' @param stn character string. Case sensitive.
+#' @param spatial logical. If `TRUE`, a spatialPointsDataFrame is returned. If `FALSE`, a dataframe is returned
 #' 
-#' @return dataframe \code{getCoords_DBHYDRO} returns a dataframe with lat/long (epsg:4326) and UTM zone 19 coordinates.
-#' 
+#' @return dataframe/spdf \code{getCoords_DBHYDRO} returns a dataframe or spatialPointsDataFrame with lat/long (epsg:4326) and UTM zone 19 coordinates.
 #' 
 #' @examples
 #' \dontrun{
@@ -29,7 +29,7 @@
 #' SMAlist    <- lapply(X = SMA.keys, getDBHYDROhydro, startDate = "20200101", 
 #'      endDate = "20200901")
 #' SMADat     <- do.call(rbind, SMAlist)
-#' sma.coords <- do.call(rbind, lapply(X = unique(SMADat$stn), getCoords_DBHYDRO))
+#' sma.coords <- do.call(rbind, lapply(X = unique(SMADat$stn), getCoords_DBHYDRO, spatial = FALSE))
 #' 
 #' ### convert to spatial data and plot
 #' sma.crds           <- sma.coords[!is.na(sma.coords$latitude), ]
@@ -48,7 +48,7 @@
 #' @export
 
 
-getCoords_DBHYDRO <- function(stn = "LASPALM11") {
+getCoords_DBHYDRO <- function(stn = "LASPALM11", spatial = TRUE) {
   targetURL <- paste0("https://my.sfwmd.gov/dbhydroplsql/show_dbkey_info.show_station_info?v_station=", stn)
   tempDoc      <- XML::htmlParse(readLines(targetURL, warn=FALSE),
                                  useInternalNodes = TRUE)
@@ -94,6 +94,10 @@ getCoords_DBHYDRO <- function(stn = "LASPALM11") {
       break
     }
     # message("continuing loop: iteration ", i)
+  }
+  if (spatial) {
+    ### convert to spatial data
+    outDF <- makeSpatialCoords(outDF, format = "dbhydro")
   }
   outDF
 }
