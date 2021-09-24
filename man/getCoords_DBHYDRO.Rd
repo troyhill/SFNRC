@@ -37,13 +37,7 @@ SMA.keys <- c(
 SMAlist    <- lapply(X = SMA.keys, getDBHYDROhydro, startDate = "20200101", 
      endDate = "20200901")
 SMADat     <- do.call(rbind, SMAlist)
-sma.coords <- do.call(rbind, lapply(X = unique(SMADat$stn), getCoords_DBHYDRO, spatial = FALSE))
-
-### convert to spatial data and plot
-sma.crds           <- sma.coords[!is.na(sma.coords$latitude), ]
-sma.crds$longitude <- -1 * sma.crds$longitude
-coordinates(sma.crds) <- c("longitude", "latitude")
-proj4string(sma.crds) <- CRS("+init=epsg:4326")
+sma.coords <- do.call(rbind, lapply(X = unique(SMADat$stn), getCoords_DBHYDRO))
 
 plot(sma.crds)
 }
