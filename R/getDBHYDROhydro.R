@@ -34,7 +34,7 @@
 
 getDBHYDROhydro <- function(dbkey = "03638", startDate = "19600101",
                             endDate = Sys.Date()) { # format(x = strptime(x = as.character(Sys.Date()), format = "%Y-%m-%d"), "%Y-%m-%d")
-  message("`getDBHYDROhydro` is deprecated; `getHydro` is preferred\n")
+  message("\n`getDBHYDROhydro` is deprecated; `getHydro` is preferred\n")
   outDat <- getHydro(dbkey = dbkey, startDate = startDate,
                             endDate = endDate)
   return(outDat)

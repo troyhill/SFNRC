@@ -28,7 +28,7 @@
 
 getDBHYDRO <- function(stn = "S333", parameters = c("PHOSPHATE, TOTAL AS P|TURBIDITY"), 
                        removeFlaggedData = TRUE, outputType = "wide") {
-  message("`getDBHYDRO` is deprecated; `getWQ` is preferred\n")
+  message("\n`getDBHYDRO` is deprecated; `getWQ` is preferred\n")
   outDat <- getWQ(stn = stn, parameters = parameters, 
                        removeFlaggedData = removeFlaggedData, outputType = outputType)
   return(outDat)
