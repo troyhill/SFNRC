@@ -1,6 +1,8 @@
 ---
 title: 'Exploring DBHYDRO data using the SFNRC R package'
 subtitle: ''
+author: "Troy Hill; Troy_Hill@nps.gov"
+date: "updated: `r Sys.Date()`"
 output: 
   pdf_document: 
 latex_engine: pdflatex
@@ -110,7 +112,7 @@ getDBkey("s33") # returns all stations starting with "s33"
 
 \vspace{12pt}
 
-Identifying DBkeys can be labor intensive, but use of scripting means it only needs to be done once. Once a DBkey is identified we can download data directly from R. This is done with the `getDBHYDROhydro()` function (poorly-named, in retrospect):
+Identifying DBkeys can be labor intensive, but use of scripting means it only needs to be done once. Once a DBkey is identified we can download data directly from R. This is done with the `getHydro()` function:
 
 
 ```{r stn_query2, include=TRUE, echo=TRUE, eval=FALSE}
@@ -118,7 +120,7 @@ Identifying DBkeys can be labor intensive, but use of scripting means it only ne
 beginDate <- "20200401"
 finalDate <- "20201001"
 
-flowDat <- getDBHYDROhydro(dbkey = "15042", startDate = beginDate, endDate = finalDate)
+flowDat <- getHydro(dbkey = "15042", startDate = beginDate, endDate = finalDate)
 
 head(flowDat)
 
@@ -136,7 +138,7 @@ This operation can be easily performed on larger numbers of stations with use of
 target.keys <- c("03620", "03626", "03632",
                  "03638", "91487", "64136")
 
-flow.data    <- do.call(rbind, lapply(target.keys,  getDBHYDROhydro, 
+flow.data    <- do.call(rbind, lapply(target.keys,  getHydro, 
                                       startDate = beginDate, endDate = finalDate))
 
 ```
@@ -181,7 +183,7 @@ ggplot(flow.data2, aes(y = value, x = date)) + geom_area(aes(fill= stn),
 ## 3. Water quality data
 \vspace{12pt}
 
-Using `SFNRC` to download DBHYDRO's water quality data is very straightforward. The water quality database is accessed using the function `getDBHYDRO()`. The only critical input is the name of the station according to DBHYDRO (including DBHYDRO's hyphens, capitalization, etc.). Note that this function can be slow because it downloads the full period of record.
+Using `SFNRC` to download DBHYDRO's water quality data is very straightforward. The water quality database is accessed using the function `getWQ()`. The only critical input is the name of the station according to DBHYDRO (including DBHYDRO's hyphens, capitalization, etc.). Note that this function can be slow because it downloads the full period of record.
 
 The `parameters` argument accepts a regex-style input specifying the parameters desired. 
 
@@ -192,8 +194,8 @@ The `outputType` argument is very useful for returning data in the appropriate s
 
 ```{r wq, include=TRUE, echo=TRUE, results = "hide"}
 
-longDat <- getDBHYDRO(stn = "s333", outputType = "long")
-wideDat <- getDBHYDRO(stn = "s333", outputType = "wide")
+longDat <- getWQ(stn = "s333", outputType = "long")
+wideDat <- getWQ(stn = "s333", outputType = "wide")
 
 tail(longDat)
 tail(wideDat)
@@ -202,7 +204,7 @@ tail(wideDat)
 stations   <- c("S333")
 wqParams   <- c("PHOSPH|NITROGEN|TURBIDITY") # partial matches are acceptable
 
-wqDat <- getDBHYDRO(stn = stations, parameters = wqParams)
+wqDat <- getWQ(stn = stations, parameters = wqParams)
 
 
 ```
@@ -236,7 +238,7 @@ stations <- c("S333", "S12D")
 
 ### download water quality data for multiple stations. rbind.fill joins the 
 ### station-level data while accommodating missing parameters
-wqDat <- do.call(plyr::rbind.fill, lapply(stations, getDBHYDRO, parameters = wqParams))
+wqDat <- do.call(plyr::rbind.fill, lapply(stations, getWQ, parameters = wqParams))
 
 ### 
 allDat <- plyr::join_all(list(flow.data, wqDat), 

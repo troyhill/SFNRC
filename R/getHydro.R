@@ -37,11 +37,11 @@ getHydro <- function(dbkey = "03638", startDate = "19600101",
   
   if(grepl(x = startDate, pattern = "-")) {
     startDate <- gsub(x = startDate, pattern = "-", replacement = "")
-    cat("hyphens in startDate are being removed; date format is assumed to be %Y-%m-%d")
+    cat("hyphens in startDate are being removed; date format is assumed to be %Y-%m-%d\n")
   }
   if(grepl(x = endDate, pattern = "-")) {
     endDate <- gsub(x = endDate, pattern = "-", replacement = "")
-    cat("hyphens in endDate are being removed; date format is assumed to be %Y-%m-%d")
+    cat("hyphens in endDate are being removed; date format is assumed to be %Y-%m-%d\n")
   }
   
   
