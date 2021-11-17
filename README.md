@@ -13,8 +13,7 @@ The `SFNRC` R package supports integration and analysis of water quality and hyd
 Install the SFNRC R package from GitHub using the following commands in the R console:
 
 ```r
-install.packages("devtools")
-devtools::install_github("troyhill/SFNRC")
+remotes::install_github("troyhill/SFNRC", ref = 'master')
 
 library(SFNRC)
 ```

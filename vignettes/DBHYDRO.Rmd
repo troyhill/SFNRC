@@ -19,13 +19,13 @@ header-includes:
 ---
 
 ```{r setup, include=FALSE, echo=FALSE}
-pkgs.used <- c("devtools", "knitr", "rmarkdown", "ggplot2", "scales", "SFNRC")
+pkgs.used <- c("knitr", "rmarkdown", "ggplot2", "scales", "SFNRC")
 pkgs.to.install <- pkgs.used[!pkgs.used %in% installed.packages()]
 if (length(pkgs.to.install) > 0) {
   install.packages(pkgs.to.install)
 }
 if (!"SFNRC" %in% installed.packages()) {
-  devtools::install_github("troyhill/SFNRC")
+  remotes::install_github("troyhill/SFNRC")
 }
 lapply(X = pkgs.used, FUN = require, character.only = TRUE)
 
@@ -39,28 +39,27 @@ knitr::opts_chunk$set(echo = TRUE, comment=NA)
 
 ## 1. Introduction
 
-Among the tools provided in the `SFNRC` R package is a simple, streamlined means of interacting with the DBHYDRO hydrology and water quality databases. This vignette demonstrates how to use the DBHYDRO-related functions. 
+The `SFNRC` R package includes a simple, streamlined means of interacting with the DBHYDRO hydrology and water quality databases. This vignette demonstrates how to use the DBHYDRO-related functions. 
 
-The `SFNRC` R package is hosted on GitHub and can be installed from the R console using the devtools package, as shown below. The package only needs to be installed once.
+The `SFNRC` R package is hosted on GitHub and can be installed from the R console using the remotes package, as shown below. The package only needs to be installed once.
 
 
 \vspace{12pt}
 
-```{r installation, include=TRUE, echo=TRUE, eval=FALSE}
-# if devtools (and ggplot2, used later) aren't already installed, install it
-if (!"devtools" %in% installed.packages()) install.packages("devtools")
-if (!"ggplot2" %in% installed.packages()) install.packages("ggplot2")
+```{r installation, include=TRUE, echo=TRUE, eval=FALSE, message = FALSE}
+# install ggplot2 if needed
+install.packages("ggplot2")
 
-# devtools can be used to install packages from GitHub
-if (!"SFNRC" %in% installed.packages()) devtools::install_github("troyhill/SFNRC@master")
+# use the remotes package to install from GitHub
+remotes::install_github("troyhill/SFNRC@master")
 
 ```
 
 \vspace{12pt}
 
-In scripts that rely on `SFNRC` functions, the package should be loaded with the command `library(SFNRC)`.
+Each script that uses functions from the `SFNRC` R package should load the package with the command:
 
-```{r loadSFNRC, include=TRUE, echo=TRUE, eval=FALSE}
+```{r loadSFNRC, include=TRUE, echo=TRUE, eval=TRUE, message = FALSE}
 library(SFNRC)
 
 ```
@@ -101,7 +100,7 @@ The starting point for DBHYDRO hydrologic data is identifying the relevant DBKey
 
 \vspace{12pt}
 
-```{r stn_query, include=TRUE, echo=TRUE, eval=FALSE}
+```{r stn_query, include=TRUE, echo=TRUE, eval=FALSE, message = FALSE}
 getDBkey("s333") # returns actively used dbkeys by default
 
 getDBkey("s333", activeOnly = FALSE) # returns *all* dbkeys tied to S-333
@@ -115,7 +114,7 @@ getDBkey("s33") # returns all stations starting with "s33"
 Identifying DBkeys can be labor intensive, but use of scripting means it only needs to be done once. Once a DBkey is identified we can download data directly from R. This is done with the `getHydro()` function:
 
 
-```{r stn_query2, include=TRUE, echo=TRUE, eval=FALSE}
+```{r stn_query2, include=TRUE, echo=TRUE, eval=TRUE, message = FALSE}
 ### we'll pull data for some time period
 beginDate <- "20200401"
 finalDate <- "20201001"
@@ -133,12 +132,12 @@ This operation can be easily performed on larger numbers of stations with use of
 
 \vspace{12pt}
 
-```{r stn_query3, include=TRUE, echo=TRUE, eval=FALSE}
+```{r stn_query3, include=TRUE, echo=TRUE, eval=TRUE, message = FALSE}
 
 target.keys <- c("03620", "03626", "03632",
                  "03638", "91487", "64136")
 
-flow.data    <- do.call(rbind, lapply(target.keys,  getHydro, 
+flow.data   <- do.call(rbind, lapply(target.keys,  getHydro, 
                                       startDate = beginDate, endDate = finalDate))
 
 ```
@@ -146,22 +145,24 @@ flow.data    <- do.call(rbind, lapply(target.keys,  getHydro,
 
 \vspace{12pt}
 
-The above data are in a tidyr-friendly format and can be easily plotted.
+The above data are in a ggplot-friendly format and can be easily plotted.
 
 \vspace{12pt}
 
 
-```{r stn_query4, include=TRUE, echo=TRUE, eval=FALSE}
+```{r stn_query4, include=TRUE, echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE, fig.width = 6, fig.height = 3}
 ### these plotting commands use the ggplot2 package. To install it:
 ### install.packages("ggplot2")
 library(ggplot2)
 
 ggplot(flow.data, aes(y = value, x = date)) + geom_area(aes(fill= stn), 
         color = "gray50", alpha = 0.3, position = 'stack') + 
-        theme_classic() + ylab("Daily flow across Tamiami Trail (cfs)") + 
+        theme_classic() + ylab("Daily flow into ENP northern boundary (cfs)") + 
         xlab("") + theme(legend.title=element_blank()) + 
         scale_fill_brewer(palette = "RdYlGn") + ylim(0, 3700)
+```
 
+```{r, include=TRUE, echo=TRUE, eval=FALSE, warning=FALSE, message=FALSE, fig.width = 6, fig.height = 3}
 ### no-flow data can appear as zeroes or NAs.
 ### changing NAs to zero can improve the behavior of stacked charts.
 flow.data2 <- flow.data
@@ -169,15 +170,12 @@ flow.data2$value[is.na(flow.data2$value)] <- 0
 
 ggplot(flow.data2, aes(y = value, x = date)) + geom_area(aes(fill= stn), 
         color = "gray50", alpha = 0.3, position = "stack") + 
-        theme_classic() + ylab("Daily flow across Tamiami Trail (cfs)") + 
+        theme_classic() + ylab("Daily flow into ENP northern boundary (cfs)") + 
         xlab("") + theme(legend.title=element_blank()) + 
         scale_fill_brewer(palette = "RdYlGn") + ylim(0, 3700)
 
 ```
 
-
-
-\vspace{12pt}
 \vspace{12pt}
 
 ## 3. Water quality data
@@ -215,7 +213,7 @@ wqDat <- getWQ(stn = stations, parameters = wqParams)
 The water quality parameters available at a station, and the number of samples for each, can be shown with the `getDBHYDROparams()` function. This function is a bit slow because it has to download all available data, but it can be useful if you're not sure what's available at a station.
 
 
-```{r wq2, include=TRUE, echo=TRUE, results = "hide"}
+```{r wq2, include=TRUE, echo=TRUE, eval=FALSE, warning=FALSE, message=FALSE}
 
 stnDat <- getDBHYDROparams(stn = "s333")
 
@@ -233,7 +231,7 @@ These functions provide a foundation for a variety of workflows. For one example
 
 \vspace{12pt}
 
-```{r hydro_get_data2, include=TRUE, message = FALSE, warning = FALSE, eval = FALSE}
+```{r hydro_get_data2, include=TRUE, echo=TRUE, eval=TRUE, warning=FALSE, message=FALSE, fig.width = 6, fig.height = 2.5}
 stations <- c("S333", "S12D")
 
 ### download water quality data for multiple stations. rbind.fill joins the 
@@ -241,7 +239,7 @@ stations <- c("S333", "S12D")
 wqDat <- do.call(plyr::rbind.fill, lapply(stations, getWQ, parameters = wqParams))
 
 ### 
-allDat <- plyr::join_all(list(flow.data, wqDat), 
+allDat <- plyr::join_all(list(wqDat, flow.data), 
                          by = c("stn", "date", "year", "mo", "day"))
 
 ggplot(allDat, aes(y = PHOSPHATETOTALASP, x = value, col = stn)) + 

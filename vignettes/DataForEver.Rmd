@@ -17,13 +17,13 @@ vignette: |
 ---
 
 ```{r setup, include=FALSE, echo=FALSE}
-pkgs.used <- c("devtools", "knitr", "rmarkdown", "rgdal", "sp", "deldir", "plyr", "reshape2", "ggplot2", "scales", "gridExtra")
+pkgs.used <- c("knitr", "rmarkdown", "rgdal", "sp", "deldir", "plyr", "reshape2", "ggplot2", "scales", "gridExtra")
 pkgs.to.install <- pkgs.used[!pkgs.used %in% installed.packages()]
 if (length(pkgs.to.install) > 0) {
   install.packages(pkgs.to.install)
 }
 if (!"SFNRC" %in% installed.packages()) {
-  devtools::install_github("troyhill/SFNRC")
+  remotes::install_github("troyhill/SFNRC")
 }
 
 # then load the package:
@@ -38,6 +38,8 @@ library(ggplot2)
 library(scales)
 library(gridExtra)
 library(SFNRC)
+library(ggplot2) 
+library(gridExtra)
 
 knitr::opts_chunk$set(echo = TRUE, comment=NA)
 ```
@@ -52,16 +54,15 @@ The `SFNRC` R package provides access to the DataForEver hydrology and water qua
 
 \vspace{12pt}
 
-The `SFNRC` R package is hosted on GitHub and can be installed from the R console using the devtools package, as shown below. The package only needs to be installed once.
+The `SFNRC` R package is hosted on GitHub and can be installed from the R console using the remotes package, as shown below. The package only needs to be installed once.
 
 ```{r install_SFNRC, include=TRUE, echo=TRUE, eval=FALSE}
 ### install devtools R package and a couple others that we'll use
-if (!"devtools" %in% installed.packages()) install.packages("devtools")
 if (!"ggplot2" %in% installed.packages()) install.packages("ggplot2")
 if (!"gridExtra" %in% installed.packages()) install.packages("gridExtra")
 
 ### install SFNRC
-if (!"SFNRC" %in% installed.packages())  devtools::install_github("troyhill/SFNRC")
+if (!"SFNRC" %in% installed.packages())  remotes::install_github("troyhill/SFNRC")
 
 library(SFNRC)
 ```
@@ -225,8 +226,6 @@ At this point the data can be plotted or analyzed. For example, simple time seri
 
 \vspace{12pt}
 ```{r hydro_show_merged, include=TRUE, echo=TRUE, warning=FALSE, message=FALSE, fig.width = 3, fig.height = 3}
-library(ggplot2) 
-library(gridExtra)
 
 ggplot(data = data.frame(hyd.wq), aes(y = PHOSPHATETOTALASP, x = date, shape = stn)) + 
   theme_classic() + geom_point(show.legend = FALSE) + geom_smooth() + 
