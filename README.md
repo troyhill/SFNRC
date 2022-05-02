@@ -1,18 +1,18 @@
 # SFNRC
 
 [![Build status](https://ci.appveyor.com/api/projects/status/cpjeexfdjcw7syd7?svg=true)](https://ci.appveyor.com/project/troyhill/sfnrc)
- [![Build Status](https://travis-ci.com/troyhill/SFNRC.svg?branch=master)](https://travis-ci.com/github/troyhill/SFNRC) [![codecov.io](https://codecov.io/github/troyhill/SFNRC/coverage.svg?branch=master)](https://codecov.io/github/troyhill/SFNRC?branch=master)
-
-[![CRAN_Status_Badge](http://www.r-pkg.org/badges/version/SFNRC)](https://cran.r-project.org/package=SFNRC) 
-
+ [![Build Status](https://travis-ci.com/troyhill/SFNRC.svg?branch=master)](https://travis-ci.com/github/troyhill/SFNRC) 
+ 
 The `SFNRC` R package supports integration and analysis of water quality and hydrology data in south Florida. The package provides an API for the South Florida Water Management District's DBHYDRO database. For users connected to the South Florida Natural Resources Center's servers, the package also provides direct access to DataForEver data.
 
 
 ## Install the package
 
-Install the SFNRC R package from GitHub using the following commands in the R console:
+Install the SFNRC R package from GitHub using the `remotes` package (may require separate installation):
 
 ```r
+if (!any(grepl(x = installed.packages(), pattern = '^remotes$'))) {install.packages('remotes')}
+
 remotes::install_github("troyhill/SFNRC", ref = 'master')
 
 library(SFNRC)

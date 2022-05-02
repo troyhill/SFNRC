@@ -31,7 +31,7 @@ stns <- c(
 "S18C_T",
 "NESRS1"
 )
-stn.coords <- do.call(rbind, lapply(X = stns, getCoords_EDEN))
+stn.coords <- do.call(rbind, lapply(X = stns, getCoords_EDEN, spatial = FALSE))
 
 ### convert to spatial data and plot
 stn.coords <- makeSpatialCoords(stn.coords, format = "eden")

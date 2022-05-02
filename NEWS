@@ -1,3 +1,8 @@
+SFNRC version 0.1.01 (release date: TBD)
+==================
+Changes:
+* Removed sp and rgdal dependencies. getCoords_DBHYDRO() and getCoords_EDEN() return SpatVectors.
+
 SFNRC version 0.0.13 (release date: 2020-11-13)
 ==================
 Changes:
