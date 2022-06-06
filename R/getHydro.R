@@ -109,13 +109,13 @@ getHydro <- function(dbkey = "03638", startDate = "19600101",
     output$year     <- as.numeric(substr(output$date, 1, 4))
     output$mo       <- as.numeric(substr(output$date, 6, 7))
     output$day      <- as.numeric(substr(output$date, 9, 10))
-    output$stn      <- gsub(pattern = "_.*", replacement = "\\1", x = output$stn, perl=TRUE) # remove anything after the underscore
+    output$site      <- gsub(pattern = "_.*", replacement = "\\1", x = output$stn, perl=TRUE) # remove anything after the underscore
     
     ### remove marginalia at bottom of file, as seen in 'a <- getDBHYDROhydro(dbkey = "VV474")'
     pre_trim <- nrow(output)
     output   <- output[!is.na(output$date), ]
     ### TODO: optionally, replace "value" with name of parameter obtained from DBKey query?
-    output <- output[, c("stn", "date", "year", "mo", "day", "value")]
+    output <- output[, c("stn", 'site', "date", "year", "mo", "day", "value")]
     
   }
   

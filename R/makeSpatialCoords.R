@@ -17,7 +17,7 @@
 #' "S18C_T",
 #' "NESRS1"
 #' )
-#' stn.coords <- do.call(rbind, lapply(X = stns, getCoords_EDEN))
+#' stn.coords <- do.call(rbind, lapply(X = stns, getCoords_EDEN, spatial = FALSE))
 #' 
 #' ### convert to spatial data and plot
 #' stn.coords <- makeSpatialCoords(stn.coords, format = "eden")
@@ -25,9 +25,9 @@
 #' plot(stn.coords)
 #' }
 #' 
-#' @importFrom sp  proj4string
-#' @importFrom sp  spTransform
-#' @importFrom sp  coordinates
+#' @importFrom terra  vect
+#' @importFrom terra  project
+#' @importFrom terra  crs
 #'  
 #' @export
 
@@ -40,16 +40,16 @@ makeSpatialCoords <- function(data,
   
   if (tolower(format) %in% "dbhydro") {
     data <- data[!is.na(data$longitude), ]
-    sp::coordinates(data) <- c("longitude", "latitude")
-    sp::proj4string(data) <- CRS("+init=epsg:4326")
+    data <- terra::vect(data, geom = c("longitude", "latitude"))
+    terra::crs(data) <- "epsg:4326"
   }
   if (tolower(format) %in% "eden") {
     data <- data[!is.na(data$northing), ]
-    sp::coordinates(data) <- c("easting", "northing")
-    sp::proj4string(data) <- "+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # crs(fireHydro::edenDEM)
+    data <- terra::vect(data, geom = c("easting", "northing")) #, crs = terra::crs("+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs", proj = TRUE))
+    terra::crs(data) <- "+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
   }
   if (!is.null(new_crs)) {
-    data <- sp::spTransform(data, new_crs)
+    data <- terra::project(data, y = new_crs)
   }
-  data
+  return(data)
 }
