@@ -42,14 +42,15 @@ makeSpatialCoords <- function(data,
     data <- data[!is.na(data$longitude), ]
     # sp::coordinates(data) <- c("longitude", "latitude")
     # sp::proj4string(data) <- CRS("+init=epsg:4326")
-    data <- terra::vect(data, geom = c("longitude", "latitude"), crs = terra::crs("+init=epsg:4326", proj = TRUE))
+    data <- terra::vect(data, geom = c("longitude", "latitude"))
+    terra::crs(data) <- "epsg:4326"
   }
   if (tolower(format) %in% "eden") {
     data <- data[!is.na(data$northing), ]
     # sp::coordinates(data) <- c("easting", "northing")
     # sp::proj4string(data) <- "+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # crs(fireHydro::edenDEM)
-    data <- terra::vect(data, geom = c("easting", "northing"), crs = terra::crs("+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs", proj = TRUE))
-    
+    data <- terra::vect(data, geom = c("easting", "northing")) #, crs = terra::crs("+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs", proj = TRUE))
+    crs(data) <- "+proj=utm +zone=17 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
   }
   if (!is.null(new_crs)) {
     # data <- sp::spTransform(data, new_crs)

@@ -26,7 +26,7 @@
 #' "WN173",  # S357_H
 #' "AM177"  # S357N_H
 #' )
-#' SMAlist    <- lapply(X = SMA.keys, getDBHYDROhydro, startDate = "20200101", 
+#' SMAlist    <- lapply(X = SMA.keys, getHydro, startDate = "20200101", 
 #'      endDate = "20200901")
 #' SMADat     <- do.call(rbind, SMAlist)
 #' sma.coords <- do.call(rbind, lapply(X = unique(SMADat$stn), getCoords_DBHYDRO))
