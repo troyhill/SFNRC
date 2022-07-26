@@ -25,6 +25,8 @@ Depends:
     EGRET,
     EGRETci,
     doParallel,
-    foreach
+    parallel,
+    foreach,
+    terra
 RoxygenNote: 7.2.0
 VignetteBuilder: knitr
