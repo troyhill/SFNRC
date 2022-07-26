@@ -13,6 +13,7 @@ Description: An R interface for the water quality and hydrology databases stewar
 License: file LICENSE
 URL: https://github.com/troyhill/SFNRC
 LazyData: true
+LazyDataCompression: xz
 Depends:
     R (>= 3.5.0),
     httr,

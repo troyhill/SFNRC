@@ -21,8 +21,12 @@ Biscayne Bay box model boundaries, simplified using Ramer-Douglas-Peucker algori
 \examples{
 
 \dontrun{
-# bnpMod <- system.file("inst/extdata/bnpMod.shp", package="SFNRC")
 plot(bnpMod)
+ # bnpMod <- system.file("inst/extdata/bnpMod.shp", package="SFNRC")
+ # bnp <- vect(bnp)
+ # tst <- bnp
+ # bnp <- wrap(tst)
+ # save(bnp, file = 'data/bnp.RData')
 # tools::resaveRdaFiles(list.files("data/", full.names= TRUE),compress="xz")
 # tools::checkRdaFiles("data/")
 }
