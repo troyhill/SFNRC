@@ -2,8 +2,6 @@
 #'
 #' @description Federal water year 2022 runs from 01 Oct 2021 - 30 Sept 2022 (beginning with the dry season). Florida water year 2022 runs from 01 May 2021 - 30 April 2022 (beginning with the wet season).
 #' 
-#' @usage seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sep"), waterYearBegin = month.abb[which(month.abb %in% wetSeas[2]) + 1])
-#' 
 #' @param inputData input dataframe 
 #' @param timeCol POSIXct column of timestamps
 #' @param wetSeas the first and last month of the wet season (inclusive; use abbreviated months as in \code{month.abb}) 

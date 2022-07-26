@@ -10,7 +10,7 @@
 #' targStn <- "S333"
 
 
-DBHYDROToDFE <- function(data = hydDat, type = "hydrology") {
+DBHYDROToDFE <- function(data, type = "hydrology") {
   ### converts DBHYDRO data to format of DataForEver, to facilitate use in convertToEgret
   if (type %in% "hydrology") {
     ### flow data: easy name change

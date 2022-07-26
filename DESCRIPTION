@@ -26,6 +26,7 @@ Depends:
     EGRETci,
     doParallel,
     parallel,
+    knitr,
     foreach,
     terra
 RoxygenNote: 7.2.0

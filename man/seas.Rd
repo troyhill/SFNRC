@@ -4,7 +4,12 @@
 \alias{seas}
 \title{Create columns indicating wet/dry season and water year}
 \usage{
-seas(inputData, timeCol = "datetime", wetSeas = c("May", "Sep"), waterYearBegin = month.abb[which(month.abb %in% wetSeas[2]) + 1])
+seas(
+  inputData,
+  timeCol = "datetime",
+  wetSeas = c("May", "Sep"),
+  waterYearBegin = month.abb[which(month.abb \%in\% wetSeas[2]) + 1]
+)
 }
 \arguments{
 \item{inputData}{input dataframe}

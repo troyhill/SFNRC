@@ -4,7 +4,7 @@
 \alias{DBHYDROToDFE}
 \title{Convert DBHYDRO flow and water quality datasets to match DataForEver for use in convertToEgret()}
 \usage{
-DBHYDROToDFE(data = hydDat, type = "hydrology")
+DBHYDROToDFE(data, type = "hydrology")
 }
 \arguments{
 \item{data}{input dataset from DBHYDRO. Dataset will be converted to be consistent with data from DataForEver.}
