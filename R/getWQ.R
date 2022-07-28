@@ -31,8 +31,18 @@ getWQ <- function(stn = "S333", parameters = c("PHOSPHATE, TOTAL AS P|TURBIDITY"
   stn        <- toupper(stn)
   parameters <- toupper(parameters)
   
-  a          <- SFNRC::dbhydro.stn(stations = stn, import_data = TRUE)
-  
+  a          <- SFNRC::dbhydro.stn(stations = stn, 
+                                   rename_proj = TRUE,
+                                   parameters = "all",
+                                   report_type = "full", # full = long dataset - 1 line per sample; crosstab = wide dataset
+                                   incl_qc_flags = TRUE,
+                                   incl_flagged_data = removeFlaggedData,
+                                   destination = "file_csv", 
+                                   start_date = "01-JAN-1960", # note format
+                                   end_date   = "today",
+                                   import_data = TRUE)
+  # Sys.sleep(2)
+  a$Test.Name <- toupper(a$Test.Name) # not all params are capitalized in DBHydro (FLAB04, Temperature) so this is needed to make query case0insensitive
   i    <- sapply(a, is.factor) # convert factor columns to character
   a[i] <- lapply(a[i], as.character)
   
