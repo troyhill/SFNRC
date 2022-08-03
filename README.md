@@ -26,7 +26,7 @@ Installing this package from out-dated versions of R (NPS users) will cause an e
 Sys.setenv(R_REMOTES_NO_ERRORS_FROM_WARNINGS="true")
 ```
 
-To installing the package from a zip file, [download a zip file from GitHub](https://github.com/troyhill/SFNRC/archive/refs/heads/master.zip) and use devtools::install_local: 
+To install the package from a local zip file, [download a zip file from GitHub](https://github.com/troyhill/SFNRC/archive/refs/heads/master.zip) and use devtools::install_local: 
 
 ```r
 if (!('devtools' %in% installed.packages())) {install.packages('devtools')}
