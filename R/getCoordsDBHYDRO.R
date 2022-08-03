@@ -31,20 +31,22 @@
 #' SMADat     <- do.call(rbind, SMAlist)
 #' sma.coords <- do.call(rbind, lapply(X = unique(SMADat$stn), getCoords_DBHYDRO))
 #' 
-#' plot(sma.crds)
+#' plot(sma.coords)
 #' }
 #' 
 #' @importFrom XML  htmlParse
 #' @importFrom XML  getNodeSet
 #' @importFrom XML  xpathSApply
 #' @importFrom XML  saveXML
+#' @importFrom curl curl
 #'  
 #' @export
 
 
 getCoords_DBHYDRO <- function(stn = "LASPALM11", spatial = TRUE) {
-  targetURL <- paste0("https://my.sfwmd.gov/dbhydroplsql/show_dbkey_info.show_station_info?v_station=", stn)
-  tempDoc      <- XML::htmlParse(readLines(targetURL, warn=FALSE),
+  targetURL    <- paste0("https://my.sfwmd.gov/dbhydroplsql/show_dbkey_info.show_station_info?v_station=", stn)
+  con          <- curl::curl(targetURL)
+  tempDoc      <- XML::htmlParse(readLines(con, warn=FALSE),
                                  useInternalNodes = TRUE)
   TempNodes    <- XML::getNodeSet(tempDoc, "//tr")
   
@@ -93,5 +95,7 @@ getCoords_DBHYDRO <- function(stn = "LASPALM11", spatial = TRUE) {
     ### convert to spatial data
     outDF <- makeSpatialCoords(outDF, format = "dbhydro")
   }
+  
+  close(con)
   outDF
 }

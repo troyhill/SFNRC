@@ -1,7 +1,7 @@
 Package: SFNRC
 Type: Package
 Title: APIs and Tools for Processing Data from DataForEver and DBHYDRO
-Version: 0.1.01
+Version: 0.1.02
 Date: 2022-05-02
 Encoding: UTF-8
 Authors@R: c(
@@ -27,7 +27,7 @@ Depends:
     EGRETci,
     doParallel,
     parallel,
-    knitr,
+    curl,
     foreach,
     terra
 RoxygenNote: 7.2.0

@@ -39,7 +39,7 @@ SMAlist    <- lapply(X = SMA.keys, getHydro, startDate = "20200101",
 SMADat     <- do.call(rbind, SMAlist)
 sma.coords <- do.call(rbind, lapply(X = unique(SMADat$stn), getCoords_DBHYDRO))
 
-plot(sma.crds)
+plot(sma.coords)
 }
 
 }

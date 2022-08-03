@@ -28,13 +28,15 @@
 #' @importFrom XML  getNodeSet
 #' @importFrom XML  xpathSApply
 #' @importFrom XML  saveXML
+#' @importFrom curl curl
 #'  
 #' @export
 
 
 getCoords_EDEN <- function(stn = "S18C_T", spatial = TRUE) {
   targetURL <- paste0("https://sofia.usgs.gov/eden/station.php?stn_name=", stn)
-  tempDoc      <- XML::htmlParse(readLines(targetURL, warn=FALSE),
+  con          <- curl::curl(targetURL)
+  tempDoc      <- XML::htmlParse(readLines(con, warn=FALSE),
                                  useInternalNodes = TRUE)
   TempNodes    <- XML::getNodeSet(tempDoc, "//tr")
   
@@ -86,6 +88,7 @@ getCoords_EDEN <- function(stn = "S18C_T", spatial = TRUE) {
     ### convert to spatial data
     outDF <- makeSpatialCoords(outDF, format = "eden")
   }
+  close(con)
   outDF
 }
 
