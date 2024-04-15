@@ -46,7 +46,7 @@ getDBkey <- function(stn = "S333", type = "all", freq = "all", activeOnly = TRUE
     info <- info[info$Freq == freq, ]
   }
   cols_to_keep <- grep(x = tolower(names(info)), 
-                       pattern = '^dbkey$|^station$|^site$|^data type$|^freq$|^stat$|^start date$|^end date$')
+                       pattern = '^dbkey$|^station$|^site$|^data type$|^freq$|^stat$|^start date$|^end date$|^sensor$|^latitude$|^longitude$|^x coord$|^y coord$')
   outDat <-   info[, cols_to_keep]
   
   ### format as dates for reporting only active time series
