@@ -70,6 +70,10 @@ getHydro <- function(dbkey = "03638", startDate = "19600101",
     colNames         <- c("date", "code", "dbkey", "value", "blank", "QA") ### Fragile! These may change for other parameters or datasets
     output_temp_2    <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = skip_arg)  
     output           <- output_temp_2[, 1:length(colNames)]
+    ### remove blank rows (sometimes at start and end of dataset)
+    blank_rows <- which(rowSums(apply(MARGIN = 2, X = output, FUN = function(x) is.na(x) | grepl(x, pattern = '^\\s*$'))) == ncol(output))
+    output <- output[-blank_rows, ]
+    
     names(output)    <- colNames
     output           <- output[, grep(x = names(output), pattern = "blank", invert = TRUE)] # remove empty column
     output$parameter <- param
