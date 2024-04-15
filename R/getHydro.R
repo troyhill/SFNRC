@@ -68,7 +68,7 @@ getHydro <- function(dbkey = "03638", startDate = "19600101",
     # output_temp <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = 0, header = FALSE)  
     skip_arg         <- min(which(output_temp[, 3] == dbkey))          ### this is a fragile approach to specifying number of columns to skip
     colNames         <- c("date", "code", "dbkey", "value", "blank", "QA") ### Fragile! These may change for other parameters or datasets
-    output_temp_2    <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = skip_arg)  
+    output_temp_2    <- utils::read.csv(fileLoc, stringsAsFactors = FALSE, skip = skip_arg, header = FALSE, row.names = NULL)  
     output           <- output_temp_2[, 1:length(colNames)]
     ### remove blank rows (sometimes at start and end of dataset)
     blank_rows <- which(rowSums(apply(MARGIN = 2, X = output, FUN = function(x) is.na(x) | grepl(x, pattern = '^\\s*$'))) == ncol(output))
