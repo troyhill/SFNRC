@@ -2,6 +2,7 @@ SFNRC version 0.1.01 (release date: TBD)
 ==================
 Changes:
 * Removed sp and rgdal dependencies. getCoords_DBHYDRO() and getCoords_EDEN() return SpatVectors.
+* Added functions for downloading and summarizing National Weather Service geotiffs (https://water.noaa.gov/resources/downloads/precip/).
 
 SFNRC version 0.0.13 (release date: 2020-11-13)
 ==================

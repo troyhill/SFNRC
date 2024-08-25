@@ -30,5 +30,5 @@ Depends:
     curl,
     foreach,
     terra
-RoxygenNote: 7.2.0
+RoxygenNote: 7.3.2
 VignetteBuilder: knitr
