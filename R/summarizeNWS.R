@@ -8,7 +8,7 @@
 #' @param polygon_names character. Name of column in `input_polygon` containing feature names/IDs. If left as `NULL`, features are numbered by their row in the polygon object.
 #' @param create_plots logical. Optional visualization produced for each layer. Setting this to `TRUE` will dramatically slow down the run time.
 #' @param func function. Used to summarize the monthly data from each polygon.
-#' @param date_correction numeric. Optional correction for data date. If no correction is desired, set to 0.
+#' @param date_correction numeric. Optional correction for data date. For example, setting this to `-1` could be appropriate for a layer dated February 1st that captures January's monthly precipitation totals. If no correction is desired, set to 0.
 #'
 #' @return list \code{summarizeNWS} containing (1) `summary_table`, a summary dataframe showing the result of `func` applied to monthly values for Jan-Dec. More complex operations can be performed on the raw values, and (2) `all_data`, a dataframe containing the raw values from each polygon and each layer.
 #' 
@@ -46,8 +46,8 @@ summarizeNWS <- function(tif_addresses,
     polygon_names <- 1:nrow(input_polygon)
   }
   
-  for (i in 1:length(tifs)) {
-    tif_address <- tifs[i]
+  for (i in 1:length(tif_addresses)) {
+    tif_address <- tif_addresses[i]
     ### get date
     split_file_name <- strsplit(x = gsub(x = basename(tif_address), pattern = 'conus|pr|ak|\\.tif', replacement = ''), split = '_')[[1]]
     date_value      <- split_file_name[length(split_file_name)]
@@ -96,7 +96,7 @@ summarizeNWS <- function(tif_addresses,
   tbl2 <- stats::reshape(tbl1, idvar = "name", timevar = "month", direction = "wide")
   names(tbl2)[2:ncol(tbl2)] <- substr(names(tbl2)[2:ncol(tbl2)], nchar(names(tbl2)[2:ncol(tbl2)])-2, nchar(names(tbl2)[2:ncol(tbl2)]))
   tbl2 <- tbl2[, c('name', month.abb[month.abb %in% names(tbl2)[2:ncol(tbl2)]])]
-  head(tbl2)
+  # head(tbl2)
   row.names(tbl2) <- 1:nrow(tbl2)
   
   ### return the table

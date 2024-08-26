@@ -27,7 +27,7 @@ summarizeNWS(
 
 \item{func}{function. Used to summarize the monthly data from each polygon.}
 
-\item{date_correction}{numeric. Optional correction for data date. If no correction is desired, set to 0.}
+\item{date_correction}{numeric. Optional correction for data date. For example, setting this to `-1` could be appropriate for a layer dated February 1st that captures January's monthly precipitation totals. If no correction is desired, set to 0.}
 }
 \value{
 list \code{summarizeNWS} containing (1) `summary_table`, a summary dataframe showing the result of `func` applied to monthly values for Jan-Dec. More complex operations can be performed on the raw values, and (2) `all_data`, a dataframe containing the raw values from each polygon and each layer.
