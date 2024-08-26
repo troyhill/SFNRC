@@ -80,9 +80,9 @@ downloadNWS <- function(data_folder,
     targetDates <- expand.grid(years, months, days)
     targetDates$ymd  <- paste0(targetDates$Var1, targetDates$Var2, targetDates$Var3)
     ### remove first part of 2016
-    targetDates      <- targetDates[!(targetDates$ymd %in% paste0('20160',1:6, '01')), ]
-    ### remove dates in current year up to two weeks ago
-    current_mo       <- format(Sys.Date() - 14, format = '%m')
+    # targetDates      <- targetDates[!(targetDates$ymd %in% paste0('20160',1:6, '01')), ]
+    ### remove future months from current year
+    current_mo       <- format(Sys.Date(), format = '%m')
     available_months <- 1:as.numeric(current_mo)
     months_to_remove <- as.character(c(1:12)[!(c(1:12) %in% available_months)])
     months_to_remove[nchar(months_to_remove) == 1] <- paste0('0', months_to_remove[nchar(months_to_remove) == 1])
