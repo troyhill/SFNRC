@@ -5,7 +5,7 @@
 #' @param data_folder parent directory for data to be deposited. If this does not exist, it will be created.
 #' @param overwrite_data TRUE/FALSE value indicating whether existing files should be overwritten. If TRUE, all data are downloaded fresh.
 #' @param stage type of data to download. Acceptable values include `stage3` and/or `stage4`.
-#' @param stage3_filename example of a stage 3 filename. YYYYMMDD is a token that will be replaced with actual dates. Adjusting this can accommodate odd filenames (e.g., 2017)
+#' @param stage3_filename example of a stage 3 filename. YYYYMMDD is a token that will be replaced with actual dates. Adjusting this can accommodate odd filenames (e.g., stage 3 2017; stage 4 2016) and download different data types (e.g., 1 day, last 180 days)
 #' @param stage4_filename example of a stage 4 filename. YYYYMMDD is a token that will be replaced with actual dates.
 #' @param day_range numeric range of days to download from each month. Default only downloads data from the first of the month.
 #'
