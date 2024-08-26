@@ -3,7 +3,7 @@
 #' @description Summarize spatial data using a polygon layer to return raw values for each date and aggregate measures by month.
 #'
 #' @param tif_addresses character vector with full file names for tiff files to be summarized (including entire directory and file extension). Can be created with `list.files('C:/directory', full.names = TRUE)`.
-#' @param parameter_pattern character element used in a grep query to identify which layer to use. Note that this must select the desired layer from both Stage 3 and Stage 4 data (so the query should likely be an OR statement, e.g., '_1|Observed' for observed data). Layer names for Stage 3 data appear to be `Observed`, `Normal`, `Departure from Normal`, and `Percent of Normal`. Layer names for Stage 4 data are the filename and a numeric value between 1 and 4.
+#' @param parameter_pattern character element used in a grep query to identify which layer to use. Note that this must select the desired layer from both Stage 3 and Stage 4 data (so the query should likely be an OR statement, e.g., '_1|Observed' for observed data). Layer names for Stage 3 data appear to be `Observed`, `Normal`, `Departure from Normal`, and `Percent of Normal`. Layer names for Stage 4 data are the filename followed by an underscore and a numeric value between 1 and 4. It is extremely important to use `$` in the pattern for the Stage 4 data.
 #' @param input_polygon Spatvector with polygons used to summarize precipitation data. Load with `terra::vect`. Example polygon data: https://catalog.data.gov/dataset/tiger-line-shapefile-2019-state-georgia-current-county-subdivision-state-based
 #' @param polygon_names character. Name of column in `input_polygon` containing feature names/IDs. If left as `NULL`, features are numbered by their row in the polygon object.
 #' @param create_plots logical. Optional visualization produced for each layer. Setting this to `TRUE` will dramatically slow down the run time.
@@ -28,7 +28,7 @@
 #' @examples
 #' 2+2
 summarizeNWS <- function(tif_addresses,
-                         parameter_pattern = '_1|Observed',
+                         parameter_pattern = '_1$|^Observed',
                          input_polygon, # shapefile, e.g., 
                          polygon_names = NULL, # optional; name of the column in the polygon object with feature IDs/names
                          create_plots = FALSE,
@@ -71,7 +71,7 @@ summarizeNWS <- function(tif_addresses,
       x.df <- x.df[!grepl(x = row.names(x.df), pattern = "ID"), 
       ]
     })
-    extracted.int           <- data.frame(extracted.int)
+    extracted.int           <- data.frame(unlist(extracted.int))
     names(extracted.int)[1] <- paste0('precip', # split_file_name[length(split_file_name) - 2],
                                       '_', split_file_name[length(split_file_name) - 1])
     extracted.int$monthYear <- as.Date(date_value, format = '%Y%m%d') + date_correction # using -1 is useful for full-month rainfall; changes date to last day of prior month. Assuming that e.g., June 1st reflects May rainfall totals

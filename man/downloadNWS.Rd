@@ -7,10 +7,11 @@
 downloadNWS(
   data_folder,
   overwrite_data = FALSE,
-  stage = c("stage3", "stage4"),
   stage3_filename = "nws_precip_mtd_YYYYMMDD.tif",
   stage4_filename = "nws_precip_mtd_YYYYMMDD_conus.tif",
-  day_range = 1
+  day_range = 1,
+  month_range = 1:12,
+  year_range = 2005:as.numeric(format(Sys.Date(), format = "\%Y"))
 )
 }
 \arguments{
@@ -18,13 +19,15 @@ downloadNWS(
 
 \item{overwrite_data}{TRUE/FALSE value indicating whether existing files should be overwritten. If TRUE, all data are downloaded fresh.}
 
-\item{stage}{type of data to download. Acceptable values include `stage3` and/or `stage4`.}
-
 \item{stage3_filename}{example of a stage 3 filename. YYYYMMDD is a token that will be replaced with actual dates. Adjusting this can accommodate odd filenames (e.g., stage 3 2017; stage 4 2016) and download different data types (e.g., 1 day, last 180 days)}
 
 \item{stage4_filename}{example of a stage 4 filename. YYYYMMDD is a token that will be replaced with actual dates.}
 
-\item{day_range}{numeric range of days to download from each month. Default only downloads data from the first of the month.}
+\item{day_range}{numeric range of days, used in identifying files to download. Default only downloads data from the first of the month.}
+
+\item{month_range}{numeric range of months, used in identifying files to download. Default downloads data from all months.}
+
+\item{year_range}{numeric range of years, used in identifying files to download. Default downloads data from all years (filtered by available Stage 3/Stage 4 data).}
 }
 \value{
 NULL \code{downloadNWS} downloads files to the provided `data_folder` directory.

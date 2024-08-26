@@ -6,7 +6,7 @@
 \usage{
 summarizeNWS(
   tif_addresses,
-  parameter_pattern = "_1|Observed",
+  parameter_pattern = "_1$|^Observed",
   input_polygon,
   polygon_names = NULL,
   create_plots = FALSE,
@@ -17,7 +17,7 @@ summarizeNWS(
 \arguments{
 \item{tif_addresses}{character vector with full file names for tiff files to be summarized (including entire directory and file extension). Can be created with `list.files('C:/directory', full.names = TRUE)`.}
 
-\item{parameter_pattern}{character element used in a grep query to identify which layer to use. Note that this must select the desired layer from both Stage 3 and Stage 4 data (so the query should likely be an OR statement, e.g., '_1|Observed' for observed data). Layer names for Stage 3 data appear to be `Observed`, `Normal`, `Departure from Normal`, and `Percent of Normal`. Layer names for Stage 4 data are the filename and a numeric value between 1 and 4.}
+\item{parameter_pattern}{character element used in a grep query to identify which layer to use. Note that this must select the desired layer from both Stage 3 and Stage 4 data (so the query should likely be an OR statement, e.g., '_1|Observed' for observed data). Layer names for Stage 3 data appear to be `Observed`, `Normal`, `Departure from Normal`, and `Percent of Normal`. Layer names for Stage 4 data are the filename followed by an underscore and a numeric value between 1 and 4. It is extremely important to use `$` in the pattern for the Stage 4 data.}
 
 \item{input_polygon}{Spatvector with polygons used to summarize precipitation data. Load with `terra::vect`. Example polygon data: https://catalog.data.gov/dataset/tiger-line-shapefile-2019-state-georgia-current-county-subdivision-state-based}
 

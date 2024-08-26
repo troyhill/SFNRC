@@ -4,10 +4,11 @@
 #'
 #' @param data_folder parent directory for data to be deposited. If this does not exist, it will be created.
 #' @param overwrite_data TRUE/FALSE value indicating whether existing files should be overwritten. If TRUE, all data are downloaded fresh.
-#' @param stage type of data to download. Acceptable values include `stage3` and/or `stage4`.
 #' @param stage3_filename example of a stage 3 filename. YYYYMMDD is a token that will be replaced with actual dates. Adjusting this can accommodate odd filenames (e.g., stage 3 2017; stage 4 2016) and download different data types (e.g., 1 day, last 180 days)
 #' @param stage4_filename example of a stage 4 filename. YYYYMMDD is a token that will be replaced with actual dates.
-#' @param day_range numeric range of days to download from each month. Default only downloads data from the first of the month.
+#' @param day_range numeric range of days, used in identifying files to download. Default only downloads data from the first of the month.
+#' @param month_range numeric range of months, used in identifying files to download. Default downloads data from all months.
+#' @param year_range numeric range of years, used in identifying files to download. Default downloads data from all years (filtered by available Stage 3/Stage 4 data).
 #'
 #' @return NULL \code{downloadNWS} downloads files to the provided `data_folder` directory. 
 #' 
@@ -20,11 +21,22 @@
 #' 2+2
 downloadNWS <- function(data_folder,
                          overwrite_data = FALSE, # if TRUE, all data is downloaded fresh
-                         stage = c('stage3', 'stage4'), # type of data to download
                          stage3_filename = 'nws_precip_mtd_YYYYMMDD.tif', # example of a stage 3 filename. YYYYMMDD is a token that will be replaced with actual dates.
                          stage4_filename = 'nws_precip_mtd_YYYYMMDD_conus.tif',
-                         day_range       = 1 # range of days to download from each month. Default only downloads data from the first of the month
+                         day_range       = 1, # range of days to download from each month. Default only downloads data from the first of the month
+                         month_range     = 1:12,
+                         year_range      = 2005:as.numeric(format(Sys.Date(), format = '%Y'))
 ) {
+  
+  ### identify which stages to download data for, based on years provided
+  stage <- c('stage3', 'stage4')
+  if (!any(2005:2017 %in% year_range)) {
+    stage <- stage[-c(which(stage %in% 'stage3'))]
+  }
+  if (!any(2016:as.numeric(format(Sys.Date(), format = '%Y')) %in% year_range)) {
+    stage <- stage[-c(which(stage %in% 'stage3'))]
+  }
+  
   filename <- c(stage3_filename, # stage 3 filename pattern
                 stage4_filename) # stage 4 filename pattern
   
@@ -33,18 +45,19 @@ downloadNWS <- function(data_folder,
       dir.create(file.path(data_folder, 'stage3'), recursive = TRUE)
     }
     ### create list of dates, then urls
-    years <- as.character(2005:2017)
-    months<- c('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
-    days  <- as.character(day_range)
-    days[nchar(days) < 2] <- paste0('0', days[nchar(days) < 2])
-    targetDates <- expand.grid(years, months, days)
-    targetDates$ymd  <- paste0(targetDates$Var1, targetDates$Var2, targetDates$Var3)
-    targetDates      <- targetDates[!grepl(x = targetDates$ymd, pattern = '20050101'), ]
-    targetDates$ymd2 <- paste(targetDates$Var1, targetDates$Var2, targetDates$Var3, sep = '/')
-    targetDates$url  <- paste0('https://water.noaa.gov/resources/downloads/precip/stageIII/', targetDates$ymd2, '/', mapply(gsub, filename[1], pattern = 'YYYYMMDD', replacement = targetDates$ymd, USE.NAMES = FALSE))
+    years                <- as.character(year_range[year_range %in% 2005:2017])
+    months               <- as.character(month_range) #c('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
+    months[nchar(months) < 2]      <- paste0('0', months[nchar(months) < 2])
+    days                 <- as.character(day_range)
+    days[nchar(days) < 2]<- paste0('0', days[nchar(days) < 2])
+    targetDates          <- expand.grid(years, months, days)
+    targetDates$ymd      <- paste0(targetDates$Var1, targetDates$Var2, targetDates$Var3)
+    # targetDates        <- targetDates[!grepl(x = targetDates$ymd, pattern = '20050101'), ]
+    targetDates$ymd2     <- paste(targetDates$Var1, targetDates$Var2, targetDates$Var3, sep = '/')
+    targetDates$url      <- paste0('https://water.noaa.gov/resources/downloads/precip/stageIII/', targetDates$ymd2, '/', mapply(gsub, filename[1], pattern = 'YYYYMMDD', replacement = targetDates$ymd, USE.NAMES = FALSE))
     targetDates$basename <- basename(targetDates$url)
-    targetDates$download_location <- file.path(data_folder, 'stage3', targetDates$basename)
-    existing_files <- list.files(file.path(data_folder, 'stage3'), full.names = FALSE)
+    targetDates$download_location   <- file.path(data_folder, 'stage3', targetDates$basename)
+    existing_files       <- list.files(file.path(data_folder, 'stage3'), full.names = FALSE)
     targetDates$exists_in_directory <- ifelse(targetDates$basename %in% existing_files, 1, 0)
     
     if (overwrite_data == FALSE) {
@@ -73,27 +86,29 @@ downloadNWS <- function(data_folder,
       dir.create(file.path(data_folder, 'stage4'), recursive = TRUE)
     }
     ### create list of dates, then urls. July 2016 is the first month that follows this pattern. Jan-Jun 2016 can be downloaded manually.
-    years <- as.character(2016:as.numeric(format(Sys.Date(), format = '%Y')))
-    months<- c('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
-    days  <- as.character(day_range)
-    days[nchar(days) < 2] <- paste0('0', days[nchar(days) < 2])
-    targetDates <- expand.grid(years, months, days)
-    targetDates$ymd  <- paste0(targetDates$Var1, targetDates$Var2, targetDates$Var3)
+    years                <- as.character(year_range[year_range %in% 2016:as.numeric(format(Sys.Date(), format = '%Y'))])
+    months               <- as.character(month_range) #c('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
+    months[nchar(months) < 2] <- paste0('0', months[nchar(months) < 2])
+    # years <- as.character(2016:as.numeric(format(Sys.Date(), format = '%Y')))
+    # months<- c('01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12')
+    days                 <- as.character(day_range)
+    days[nchar(days) < 2]<- paste0('0', days[nchar(days) < 2])
+    targetDates          <- expand.grid(years, months, days)
+    targetDates$ymd      <- paste0(targetDates$Var1, targetDates$Var2, targetDates$Var3)
     ### remove first part of 2016
-    # targetDates      <- targetDates[!(targetDates$ymd %in% paste0('20160',1:6, '01')), ]
+    # targetDates        <- targetDates[!(targetDates$ymd %in% paste0('20160',1:6, '01')), ]
     ### remove future months from current year
-    current_mo       <- format(Sys.Date(), format = '%m')
-    available_months <- 1:as.numeric(current_mo)
-    months_to_remove <- as.character(c(1:12)[!(c(1:12) %in% available_months)])
+    current_mo           <- format(Sys.Date(), format = '%m')
+    available_months     <- 1:as.numeric(current_mo)
+    months_to_remove     <- as.character(c(1:12)[!(c(1:12) %in% available_months)])
     months_to_remove[nchar(months_to_remove) == 1] <- paste0('0', months_to_remove[nchar(months_to_remove) == 1])
-    dates_to_remove  <- paste0(format(Sys.Date(), format = '%Y'), months_to_remove, '01')
-    targetDates      <- targetDates[!(targetDates$ymd %in% dates_to_remove), ]
-    
-    targetDates$ymd2 <- paste(targetDates$Var1, targetDates$Var2, targetDates$Var3, sep = '/')
-    targetDates$url  <- paste0('https://water.noaa.gov/resources/downloads/precip/stageIV/', targetDates$ymd2, "/", mapply(gsub, filename[2], pattern = 'YYYYMMDD', replacement = targetDates$ymd, USE.NAMES = FALSE))
+    dates_to_remove      <- paste0(format(Sys.Date(), format = '%Y'), months_to_remove, '01')
+    targetDates          <- targetDates[!(targetDates$ymd %in% dates_to_remove), ]
+    targetDates$ymd2     <- paste(targetDates$Var1, targetDates$Var2, targetDates$Var3, sep = '/')
+    targetDates$url      <- paste0('https://water.noaa.gov/resources/downloads/precip/stageIV/', targetDates$ymd2, "/", mapply(gsub, filename[2], pattern = 'YYYYMMDD', replacement = targetDates$ymd, USE.NAMES = FALSE))
     targetDates$basename <- basename(targetDates$url)
-    targetDates$download_location <- file.path(data_folder, 'stage4', targetDates$basename)
-    existing_files   <- list.files(file.path(data_folder, 'stage4'), full.names = FALSE)
+    targetDates$download_location   <- file.path(data_folder, 'stage4', targetDates$basename)
+    existing_files       <- list.files(file.path(data_folder, 'stage4'), full.names = FALSE)
     targetDates$exists_in_directory <- ifelse(targetDates$basename %in% existing_files, 1, 0)
     
     if (overwrite_data == FALSE) {
