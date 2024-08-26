@@ -20,7 +20,7 @@ downloadNWS(
 
 \item{stage}{type of data to download. Acceptable values include `stage3` and/or `stage4`.}
 
-\item{stage3_filename}{example of a stage 3 filename. YYYYMMDD is a token that will be replaced with actual dates. Adjusting this can accommodate odd filenames (e.g., 2017)}
+\item{stage3_filename}{example of a stage 3 filename. YYYYMMDD is a token that will be replaced with actual dates. Adjusting this can accommodate odd filenames (e.g., stage 3 2017; stage 4 2016) and download different data types (e.g., 1 day, last 180 days)}
 
 \item{stage4_filename}{example of a stage 4 filename. YYYYMMDD is a token that will be replaced with actual dates.}
 
