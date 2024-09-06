@@ -34,7 +34,7 @@ downloadNWS <- function(data_folder,
     stage <- stage[-c(which(stage %in% 'stage3'))]
   }
   if (!any(2016:as.numeric(format(Sys.Date(), format = '%Y')) %in% year_range)) {
-    stage <- stage[-c(which(stage %in% 'stage3'))]
+    stage <- stage[-c(which(stage %in% 'stage4'))]
   }
   
   filename <- c(stage3_filename, # stage 3 filename pattern
