@@ -40,11 +40,17 @@ summarizeNWS <- function(tif_addresses,
     ### confirm polygon names are present
     if (!polygon_names %in% names(input_polygon)) {
       polygon_names <- NULL
+    } else {
+      if (any(duplicated(values(input_polygon[, polygon_names])))) {
+        message(sum(duplicated(values(input_polygon[, polygon_names]))), ' polygon_names are duplicated. These multipolygon features are being aggregated internally.')
+        ### make sure there's just one row per polygon ID
+        input_polygon <- terra::aggregate(input_polygon, by = polygon_names, fun = 'sum')
+      }
     }
   }
-  if (is.null(polygon_names)) {
-    polygon_names <- 1:nrow(input_polygon)
-  }
+  # if (is.null(polygon_names)) {
+  #   polygon_names <- 1:nrow(input_polygon)
+  # }
   
   param <- data.frame(input = c('observed', 'normal', 'departure_in', 'departure_pct'),
                       output = c('_1$|^Observed', '_2$|^Normal', '_3$|^Departure', '_4$|^Percent'))
@@ -84,7 +90,11 @@ summarizeNWS <- function(tif_addresses,
                                       '_', split_file_name[length(split_file_name) - 1])
     extracted.int$monthYear <- as.Date(date_value, format = '%Y%m%d') + date_correction # using -1 is useful for full-month rainfall; changes date to last day of prior month. Assuming that e.g., June 1st reflects May rainfall totals
     extracted.int$month     <- format(extracted.int$monthYear, '%b')
-    extracted.int$name      <- terra::values(input_polygon[, polygon_names])[,1]
+    if (is.null(polygon_names)) {
+      extracted.int$name      <- i
+    } else {
+      extracted.int$name      <- terra::values(input_polygon[, polygon_names])[,1]
+    }
     
     if(create_plots) {
       input_polygon$mtd <- extracted.int[,1]
