@@ -10,7 +10,7 @@ summarizeNWS(
   input_polygon,
   polygon_names = NULL,
   create_plots = FALSE,
-  func = median,
+  func = mean,
   date_correction = -1
 )
 }

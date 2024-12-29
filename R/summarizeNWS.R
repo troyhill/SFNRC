@@ -32,7 +32,7 @@ summarizeNWS <- function(tif_addresses,
                          input_polygon, # shapefile, e.g., 
                          polygon_names = NULL, # optional; name of the column in the polygon object with feature IDs/names
                          create_plots = FALSE,
-                         func = median, # value to report in the final summary table (max, min, mean, etc.)
+                         func = mean, # value to report in the final summary table (max, min, mean, etc.)
                          date_correction = -1 # optional correction for data date. 
 ) {
   
